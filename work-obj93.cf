@@ -1,0 +1,13 @@
+v 4
+file . "tb/tb_instruction_fetch.vhd" "71bdf565356e14ba5e00b3c52a72eb034fbfde91" "20250917084738.999":
+  entity tb_instruction_fetch at 1( 0) + 0 on 103;
+  architecture test of tb_instruction_fetch at 8( 114) + 0 on 104;
+file . "src/instruction_fetch.vhd" "b91d24ee34f18133022f8b3f0d7f9ae691415cfa" "20250917084738.994":
+  entity instruction_fetch at 1( 0) + 0 on 99;
+  architecture behavioral of instruction_fetch at 16( 343) + 0 on 100;
+file . "src/register_file.vhd" "5c52fc9e091b40cc7b11159bef70f10296652ff3" "20250917084738.997":
+  entity register_file at 1( 0) + 0 on 101;
+  architecture behavioral of register_file at 29( 633) + 0 on 102;
+file . "tb/tb_register_file.vhd" "e91bd64e138f47a11adf4af7ed2adb3d6cd694d3" "20250917084528.408":
+  entity tb_register_file at 1( 0) + 0 on 91;
+  architecture test of tb_register_file at 9( 147) + 0 on 92;
