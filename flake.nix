@@ -32,6 +32,8 @@
             # Documentation tools
             pandoc # Document conversion
             graphviz # Diagram generation
+
+            texlive.combined.scheme-full
           ];
           shellHook = ''
             if [ -x "${pkgs.zsh}/bin/zsh" ]; then
