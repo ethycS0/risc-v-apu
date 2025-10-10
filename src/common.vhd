@@ -3,7 +3,7 @@ USE ieee.std_logic_1164.ALL;
 
 PACKAGE rv32i_pkg IS
 
-	TYPE exec_op_t IS (
+	TYPE exec_opcodes_t IS (
                 -- AGU
                 OP_LUI, OP_AUIPC, 
                 -- JUMP
@@ -23,5 +23,9 @@ PACKAGE rv32i_pkg IS
                 -- Errors
                 OP_INVALID
 	);
+
+        TYPE exec_unit_t IS (
+                UNIT_AGU, UNIT_JMP, UNIT_BR, UNIT_LD, UNIT_STR, UNIT_ALU, UNIT_MO, UNIT_ENVC
+        );
 
 END PACKAGE rv32i_pkg;

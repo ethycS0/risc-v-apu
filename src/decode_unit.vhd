@@ -8,7 +8,8 @@ ENTITY decode_unit IS
 
 	PORT (
 		instruction : IN std_logic_vector(31 DOWNTO 0);
-		operation : OUT exec_op_t
+		operation : OUT exec_opcodes_t;
+                unit_en : OUT exec_unit_t
 	);
 
 END ENTITY decode_unit;
