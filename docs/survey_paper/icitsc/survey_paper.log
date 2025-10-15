@@ -1,118 +1,118 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025/nixos.org) (preloaded format=pdflatex 1980.1.1)  8 OCT 2025 20:45
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/nixos.org) (preloaded format=pdflatex 1980.1.1)  15 OCT 2025 22:46
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
 **survey_paper.tex
 (./survey_paper.tex
-LaTeX2e <2025-06-01> patch level 1
-L3 programming layer <2025-06-09>
+LaTeX2e <2023-11-01> patch level 1
+L3 programming layer <2024-02-20>
 
-(/nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.2025070
-3-texmfdist/tex/latex/base/article.cls
-Document Class: article 2025/01/22 v1.4n Standard LaTeX document class
+(/nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-t
+exmfdist/tex/latex/base/article.cls
+Document Class: article 2023/05/17 v1.4n Standard LaTeX document class
 
-(/nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.2025070
-3-texmfdist/tex/latex/base/size10.clo
-File: size10.clo 2025/01/22 v1.4n Standard LaTeX file (size option)
+(/nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-t
+exmfdist/tex/latex/base/size10.clo
+File: size10.clo 2023/05/17 v1.4n Standard LaTeX file (size option)
 )
-\c@part=\count275
-\c@section=\count276
-\c@subsection=\count277
-\c@subsubsection=\count278
-\c@paragraph=\count279
-\c@subparagraph=\count280
-\c@figure=\count281
-\c@table=\count282
-\abovecaptionskip=\skip49
-\belowcaptionskip=\skip50
-\bibindent=\dimen148
+\c@part=\count188
+\c@section=\count189
+\c@subsection=\count190
+\c@subsubsection=\count191
+\c@paragraph=\count192
+\c@subparagraph=\count193
+\c@figure=\count194
+\c@table=\count195
+\abovecaptionskip=\skip48
+\belowcaptionskip=\skip49
+\bibindent=\dimen140
 )
-(/nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.2025070
-3-texmfdist/tex/latex/graphics/epsfig.sty
-Package: epsfig 2024/01/14 v1.7b (e)psfig emulation (SPQR)
+(/nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-t
+exmfdist/tex/latex/graphics/epsfig.sty
+Package: epsfig 2017/06/25 v1.7b (e)psfig emulation (SPQR)
 
-(/nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.2025070
-3-texmfdist/tex/latex/graphics/graphicx.sty
-Package: graphicx 2024/12/31 v1.2e Enhanced LaTeX Graphics (DPC,SPQR)
+(/nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-t
+exmfdist/tex/latex/graphics/graphicx.sty
+Package: graphicx 2021/09/16 v1.2d Enhanced LaTeX Graphics (DPC,SPQR)
 
-(/nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.2025070
-3-texmfdist/tex/latex/graphics/keyval.sty
+(/nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-t
+exmfdist/tex/latex/graphics/keyval.sty
 Package: keyval 2022/05/29 v1.15 key=value parser (DPC)
 \KV@toks@=\toks17
 )
-(/nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.2025070
-3-texmfdist/tex/latex/graphics/graphics.sty
-Package: graphics 2024/08/06 v1.4g Standard LaTeX Graphics (DPC,SPQR)
+(/nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-t
+exmfdist/tex/latex/graphics/graphics.sty
+Package: graphics 2022/03/10 v1.4e Standard LaTeX Graphics (DPC,SPQR)
 
-(/nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.2025070
-3-texmfdist/tex/latex/graphics/trig.sty
-Package: trig 2023/12/02 v1.11 sin cos tan (DPC)
+(/nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-t
+exmfdist/tex/latex/graphics/trig.sty
+Package: trig 2021/08/11 v1.11 sin cos tan (DPC)
 )
-(/nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.2025070
-3-texmfdist/tex/latex/graphics-cfg/graphics.cfg
+(/nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-t
+exmfdist/tex/latex/graphics-cfg/graphics.cfg
 File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
 )
-Package graphics Info: Driver file: pdftex.def on input line 106.
+Package graphics Info: Driver file: pdftex.def on input line 107.
 
-(/nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.2025070
-3-texmfdist/tex/latex/graphics-def/pdftex.def
-File: pdftex.def 2024/04/13 v1.2c Graphics/color driver for pdftex
+(/nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-t
+exmfdist/tex/latex/graphics-def/pdftex.def
+File: pdftex.def 2022/09/22 v1.2b Graphics/color driver for pdftex
 ))
-\Gin@req@height=\dimen149
-\Gin@req@width=\dimen150
+\Gin@req@height=\dimen141
+\Gin@req@width=\dimen142
 )
-\epsfxsize=\dimen151
-\epsfysize=\dimen152
+\epsfxsize=\dimen143
+\epsfysize=\dimen144
 )
-(/nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.2025070
-3-texmfdist/tex/latex/caption/subcaption.sty
+(/nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-t
+exmfdist/tex/latex/caption/subcaption.sty
 Package: subcaption 2023/07/28 v1.6b Sub-captions (AR)
 
-(/nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.2025070
-3-texmfdist/tex/latex/caption/caption.sty
+(/nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-t
+exmfdist/tex/latex/caption/caption.sty
 Package: caption 2023/08/05 v3.6o Customizing captions (AR)
 
-(/nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.2025070
-3-texmfdist/tex/latex/caption/caption3.sty
+(/nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-t
+exmfdist/tex/latex/caption/caption3.sty
 Package: caption3 2023/07/31 v2.4d caption3 kernel (AR)
-\caption@tempdima=\dimen153
-\captionmargin=\dimen154
-\caption@leftmargin=\dimen155
-\caption@rightmargin=\dimen156
-\caption@width=\dimen157
-\caption@indent=\dimen158
-\caption@parindent=\dimen159
-\caption@hangindent=\dimen160
+\caption@tempdima=\dimen145
+\captionmargin=\dimen146
+\caption@leftmargin=\dimen147
+\caption@rightmargin=\dimen148
+\caption@width=\dimen149
+\caption@indent=\dimen150
+\caption@parindent=\dimen151
+\caption@hangindent=\dimen152
 Package caption Info: Standard document class detected.
 )
-\c@caption@flags=\count283
-\c@continuedfloat=\count284
+\c@caption@flags=\count196
+\c@continuedfloat=\count197
 )
 Package caption Info: New subtype `subfigure' on input line 238.
-\c@subfigure=\count285
+\c@subfigure=\count198
 Package caption Info: New subtype `subtable' on input line 238.
-\c@subtable=\count286
+\c@subtable=\count199
 )
-(/nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.2025070
-3-texmfdist/tex/latex/tools/calc.sty
-Package: calc 2025/03/01 v4.3b Infix arithmetic (KKT,FJ)
-\calc@Acount=\count287
-\calc@Bcount=\count288
-\calc@Adimen=\dimen161
-\calc@Bdimen=\dimen162
-\calc@Askip=\skip51
-\calc@Bskip=\skip52
-LaTeX Info: Redefining \setlength on input line 86.
-LaTeX Info: Redefining \addtolength on input line 87.
-\calc@Ccount=\count289
-\calc@Cskip=\skip53
+(/nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-t
+exmfdist/tex/latex/tools/calc.sty
+Package: calc 2023/07/08 v4.3 Infix arithmetic (KKT,FJ)
+\calc@Acount=\count266
+\calc@Bcount=\count267
+\calc@Adimen=\dimen153
+\calc@Bdimen=\dimen154
+\calc@Askip=\skip50
+\calc@Bskip=\skip51
+LaTeX Info: Redefining \setlength on input line 80.
+LaTeX Info: Redefining \addtolength on input line 81.
+\calc@Ccount=\count268
+\calc@Cskip=\skip52
 )
-(/nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.2025070
-3-texmfdist/tex/latex/amsfonts/amssymb.sty
+(/nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-t
+exmfdist/tex/latex/amsfonts/amssymb.sty
 Package: amssymb 2013/01/14 v3.01 AMS font symbols
 
-(/nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.2025070
-3-texmfdist/tex/latex/amsfonts/amsfonts.sty
+(/nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-t
+exmfdist/tex/latex/amsfonts/amsfonts.sty
 Package: amsfonts 2013/01/14 v3.01 Basic AMSFonts support
 \@emptytoks=\toks18
 \symAMSa=\mathgroup4
@@ -121,118 +121,120 @@ LaTeX Font Info:    Redeclaring math symbol \hbar on input line 98.
 LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
 (Font)                  U/euf/m/n --> U/euf/b/n on input line 106.
 ))
-(/nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.2025070
-3-texmfdist/tex/latex/amsmath/amstext.sty
-Package: amstext 2024/11/17 v2.01 AMS text
+(/nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-t
+exmfdist/tex/latex/amsmath/amstext.sty
+Package: amstext 2021/08/26 v2.01 AMS text
 
-(/nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.2025070
-3-texmfdist/tex/latex/amsmath/amsgen.sty
+(/nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-t
+exmfdist/tex/latex/amsmath/amsgen.sty
 File: amsgen.sty 1999/11/30 v2.0 generic functions
 \@emptytoks=\toks19
-\ex@=\dimen163
+\ex@=\dimen155
 ))
-(/nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.2025070
-3-texmfdist/tex/latex/amsmath/amsmath.sty
-Package: amsmath 2025/06/16 v2.17y AMS math features
-\@mathmargin=\skip54
+(/nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-t
+exmfdist/tex/latex/amsmath/amsmath.sty
+Package: amsmath 2023/05/13 v2.17o AMS math features
+\@mathmargin=\skip53
 
 For additional information on amsmath, use the `?' option.
 
-(/nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.2025070
-3-texmfdist/tex/latex/amsmath/amsbsy.sty
+(/nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-t
+exmfdist/tex/latex/amsmath/amsbsy.sty
 Package: amsbsy 1999/11/29 v1.2d Bold Symbols
-\pmbraise@=\dimen164
+\pmbraise@=\dimen156
 )
-(/nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.2025070
-3-texmfdist/tex/latex/amsmath/amsopn.sty
+(/nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-t
+exmfdist/tex/latex/amsmath/amsopn.sty
 Package: amsopn 2022/04/08 v2.04 operator names
 )
-\inf@bad=\count290
-LaTeX Info: Redefining \frac on input line 233.
-\uproot@=\count291
-\leftroot@=\count292
-LaTeX Info: Redefining \overline on input line 398.
-LaTeX Info: Redefining \colon on input line 409.
-\classnum@=\count293
-\DOTSCASE@=\count294
-LaTeX Info: Redefining \ldots on input line 495.
-LaTeX Info: Redefining \dots on input line 498.
-LaTeX Info: Redefining \cdots on input line 619.
-\Mathstrutbox@=\box53
-\strutbox@=\box54
-LaTeX Info: Redefining \big on input line 721.
-LaTeX Info: Redefining \Big on input line 722.
-LaTeX Info: Redefining \bigg on input line 723.
-LaTeX Info: Redefining \Bigg on input line 724.
-\big@size=\dimen165
-LaTeX Font Info:    Redeclaring font encoding OML on input line 742.
-LaTeX Font Info:    Redeclaring font encoding OMS on input line 743.
-\macc@depth=\count295
-LaTeX Info: Redefining \bmod on input line 904.
-LaTeX Info: Redefining \pmod on input line 909.
-LaTeX Info: Redefining \smash on input line 939.
-LaTeX Info: Redefining \relbar on input line 969.
-LaTeX Info: Redefining \Relbar on input line 970.
-\c@MaxMatrixCols=\count296
-\dotsspace@=\muskip17
-\c@parentequation=\count297
-\dspbrk@lvl=\count298
+\inf@bad=\count269
+LaTeX Info: Redefining \frac on input line 234.
+\uproot@=\count270
+\leftroot@=\count271
+LaTeX Info: Redefining \overline on input line 399.
+LaTeX Info: Redefining \colon on input line 410.
+\classnum@=\count272
+\DOTSCASE@=\count273
+LaTeX Info: Redefining \ldots on input line 496.
+LaTeX Info: Redefining \dots on input line 499.
+LaTeX Info: Redefining \cdots on input line 620.
+\Mathstrutbox@=\box51
+\strutbox@=\box52
+LaTeX Info: Redefining \big on input line 722.
+LaTeX Info: Redefining \Big on input line 723.
+LaTeX Info: Redefining \bigg on input line 724.
+LaTeX Info: Redefining \Bigg on input line 725.
+\big@size=\dimen157
+LaTeX Font Info:    Redeclaring font encoding OML on input line 743.
+LaTeX Font Info:    Redeclaring font encoding OMS on input line 744.
+\macc@depth=\count274
+LaTeX Info: Redefining \bmod on input line 905.
+LaTeX Info: Redefining \pmod on input line 910.
+LaTeX Info: Redefining \smash on input line 940.
+LaTeX Info: Redefining \relbar on input line 970.
+LaTeX Info: Redefining \Relbar on input line 971.
+\c@MaxMatrixCols=\count275
+\dotsspace@=\muskip16
+\c@parentequation=\count276
+\dspbrk@lvl=\count277
 \tag@help=\toks20
-\row@=\count299
-\column@=\count300
-\maxfields@=\count301
+\row@=\count278
+\column@=\count279
+\maxfields@=\count280
 \andhelp@=\toks21
-\eqnshift@=\dimen166
-\alignsep@=\dimen167
-\tagshift@=\dimen168
-\tagwidth@=\dimen169
-\totwidth@=\dimen170
-\lineht@=\dimen171
+\eqnshift@=\dimen158
+\alignsep@=\dimen159
+\tagshift@=\dimen160
+\tagwidth@=\dimen161
+\totwidth@=\dimen162
+\lineht@=\dimen163
 \@envbody=\toks22
-\multlinegap=\skip55
-\multlinetaggap=\skip56
+\multlinegap=\skip54
+\multlinetaggap=\skip55
 \mathdisplay@stack=\toks23
-LaTeX Info: Redefining \[ on input line 2949.
-LaTeX Info: Redefining \] on input line 2950.
+LaTeX Info: Redefining \[ on input line 2953.
+LaTeX Info: Redefining \] on input line 2954.
 )
-(/nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.2025070
-3-texmfdist/tex/latex/amscls/amsthm.sty
+(/nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-t
+exmfdist/tex/latex/amscls/amsthm.sty
 Package: amsthm 2020/05/29 v2.20.6
 \thm@style=\toks24
 \thm@bodyfont=\toks25
 \thm@headfont=\toks26
 \thm@notefont=\toks27
 \thm@headpunct=\toks28
-\thm@preskip=\skip57
-\thm@postskip=\skip58
-\thm@headsep=\skip59
+\thm@preskip=\skip56
+\thm@postskip=\skip57
+\thm@headsep=\skip58
 \dth@everypar=\toks29
 )
-(/nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.2025070
-3-texmfdist/tex/latex/tools/multicol.sty
-Package: multicol 2025/05/25 v2.0a multicolumn formatting (FMi)
-\c@tracingmulticols=\count302
-\mult@box=\box55
-\multicol@leftmargin=\dimen172
-\c@unbalance=\count303
-\c@collectmore=\count304
-\doublecol@number=\count305
-\multicoltolerance=\count306
-\multicolpretolerance=\count307
-\full@width=\dimen173
-\page@free=\dimen174
-\premulticols=\dimen175
-\postmulticols=\dimen176
-\multicolsep=\skip60
-\multicolbaselineskip=\skip61
-\partial@page=\box56
-\last@line=\box57
-\mc@boxedresult=\box58
-\maxbalancingoverflow=\dimen177
-\mult@rightbox=\box59
-\mult@grightbox=\box60
-\mult@firstbox=\box61
-\mult@gfirstbox=\box62
+(/nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-t
+exmfdist/tex/latex/tools/multicol.sty
+Package: multicol 2023/03/30 v1.9f multicolumn formatting (FMi)
+\c@tracingmulticols=\count281
+\mult@box=\box53
+\multicol@leftmargin=\dimen164
+\c@unbalance=\count282
+\c@collectmore=\count283
+\doublecol@number=\count284
+\multicoltolerance=\count285
+\multicolpretolerance=\count286
+\full@width=\dimen165
+\page@free=\dimen166
+\premulticols=\dimen167
+\postmulticols=\dimen168
+\multicolsep=\skip59
+\multicolbaselineskip=\skip60
+\partial@page=\box54
+\last@line=\box55
+\mc@boxedresult=\box56
+\maxbalancingoverflow=\dimen169
+\mult@rightbox=\box57
+\mult@grightbox=\box58
+\mult@firstbox=\box59
+\mult@gfirstbox=\box60
+\@tempa=\box61
+\@tempa=\box62
 \@tempa=\box63
 \@tempa=\box64
 \@tempa=\box65
@@ -267,21 +269,18 @@ Package: multicol 2025/05/25 v2.0a multicolumn formatting (FMi)
 \@tempa=\box94
 \@tempa=\box95
 \@tempa=\box96
-\@tempa=\box97
-\@tempa=\box98
-\c@minrows=\count308
-\c@columnbadness=\count309
-\c@finalcolumnbadness=\count310
-\last@try=\dimen178
-\multicolovershoot=\dimen179
-\multicolundershoot=\dimen180
-\mult@nat@firstbox=\box99
-\colbreak@box=\box100
-\mc@col@check@num=\count311
-\g__mc_curr_col_int=\count312
+\c@minrows=\count287
+\c@columnbadness=\count288
+\c@finalcolumnbadness=\count289
+\last@try=\dimen170
+\multicolovershoot=\dimen171
+\multicolundershoot=\dimen172
+\mult@nat@firstbox=\box97
+\colbreak@box=\box98
+\mc@col@check@num=\count290
 )
-(/nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.2025070
-3-texmfdist/tex/latex/psnfss/mathptmx.sty
+(/nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-t
+exmfdist/tex/latex/psnfss/mathptmx.sty
 Package: mathptmx 2020/03/25 PSNFSS-v9.3 Times w/ Math, improved (SPQR, WaS) 
 LaTeX Font Info:    Redeclaring symbol font `operators' on input line 28.
 LaTeX Font Info:    Overwriting symbol font `operators' in version `normal'
@@ -317,94 +316,96 @@ LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `bold'
 (Font)                  OT1/cmr/bx/it --> OT1/ptm/m/it on input line 35.
 LaTeX Info: Redefining \hbar on input line 50.
 )
-(/nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.2025070
-3-texmfdist/tex/latex/algorithm2e/algorithm2e.sty
+(/nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-t
+exmfdist/tex/latex/algorithm2e/algorithm2e.sty
 Package: algorithm2e 2017/07/18 v5.2 algorithms environments
-\c@AlgoLine=\count313
+\c@AlgoLine=\count291
 
-(/nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.2025070
-3-texmfdist/tex/latex/base/ifthen.sty
-Package: ifthen 2024/03/16 v1.1e Standard LaTeX ifthen package (DPC)
+(/nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-t
+exmfdist/tex/latex/base/ifthen.sty
+Package: ifthen 2022/04/13 v1.1d Standard LaTeX ifthen package (DPC)
 )
-\algocf@hangindent=\skip62
+\algocf@hangindent=\skip61
 
-(/nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.2025070
-3-texmfdist/tex/latex/ifoddpage/ifoddpage.sty
+(/nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-t
+exmfdist/tex/latex/ifoddpage/ifoddpage.sty
 Package: ifoddpage 2022/10/18 v1.2 Conditionals for odd/even page detection
-\c@checkoddpage=\count314
+\c@checkoddpage=\count292
 )
-(/nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.2025070
-3-texmfdist/tex/latex/tools/xspace.sty
+(/nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-t
+exmfdist/tex/latex/tools/xspace.sty
 Package: xspace 2014/10/28 v1.13 Space after command names (DPC,MH)
 )
-(/nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.2025070
-3-texmfdist/tex/latex/relsize/relsize.sty
+(/nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-t
+exmfdist/tex/latex/relsize/relsize.sty
 Package: relsize 2013/03/29 ver 4.1
 )
-\skiptotal=\skip63
-\skiplinenumber=\skip64
-\skiprule=\skip65
-\skiphlne=\skip66
-\skiptext=\skip67
-\skiplength=\skip68
-\algomargin=\skip69
-\skipalgocfslide=\skip70
-\algowidth=\dimen181
-\inoutsize=\dimen182
-\inoutindent=\dimen183
-\interspacetitleruled=\dimen184
-\interspacealgoruled=\dimen185
-\interspacetitleboxruled=\dimen186
-\algocf@ruledwidth=\skip71
-\algocf@inoutbox=\box101
-\algocf@inputbox=\box102
-\AlCapSkip=\skip72
-\AlCapHSkip=\skip73
-\algoskipindent=\skip74
-\algocf@nlbox=\box103
-\algocf@hangingbox=\box104
-\algocf@untilbox=\box105
-\algocf@skipuntil=\skip75
-\algocf@capbox=\box106
-\algocf@lcaptionbox=\skip76
-\algoheightruledefault=\skip77
-\algoheightrule=\skip78
-\algotitleheightruledefault=\skip79
-\algotitleheightrule=\skip80
-\c@algocfline=\count315
-\c@algocfproc=\count316
-\c@algocf=\count317
-\algocf@algoframe=\box107
-\algocf@algobox=\box108
+\skiptotal=\skip62
+\skiplinenumber=\skip63
+\skiprule=\skip64
+\skiphlne=\skip65
+\skiptext=\skip66
+\skiplength=\skip67
+\algomargin=\skip68
+\skipalgocfslide=\skip69
+\algowidth=\dimen173
+\inoutsize=\dimen174
+\inoutindent=\dimen175
+\interspacetitleruled=\dimen176
+\interspacealgoruled=\dimen177
+\interspacetitleboxruled=\dimen178
+\algocf@ruledwidth=\skip70
+\algocf@inoutbox=\box99
+\algocf@inputbox=\box100
+\AlCapSkip=\skip71
+\AlCapHSkip=\skip72
+\algoskipindent=\skip73
+\algocf@nlbox=\box101
+\algocf@hangingbox=\box102
+\algocf@untilbox=\box103
+\algocf@skipuntil=\skip74
+\algocf@capbox=\box104
+\algocf@lcaptionbox=\skip75
+\algoheightruledefault=\skip76
+\algoheightrule=\skip77
+\algotitleheightruledefault=\skip78
+\algotitleheightrule=\skip79
+\c@algocfline=\count293
+\c@algocfproc=\count294
+\c@algocf=\count295
+\algocf@algoframe=\box105
+\algocf@algobox=\box106
 )
-(/nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.2025070
-3-texmfdist/tex/latex/footmisc/footmisc.sty
-Package: footmisc 2025/05/09 v7.0b a miscellany of footnote facilities
+(/nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-t
+exmfdist/tex/latex/footmisc/footmisc.sty
+Package: footmisc 2023/07/05 v6.0f a miscellany of footnote facilities
 \FN@temptoken=\toks30
-\footnotemargin=\dimen187
-Package footmisc Info: Declaring symbol style bringhurst on input line 549.
-Package footmisc Info: Declaring symbol style chicago on input line 557.
-Package footmisc Info: Declaring symbol style wiley on input line 566.
-Package footmisc Info: Declaring symbol style lamport-robust on input line 577.
+\footnotemargin=\dimen179
+\@outputbox@depth=\dimen180
+Package footmisc Info: Declaring symbol style bringhurst on input line 696.
+Package footmisc Info: Declaring symbol style chicago on input line 704.
+Package footmisc Info: Declaring symbol style wiley on input line 713.
+Package footmisc Info: Declaring symbol style lamport-robust on input line 724.
 
-Package footmisc Info: Declaring symbol style lamport* on input line 597.
-Package footmisc Info: Declaring symbol style lamport*-robust on input line 618
+Package footmisc Info: Declaring symbol style lamport* on input line 744.
+Package footmisc Info: Declaring symbol style lamport*-robust on input line 765
 .
 ) (./SCITEPRESS.sty
 Conference Style for SCITEPRESS for LaTeX 2e -- version of May 2023
-\titlebox=\skip81
+\titlebox=\skip80
 )
 LaTeX Font Info:    Trying to load font information for OT1+ptm on input line 1
 6.
 
-(/nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.2025070
-3-texmfdist/tex/latex/psnfss/ot1ptm.fd
+(/nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-t
+exmfdist/tex/latex/psnfss/ot1ptm.fd
 File: ot1ptm.fd 2001/06/04 font definitions for OT1/ptm.
 )
-(/nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.2025070
-3-texmfdist/tex/latex/l3backend/l3backend-pdftex.def
-File: l3backend-pdftex.def 2025-06-09 L3 backend support: PDF output (pdfTeX)
-\l__color_backend_stack_int=\count318
+(/nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-t
+exmfdist/tex/latex/l3backend/l3backend-pdftex.def
+File: l3backend-pdftex.def 2024-02-20 L3 backend support: PDF output (pdfTeX)
+\l__color_backend_stack_int=\count296
+\l__pdf_internal_box=\box107
 ) (./survey_paper.aux)
 \openout1 = `survey_paper.aux'.
 
@@ -423,284 +424,265 @@ LaTeX Font Info:    ... okay on input line 16.
 LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 16.
 LaTeX Font Info:    ... okay on input line 16.
 
-(/nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.2025070
-3-texmfdist/tex/context/base/mkii/supp-pdf.mkii
+(/nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-t
+exmfdist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count319
-\scratchdimen=\dimen188
-\scratchbox=\box109
-\nofMPsegments=\count320
-\nofMParguments=\count321
+\scratchcounter=\count297
+\scratchdimen=\dimen181
+\scratchbox=\box108
+\nofMPsegments=\count298
+\nofMParguments=\count299
 \everyMPshowfont=\toks31
-\MPscratchCnt=\count322
-\MPscratchDim=\dimen189
-\MPnumerator=\count323
-\makeMPintoPDFobject=\count324
+\MPscratchCnt=\count300
+\MPscratchDim=\dimen182
+\MPnumerator=\count301
+\makeMPintoPDFobject=\count302
 \everyMPtoPDFconversion=\toks32
 )
-(/nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.2025070
-3-texmfdist/tex/latex/epstopdf-pkg/epstopdf-base.sty
+(/nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-t
+exmfdist/tex/latex/epstopdf-pkg/epstopdf-base.sty
 Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
 Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
 85.
 
-(/nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.2025070
-3-texmfdist/tex/latex/latexconfig/epstopdf-sys.cfg
+(/nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-t
+exmfdist/tex/latex/latexconfig/epstopdf-sys.cfg
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: End \AtBeginDocument code.
-LaTeX Font Info:    Calculating math sizes for size <11> on input line 37.
+LaTeX Font Info:    Calculating math sizes for size <11> on input line 46.
 LaTeX Font Info:    Trying to load font information for OT1+ztmcm on input line
- 37.
+ 46.
 
-(/nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.2025070
-3-texmfdist/tex/latex/psnfss/ot1ztmcm.fd
+(/nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-t
+exmfdist/tex/latex/psnfss/ot1ztmcm.fd
 File: ot1ztmcm.fd 2000/01/03 Fontinst v1.801 font definitions for OT1/ztmcm.
 )
 LaTeX Font Info:    Trying to load font information for OML+ztmcm on input line
- 37.
+ 46.
 
-(/nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.2025070
-3-texmfdist/tex/latex/psnfss/omlztmcm.fd
+(/nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-t
+exmfdist/tex/latex/psnfss/omlztmcm.fd
 File: omlztmcm.fd 2000/01/03 Fontinst v1.801 font definitions for OML/ztmcm.
 )
 LaTeX Font Info:    Trying to load font information for OMS+ztmcm on input line
- 37.
+ 46.
 
-(/nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.2025070
-3-texmfdist/tex/latex/psnfss/omsztmcm.fd
+(/nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-t
+exmfdist/tex/latex/psnfss/omsztmcm.fd
 File: omsztmcm.fd 2000/01/03 Fontinst v1.801 font definitions for OMS/ztmcm.
 )
 LaTeX Font Info:    Trying to load font information for OMX+ztmcm on input line
- 37.
+ 46.
 
-(/nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.2025070
-3-texmfdist/tex/latex/psnfss/omxztmcm.fd
+(/nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-t
+exmfdist/tex/latex/psnfss/omxztmcm.fd
 File: omxztmcm.fd 2000/01/03 Fontinst v1.801 font definitions for OMX/ztmcm.
 )
 LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <11> not available
-(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 37.
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 46.
 LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <8.14006> not available
-(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 37.
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 46.
 LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <6.60007> not available
-(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 37.
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 46.
 LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <9> not available
-(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 37.
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 46.
 LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <7> not available
-(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 37.
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 46.
 LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <5> not available
-(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 37.
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 46.
 
-Underfull \hbox (badness 10000) in paragraph at lines 37--37
+Underfull \hbox (badness 10000) in paragraph at lines 46--46
 
  []
 
 
-Underfull \hbox (badness 1521) in paragraph at lines 46--47
+Underfull \hbox (badness 1521) in paragraph at lines 55--56
 []\OT1/ptm/m/n/10 This sur-vey aims to pro-vide an overview of
  []
 
-
-
-
-Underfull \hbox (badness 1137) in paragraph at lines 53--54
-\OT1/ptm/m/n/10 pose a min-i-mal ISA ex-ten-sion for SIMT ex-e-cu-
- []
-
-
-
-[1{/nix/store/j92f3vnkb57zi6d9wdw8wq91z6hgip88-texlive-combined-full-2025.20250
-703/share/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{/nix/store/brv5210znq3x
-b212dp5zafyxda5mycf2-texlive-combined-full-2025.20250703-texmfdist/fonts/enc/dv
-ips/base/8r.enc}
+[1{/nix/store/2k37baj1fissbch51hww7hf4gkvyy9si-texlive-combined-full-2023-final
+/share/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{/nix/store/pmgqv45x7z36cdl
+fvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-texmfdist/fonts/enc/dvips/ba
+se/8r.enc}
 
 
 
 
 ]
-Underfull \hbox (badness 1122) in paragraph at lines 59--60
-\OT1/ptm/m/n/10 pro-to-typ-ing plat-forms for im-ple-ment-ing het-ero-ge-
+Underfull \hbox (badness 1137) in paragraph at lines 62--63
+\OT1/ptm/m/n/10 pose a min-i-mal ISA ex-ten-sion for SIMT ex-e-cu-
  []
 
 
+Underfull \hbox (badness 1163) in paragraph at lines 77--78
+[]\OT1/ptm/m/n/10 This sur-vey pro-vides crit-i-cal in-sights into ar-
+ []
 
-<../../pipeline_design.png, id=9, 2953.0325pt x 2697.07625pt>
+
+Underfull \hbox (badness 1024) in paragraph at lines 77--78
+\OT1/ptm/m/n/10 es-tab-lishes de-sign pat-terns and best prac-tices for
+ []
+
+[2]
+Underfull \hbox (badness 3000) in paragraph at lines 84--85
+[]\OT1/ptm/m/n/10 The adop-tion pat-terns demon-strate RISC-V's
+ []
+
+
+Underfull \hbox (badness 3098) in paragraph at lines 84--85
+\OT1/ptm/m/n/10 vi-a-bil-ity across pro-ces-sor com-plex-ity spec-trums,
+ []
+
+
+Underfull \hbox (badness 1264) in paragraph at lines 89--90
+\OT1/ptm/m/n/10 con-fig-u-ra-tions, im-prov-ing syn-chro-niza-tion mech-a-
+ []
+
+[3]
+Underfull \hbox (badness 1122) in paragraph at lines 103--104
+\OT1/ptm/m/n/10 pro-to-typ-ing plat-forms for im-ple-ment-ing het-ero-ge-
+ []
+
+<../../pipeline_design.png, id=16, 2953.0325pt x 2697.07625pt>
 File: ../../pipeline_design.png Graphic file (type png)
 <use ../../pipeline_design.png>
-Package pdftex.def Info: ../../pipeline_design.png  used on input line 75.
+Package pdftex.def Info: ../../pipeline_design.png  used on input line 119.
 (pdftex.def)             Requested size: 449.59116pt x 410.59363pt.
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-
-
-[2]
-
-
-
-[3 <../../pipeline_design.png>]
-Underfull \hbox (badness 1248) in paragraph at lines 87--88
+[4] [5 <../../pipeline_design.png>]
+Underfull \hbox (badness 1248) in paragraph at lines 131--132
 []\OT1/ptm/m/n/10 Recent ad-vance-ments in het-ero-ge-neous RISC-
  []
 
 
-Underfull \hbox (badness 5622) in paragraph at lines 89--90
+Underfull \hbox (badness 5622) in paragraph at lines 133--134
 \OT1/ptm/m/n/10 ware/software co-design in ad-dress-ing evolv-ing
  []
 
 
-Underfull \hbox (badness 1902) in paragraph at lines 100--101
+Underfull \hbox (badness 1902) in paragraph at lines 148--149
 \OT1/ptm/m/n/10 TinyAI Ap-pli-ca-tions. \OT1/ptm/m/it/10 IEEE Trans-ac-tions on
 
  []
 
 
-
-
-Underfull \hbox (badness 2237) in paragraph at lines 109--110
+Underfull \hbox (badness 2237) in paragraph at lines 157--158
 []\OT1/ptm/m/n/10 Li, Z., Hu, W., & Chen, S. (2019, Au-
  []
 
 
-Underfull \hbox (badness 1688) in paragraph at lines 109--110
+Underfull \hbox (badness 1688) in paragraph at lines 157--158
 \OT1/ptm/m/it/10 mu-ni-ca-tions; IEEE 17th In-ter-na-tional Con-
  []
 
 
-Underfull \hbox (badness 2027) in paragraph at lines 109--110
+Underfull \hbox (badness 2027) in paragraph at lines 157--158
 \OT1/ptm/m/it/10 fer-ence on Smart City; IEEE 5th In-ter-na-
  []
 
 
-Underfull \hbox (badness 2426) in paragraph at lines 118--119
+Underfull \hbox (badness 2426) in paragraph at lines 166--167
 \OT1/ptm/m/n/10 ram-e-ter-ized RISC-V. \OT1/ptm/m/it/10 IEEE Trans-ac-tions on
  []
 
-
-
-[4]
-Underfull \hbox (badness 6348) in paragraph at lines 142--143
+[6]
+Underfull \hbox (badness 6348) in paragraph at lines 190--191
 []\OT1/ptm/m/n/10 Al Kadi, M., Janssen, B., & Hueb-ner,
  []
 
 
-Underfull \hbox (badness 7504) in paragraph at lines 142--143
+Underfull \hbox (badness 7504) in paragraph at lines 190--191
 \OT1/ptm/m/n/10 M. (2016, Febru-ary). FGPU: An SIMT-
  []
 
 
-Underfull \hbox (badness 2368) in paragraph at lines 142--143
+Underfull \hbox (badness 2368) in paragraph at lines 190--191
 \OT1/ptm/m/it/10 Field-Programmable Gate Ar-rays \OT1/ptm/m/n/10 (pp. 254-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 145--146
+Underfull \hbox (badness 10000) in paragraph at lines 193--194
 []\OT1/ptm/m/n/10 OpenHW Group. (2019). \OT1/ptm/m/it/10 Open-Bus In-ter-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 145--146
+Underfull \hbox (badness 10000) in paragraph at lines 193--194
 \OT1/ptm/m/it/10 face (OBI) Spec-i-fi-ca-tion\OT1/ptm/m/n/10 . Re-trieved from
  []
 
 
-Overfull \hbox (12.9937pt too wide) in paragraph at lines 145--146
+Overfull \hbox (12.9937pt too wide) in paragraph at lines 193--194
 \OT1/cmtt/m/n/10 https://openhwgroup.org/specifications/ 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 148--149
+Underfull \hbox (badness 10000) in paragraph at lines 196--197
 []\OT1/ptm/m/n/10 Vortex GPGPU. (n.d.). GitHub
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 148--149
+Underfull \hbox (badness 10000) in paragraph at lines 196--197
 \OT1/ptm/m/n/10 repos-i-tory. Re-trieved from
  []
 
 
-Overfull \hbox (2.49379pt too wide) in paragraph at lines 148--149
+Overfull \hbox (2.49379pt too wide) in paragraph at lines 196--197
 \OT1/cmtt/m/n/10 https://github.com/vortexgpgpu/vortex 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 151--152
+Underfull \hbox (badness 10000) in paragraph at lines 199--200
 []\OT1/ptm/m/n/10 Smol GPU. (n.d.). GitHub
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 151--152
+Underfull \hbox (badness 10000) in paragraph at lines 199--200
 \OT1/ptm/m/n/10 repos-i-tory. Re-trieved from
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 154--155
+Underfull \hbox (badness 10000) in paragraph at lines 202--203
 []\OT1/ptm/m/n/10 RISCY. (n.d.). GitHub
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 154--155
+Underfull \hbox (badness 10000) in paragraph at lines 202--203
 \OT1/ptm/m/n/10 repos-i-tory. Re-trieved from
  []
 
-
-Underfull \hbox (badness 10000) in paragraph at lines 157--158
-[]\OT1/ptm/m/n/10 RISC-V Foun-da-tion. (2019). *The
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 157--158
-\OT1/ptm/m/n/10 RISC-V In-struc-tion Set Man-ual, Vol-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 157--158
-\OT1/ptm/m/n/10 ume I: Un-priv-i-leged ISA, Ver-sion 2.1
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 157--158
-\OT1/ptm/m/n/10 (RV32I/64I/128I)*. Re-trieved from
- []
-
-
-Overfull \hbox (33.99352pt too wide) in paragraph at lines 157--158
-\OT1/cmtt/m/n/10 https://riscv.org/technical/specifications/ 
- []
-
-
-
-
-
-[5
+[7
 
 ] (./survey_paper.aux)
  ***********
-LaTeX2e <2025-06-01> patch level 1
-L3 programming layer <2025-06-09>
+LaTeX2e <2023-11-01> patch level 1
+L3 programming layer <2024-02-20>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 5752 strings out of 467888
- 99003 string characters out of 5405403
- 505462 words of memory out of 5000000
- 34240 multiletter control sequences out of 15000+600000
- 663091 words of font info for 113 fonts, out of 8000000 for 9000
+ 5756 strings out of 474116
+ 98853 string characters out of 5717523
+ 1942187 words of memory out of 5000000
+ 28049 multiletter control sequences out of 15000+600000
+ 594503 words of font info for 110 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 72i,7n,79p,1370b,342s stack positions out of 10000i,1000n,20000p,200000b,200000s
-</nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.20250
-703-texmfdist/fonts/type1/public/amsfonts/cm/cmtt10.pfb></nix/store/brv5210znq3
-xb212dp5zafyxda5mycf2-texlive-combined-full-2025.20250703-texmfdist/fonts/type1
-/urw/times/utmb8a.pfb></nix/store/brv5210znq3xb212dp5zafyxda5mycf2-texlive-comb
-ined-full-2025.20250703-texmfdist/fonts/type1/urw/times/utmr8a.pfb></nix/store/
-brv5210znq3xb212dp5zafyxda5mycf2-texlive-combined-full-2025.20250703-texmfdist/
-fonts/type1/urw/times/utmri8a.pfb>
-Output written on survey_paper.pdf (5 pages, 332979 bytes).
+ 72i,7n,79p,1370b,340s stack positions out of 10000i,1000n,20000p,200000b,200000s
+</nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final
+-texmfdist/fonts/type1/public/amsfonts/cm/cmitt10.pfb></nix/store/pmgqv45x7z36c
+dlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-texmfdist/fonts/type1/publ
+ic/amsfonts/cm/cmtt10.pfb></nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-
+combined-full-2023-final-texmfdist/fonts/type1/urw/times/utmb8a.pfb></nix/store
+/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-texlive-combined-full-2023-final-texmfdist/fo
+nts/type1/urw/times/utmr8a.pfb></nix/store/pmgqv45x7z36cdlfvmf79wl0mj2fk7hl-tex
+live-combined-full-2023-final-texmfdist/fonts/type1/urw/times/utmri8a.pfb>
+Output written on survey_paper.pdf (7 pages, 346940 bytes).
 PDF statistics:
- 44 PDF objects out of 1000 (max. 8388607)
- 26 compressed objects within 1 object stream
+ 57 PDF objects out of 1000 (max. 8388607)
+ 35 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  6 words of extra memory for PDF output out of 10000 (max. 10000000)
 
