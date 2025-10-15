@@ -8,31 +8,40 @@
 \usepackage{amsmath}
 \usepackage{amsthm}
 \usepackage{multicol}
-\usepackage{mathptmx}  
+\usepackage{mathptmx}  % <-- Add this instead
 \usepackage{algorithm2e}
 \usepackage[bottom]{footmisc}
-\usepackage{SCITEPRESS}     
+\usepackage{SCITEPRESS}     % Please add other packages that you may need BEFORE the SCITEPRESS.sty package.
 
 \begin{document}
 
-\title{RISC-V Accelerated Processors on FPGA: Survey of Architecture and Design}
+\title{RISC-V Accelerated Processors on FPGA: Architecture, Design and Implementation}
 
 \author{
 \authorname{
-\text{Arjun Salunkhe$^{1}$*, Atharva Bhosale$^{1}$, Srushti Shinde$^{1}$, Sourabh Bansode$^{1}$, Kanchan Vaidya$^{2}$*}
+\text{Author[1]$^{1}$*, Author[2]$^{2}$, Author[3]$^{3}$, Author[4]$^{4}$, Author[5]$^{5}$*}
 }
 \affiliation{
-\sup{1}Student at Ajeenkya DY Patil School of Engineering, India
+\sup{1}Education Institute, Country
 }
 \affiliation{
-\sup{2}Assistant Professor at Ajeenkya DY Patil School of Engineering, India
+\sup{2}Education Institute, Country
 }
-\email{\text{arjun.salunkhe@proton.me} \quad | \quad \text{kanchansvaidya@gmail.com}}
+\affiliation{
+\sup{3}Education Institute, Country
+}
+\affiliation{
+\sup{4}Education Institute, Country
+}
+\affiliation{
+\sup{5}Education Institute, Country
+}
+\email{\texttt{example1@mail} \quad | \quad \texttt{example2@mail}}
 }
 
 \keywords{RISC-V, FPGA, Hardware Description Language (HDL), VHDL, 32-bit processor, ISA, APU, GPU-Accelerated Computing, RISC-V APU, 5 stage pipelining, System on Chip (SoC), Open Source, Digital Logic Design, Computer Architecture, RV32I, Vortex, e-GPU}
 
-\abstract{This survey paper reviews recent research and development efforts on Field Programmable Gate Array (FPGA) based implementations of Reduced Instruction Set Computing version Five (RISC-V) Accelerated Processing Units (APUs) that integrate CPU and GPU capabilities on a unified platform. Focused primarily on RV32I processors extended with SIMD/SIMT architectures and GPU-specialized accelerators, this work examines open-source Hardware Description Language (HDL) implementations targeting resource-efficient computing. Key topics include architectural trade-offs, programmability, and hardware-software co-design challenges. Architectures such as Vortex and e-GPU serve as case studies for RISC-V–based GPU design strategies, while open-source RISC-V CPU implementations like RV32I (e.g., RISCY) complement these efforts, providing valuable insights for APU design.}
+\abstract{This survey paper reviews recent research and development efforts on Field Programmable Gate Array (FPGA) based implementations of Reduced Instruction Set Computing version Five (RISC-V) Accelerated Processing Units (APUs) that integrate CPU and GPU capabilities on a unified platform. Focused primarily on RV32I processors extended with SIMD/SIMT architectures and GPU-specialized accelerators, this work examines open-source Hardware Description Language (HDL) implementations targeting resource-efficient computing. Key topics include architectural trade-offs, programmability, and hardware-software co-design challenges. Architectures such as Vortex and e-GPU serve as case studies illustrating state-of-the-art RISC-V APU design strategies.}
 
 \onecolumn \maketitle \normalsize \setcounter{footnote}{0} \vfill
 
@@ -43,7 +52,7 @@ The RISC-V Instruction Set Architecture (ISA) is a modern, open, and modular pro
 
 Recently, there has been growing research interest in designing Accelerated Processing Units (APUs) that merge traditional CPU cores with GPU-like parallel processors on a single chip. This integration addresses the need for heterogeneous computing platforms that leverage the sequential flexibility of CPUs alongside the data-parallel throughput of GPUs. RISC-V's modular ISA and open ecosystem facilitate the seamless extension of CPUs with SIMD and SIMT architectures, enabling such heterogeneous designs.
 
-This survey aims to provide an overview of FPGA-based RISC-V APUs with a focus on architectural innovations, ISA extensions, and open-source hardware developments, using projects like Vortex and e-GPU as illustrative examples for GPU design and other open source RV32I projects like RISCY for CPU Design. The goal is to guide future research towards scalable, energy-efficient, and programmable heterogeneous computing solutions using RISC-V.
+This survey aims to provide an overview of FPGA-based RISC-V APUs with a focus on architectural innovations, ISA extensions, and open-source hardware developments, using projects like Vortex and e-GPU as illustrative examples. The goal is to guide future research towards scalable, energy-efficient, and programmable heterogeneous computing solutions using RISC-V.
 
 \section{\uppercase{Literature Survey}}
 \label{sec:survey}
@@ -51,6 +60,41 @@ This survey aims to provide an overview of FPGA-based RISC-V APUs with a focus o
 The landscape of RISC-V processor implementation on FPGAs is well-documented. Foundational work includes the design of 32-bit RISC-V CPUs targeting the RV32I base ISA with both single-cycle and pipelined versions to analyze throughput and resource trade-offs \cite{Rao2024}. Others have focused on creating flexible, parameterized softcores that allow designers to balance performance and area for different applications \cite{Rodrigues2019}. Implementations often extend beyond the base ISA, with researchers demonstrating performance gains by adding application-specific custom instructions to an FPGA-based System on Chip (SoC) while maintaining ISA compliance \cite{Li2019}. Simpler implementations have also been verified in hardware, providing practical data on resource usage and performance \cite{Begum2023}.
 
 A significant area of research is the extension of RISC-V for accelerated computing, particularly for graphics and general-purpose GPU (GPGPU) tasks. One approach integrates a fixed-pipeline graphics rendering extension into the ISA, optimized for low-power rendering on embedded AI chips \cite{Zhou2020}. More general-purpose architectures, such as Vortex, propose a minimal ISA extension for SIMT execution to support OpenCL and OpenGL, implementing a scalable multi-core soft GPU on FPGAs \cite{Tine2021, Elsabbagh2020}. Similarly, the e-GPU platform presents an open-source, configurable RISC-V GPU for ultra-low-power TinyAI edge devices, showing significant speedups on specialized workloads \cite{Machetti2025}. The FGPU project also demonstrates a scalable SIMT soft processor for FPGAs, focusing on integer processing and achieving notable speedups over traditional embedded processors \cite{AlKadi2016}. To manage the complexity of these heterogeneous systems, scalable interconnects like the Open Bus Interface (OBI) are specified for integrating cores and accelerators \cite{OpenHW2019}. The correctness of such complex parallel hardware is also being addressed through formal methods, with work on formalizing GPU instruction behavior in Coq to enable verifiable models for both software and hardware \cite{Bhatia2019}.
+
+\section{\uppercase{Survey Overview}}
+
+\subsection{Relevance and Timeliness}
+This survey addresses a critical juncture in the semiconductor industry where RISC-V architecture is experiencing unprecedented growth and adoption. As of 2024, over two billion System-on-Chips (SoCs) are currently using RISC-V cores, with projections indicating this number will surge to 20 billion by 2031. The global RISC-V market was valued at USD 1.76 billion in 2024 and is expected to reach USD 25.73 billion by 2034, growing at a CAGR of 30.7\%. The timing of this survey is particularly significant as major semiconductor players including Bosch, Infineon, Nordic, NXP, and Qualcomm have jointly invested in advancing RISC-V adoption globally. The ratification of the RVA23 Profile standard in October 2024 marks a watershed moment for software portability across RISC-V implementations, accelerating toolchain and operating system adoption across diverse processor configurations.
+
+\subsection{Impact on VLSI Design and APU Development}
+The emergence of RISC-V APUs represents a fundamental shift in VLSI design methodologies, challenging the decades-long dominance of proprietary instruction set architectures. By eliminating costly licensing fees and vendor lock-in constraints, RISC-V enables semiconductor companies to innovate more freely while reducing development costs and accelerating time-to-market. FPGA-based prototyping platforms, as examined in this survey, provide ideal testbeds for exploring RISC-V extensions and heterogeneous computing architectures. The flexibility of FPGAs enables rapid iteration on microarchitectural options, ISA extensions, and system integration strategies without the prohibitive costs associated with ASIC fabrication. 
+
+APU architectures that integrate CPU and GPU capabilities on unified platforms address the fundamental challenge of balancing sequential processing efficiency with massive data-parallel throughput. The RV32I base ISA serves as a robust foundation for these heterogeneous designs, providing a simple yet extensible instruction framework that facilitates the addition of SIMD and SIMT execution capabilities. This modularity enables designers to customize processor configurations for specific application domains while maintaining ISA compliance and software compatibility.
+
+\subsection{Addressing Architectural Challenges in Heterogeneous Processing}
+The semiconductor industry faces mounting pressures to deliver computing solutions that efficiently handle diverse workload characteristics spanning graphics rendering, parallel computation, and embedded control. Traditional CPU-only architectures struggle with data-parallel throughput requirements, while standalone GPU designs lack the flexibility needed for sequential control logic and irregular computation patterns. RISC-V APUs directly address these challenges by integrating CPU and GPU capabilities on unified platforms with shared memory hierarchies and coherent interconnects.
+
+This survey provides critical insights into architectural trade-offs, programmability models, and hardware-software co-design strategies essential for practical APU implementation. By examining state-of-the-art projects like Vortex and e-GPU, the work establishes design patterns and best practices for SIMT/SIMD extensions, warp scheduling, memory subsystem optimization, and divergent branch handling. The Vortex architecture demonstrates minimal ISA extensions for SIMT execution supporting OpenCL and OpenGL, implementing a scalable multi-core soft GPU on FPGAs. Similarly, the e-GPU platform presents an open-source, configurable RISC-V GPU showing significant speedups on specialized workloads while maintaining ultra-low-power operation.
+
+The methodological approaches documented in this survey span hardware description language selection (VHDL, Verilog, Chisel), pipeline microarchitecture design, GPU execution models, and system-level integration using standardized interconnects like the Open Bus Interface. These contributions provide practical guidance for researchers and practitioners developing RISC-V-based heterogeneous processors, addressing critical design decisions regarding resource allocation, thread scheduling, memory bandwidth optimization, and execution divergence handling.
+
+\subsection{Implications for the RISC-V Processor Ecosystem}
+The technical content of this survey directly supports RISC-V's strategic positioning across computing domains requiring customizable, extensible processor architectures. The RV32I base ISA examined here serves as the foundation for countless embedded processors and educational FPGA projects, while the GPU acceleration techniques presented enable RISC-V to compete in computationally demanding workloads traditionally dominated by proprietary architectures. Major technology companies are already leveraging RISC-V at scale—NVIDIA alone is estimated to ship between one and two billion RISC-V cores in 2024, utilizing the architecture in its CUDA microcontroller cores. Qualcomm has shipped over 650 million RISC-V cores in its Snapdragon processors.
+
+The adoption patterns demonstrate RISC-V's viability across processor complexity spectrums, from simple embedded microcontrollers to sophisticated multi-core APU configurations. Infineon, the world's leading automotive microcontroller company, launched its first RISC-V-based AURIX automotive microcontroller in March 2025, signaling mainstream acceptance in safety-critical applications. The European Space Agency has partnered with semiconductor companies to develop RISC-V processors for space industry microcontrollers, citing the architecture's configurability, security, and cost-effectiveness. These adoption patterns underscore the practical relevance of APU research presented in this survey.
+
+The RV32I subset's simplicity makes it particularly well-suited for FPGA implementation, enabling resource-efficient designs that can be extended with GPU-like acceleration capabilities. Research documented in this survey demonstrates performance gains achievable through application-specific custom instructions while maintaining ISA compliance. The open-source nature of RISC-V facilitates collaborative innovation, allowing designers to contribute to architectural evolution while sharing advancements with the broader community. As RISC-V International expands to over 4,120 members across 52 countries with more than 80 technical working groups, surveys documenting existing APU implementations and architectural patterns become increasingly valuable for coordinating community efforts and establishing reference designs.
+
+\subsection{Future Directions in RISC-V APU Research}
+Looking forward, this survey establishes a foundation for next-generation research in scalable, energy-efficient, and programmable heterogeneous computing using RISC-V. Critical open questions include optimizing architectural complexity in multi-core APU configurations, improving synchronization mechanisms between CPU and GPU execution contexts, enhancing communication bandwidth between heterogeneous cores through advanced interconnect designs, and ensuring energy-efficient operation for resource-constrained FPGA implementations. The formal methods approaches mentioned for verifying complex parallel hardware behavior represent promising directions for ensuring correctness as APU designs grow in sophistication, with work on formalizing GPU instruction behavior in Coq enabling verifiable models for both software and hardware.
+
+FPGA-based prototyping will continue to play a crucial role in exploring APU design spaces before committing to silicon implementation. The configurable nature of FPGAs allows researchers to experiment with pipeline depths, cache hierarchies, thread scheduling policies, and memory subsystem organizations without the financial risk associated with ASIC fabrication. Hardware description languages such as VHDL, Verilog, and Chisel enable modular, parameterizable hardware construction facilitating iterative design and verification cycles across different FPGA platforms including Xilinx and Altera families.
+
+The convergence of RV32I-based CPU cores with GPU-like SIMT/SIMD acceleration presents opportunities for specialized processor designs optimized for specific computational patterns. Thread-level parallelism, multi-port caching, and parallel memory banks collectively balance area, bandwidth, and performance while maintaining programmable flexibility. Software frameworks leverage execution models through lightweight kernel dispatch abstractions, allowing scalable control over thread blocks and warps in a manner reminiscent of CUDA-style execution. As the RISC-V community grows to encompass over 16,000 engineers worldwide through education initiatives, mentorship programs, and technical training, surveys like this one become essential educational resources for onboarding new contributors and establishing shared understanding of APU architectural principles.
+
+In conclusion, this survey arrives at a pivotal moment when RISC-V is transitioning from academic curiosity to industrial reality across processor design domains. By documenting current APU implementations spanning RV32I CPU cores and GPU acceleration units, analyzing design trade-offs in heterogeneous architectures, and identifying future research directions in FPGA-based prototyping, this work contributes to the collective knowledge base enabling RISC-V to fulfill its promise as an open, modular, and transformative computing platform.
+
+
 
 \section{\uppercase{Methodology}}
 
@@ -73,7 +117,7 @@ At the ISA and microarchitecture level, minimal hardware changes can introduce s
 \begin{figure*}[h]
         \centering
         \includegraphics[width=1\textwidth]{../../pipeline_design.png}
-        \caption{Simplified APU Pipeline Design}
+        \caption{APU Pipeline Design}
         \label{fig.example}
 \end{figure*}
 
@@ -87,6 +131,12 @@ The RISC-V ecosystem has demonstrated significant progress towards realizing fle
 Recent advancements in heterogeneous RISC-V platforms, exemplified by projects such as Vortex and e-GPU, illustrate the practical integration of GPU-like acceleration into traditional CPUs to form APUs capable of exploiting data-parallel workloads across domains like AI, graphics, and edge computing. These designs highlight the feasibility of minimal ISA extensions, scalable multi-core configurations, and novel cache and memory hierarchies that maintain programmability via open-source toolchains and standardized interfaces.
 
 The combined body of work emphasizes the importance of modularity, configurability, and hardware/software co-design in addressing evolving performance and application-specific requirements. Challenges remain in optimizing architectural complexity, synchronization, and communication across heterogeneous cores while ensuring energy-efficient operation suitable for resource-constrained environments. Overall, these efforts present an encouraging future trajectory for RISC-V APUs, promoting more versatile, open, and high-performance computing architectures tailored to contemporary embedded and parallel computation needs.
+
+\section*{\uppercase{Acknowledgements}}
+
+If any, should be placed before the references section
+without numbering. To do so please use the following command:
+\textit{$\backslash$section*\{ACKNOWLEDGEMENTS\}}
 
 \begin{thebibliography}{99}
 
@@ -153,11 +203,7 @@ Smol GPU. (n.d.). GitHub repository. Retrieved from \texttt{https://github.com/G
 \bibitem{RiscyGit}
 RISCY. (n.d.). GitHub repository. Retrieved from \texttt{https://github.com/mongrelgem/RISCY}
 
-\bibitem{RV32ISpec}
-RISC-V Foundation. (2019). *The RISC-V Instruction Set Manual, Volume I: Unprivileged ISA, Version 2.1 (RV32I/64I/128I)*. Retrieved from \texttt{https://riscv.org/technical/specifications/}
-
 \end{thebibliography}
 
 \end{document}
-
 
