@@ -1,0 +1,7 @@
+[libraries]
+lib.files = [
+    'src/common.vhd',
+    'src/*.vhd',
+    'tb/*.vhd'
+]
+

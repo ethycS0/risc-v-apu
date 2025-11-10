@@ -6,7 +6,10 @@ GTKWAVE = gtkwave
 
 # --- Smart Configuration ---
 # All VHDL source files in the src directory
-VHDL_SOURCES = $(wildcard src/*.vhd)
+PKG_FILES = src/common.vhd
+SRC_FILES = src/alu.vhd src/decode_unit.vhd src/execution_unit.vhd \
+            src/immediate_constructor.vhd src/instruction_fetch.vhd \
+            src/register_file.vhd
 
 # The testbench to run, can be overridden from the command line
 # e.g., make run TB=tb_alu
@@ -24,7 +27,7 @@ all: run
 # Compile all VHDL source and the specified testbench
 compile:
 	@echo "Compiling VHDL sources..."
-	$(GHDL) -a $(VHDL_SOURCES) $(VHDL_TESTBENCH)
+	$(GHDL) -a $(PKG_FILES) $(SRC_FILES) $(VHDL_TESTBENCH)
 
 # Elaborate the specified testbench
 elaborate: compile

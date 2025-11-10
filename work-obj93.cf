@@ -1,0 +1,24 @@
+v 4
+file . "tb/tb_immediate_constructor.vhd" "0501442249fc5199e71f0a82ae97dd2411e3708e" "20251110071616.540":
+  entity tb_immediate_constructor at 1( 0) + 0 on 54;
+  architecture test of tb_immediate_constructor at 8( 143) + 0 on 55;
+file . "src/register_file.vhd" "5c52fc9e091b40cc7b11159bef70f10296652ff3" "20251110071616.539":
+  entity register_file at 1( 0) + 0 on 52;
+  architecture behavioral of register_file at 29( 633) + 0 on 53;
+file . "src/instruction_fetch.vhd" "794e48452de469ab9cca6738d9c7f34b9815176b" "20251110071616.538":
+  entity instruction_fetch_unit at 1( 0) + 0 on 50;
+  architecture behavioral of instruction_fetch_unit at 30( 942) + 0 on 51;
+file . "src/immediate_constructor.vhd" "a49f6dc858f30adcd22a0bd32da5e634c6c001f1" "20251110071616.538":
+  entity immediate_constructor_unit at 1( 0) + 0 on 48;
+  architecture behavioral of immediate_constructor_unit at 13( 258) + 0 on 49;
+file . "src/execution_unit.vhd" "aa960c26ee17b2960a978820afd02080965f3e1b" "20251110071616.537":
+  entity execution_unit at 1( 0) + 0 on 46;
+  architecture behavioral of execution_unit at 19( 469) + 0 on 47;
+file . "src/decode_unit.vhd" "0b3e8001f6156fd71b136b55d8270942ce6f3104" "20251110071616.536":
+  entity decode_unit at 1( 0) + 0 on 44;
+  architecture behavioral of decode_unit at 16( 239) + 0 on 45;
+file . "src/alu.vhd" "8b1fb05a017538a6023a5d1bb42bea9561e1d4c1" "20251110071616.536":
+  entity alu at 1( 0) + 0 on 42;
+  architecture behavioral of alu at 18( 340) + 0 on 43;
+file . "src/common.vhd" "aaafbea355f0f1e6d91144deb6131a684cdc5491" "20251110071616.534":
+  package rv32i_pkg at 1( 0) + 0 on 41;
