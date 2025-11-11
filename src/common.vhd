@@ -15,10 +15,16 @@ PACKAGE rv32i_pkg IS
                 ALU_AND, ALU_SLL, ALU_SRL, ALU_SRA, ALU_SUB, ALU_COPY_B
 	);
 
-	-- Selects the second operand for the ALU.
-	TYPE t_AluSrc IS (
-                ALU_SRC_REG,
-                ALU_SRC_IMM 
+	-- Selects the operand for the ALU.
+	TYPE t_AluSrc_A IS (
+                ALU_A_RS1,
+                ALU_A_PC,
+                ALU_A_ZERO
+	);
+
+	TYPE t_AluSrc_B IS (
+                ALU_B_RS2,
+                ALU_B_IMM 
 	);
 
 	-- Selects the data source for the register file write-back.

@@ -7,9 +7,15 @@ GTKWAVE = gtkwave
 # --- Smart Configuration ---
 # All VHDL source files in the src directory
 PKG_FILES = src/common.vhd
-SRC_FILES = src/alu.vhd src/decode_unit.vhd src/execution_unit.vhd \
-            src/immediate_constructor.vhd src/instruction_fetch.vhd \
-            src/register_file.vhd
+SRC_FILES = src/alu.vhd \
+	src/alu_control.vhd \
+	src/branch_adder.vhd \
+	src/branch_control.vhd \
+	src/decode_control_unit.vhd \
+	src/execution_unit.vhd \
+        src/immediate_constructor.vhd \
+	src/instruction_fetch.vhd \
+        src/register_file.vhd 
 
 # The testbench to run, can be overridden from the command line
 # e.g., make run TB=tb_alu

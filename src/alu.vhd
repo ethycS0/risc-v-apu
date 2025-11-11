@@ -27,18 +27,23 @@ ARCHITECTURE structural OF alu IS
 	SIGNAL logic_result : std_logic_vector(31 DOWNTO 0);
 	SIGNAL shifter_result : std_logic_vector(31 DOWNTO 0);
 	SIGNAL slt_result : std_logic_vector(31 DOWNTO 0);
+        SIGNAL adder_carry_term : signed(32 DOWNTO 0);
+
+        SIGNAL internal_flags   : t_AluFlags;
 
 BEGIN
         -- Adder Implementation for ADD | SUB | SLT | SLTU
 	adder_carry_in <= '1' WHEN (i_alu_opcode = ALU_SUB) OR (i_alu_opcode = ALU_SLT) OR (i_alu_opcode = ALU_SLTU) ELSE '0';
 	adder_b_operand <= i_alu_y XOR (31 DOWNTO 0 => adder_carry_in);
-        extended_adder_result <= std_logic_vector(('0' & signed(i_alu_x)) + ('0' & signed(adder_b_operand)) + signed(std_logic_vector'(0 => adder_carry_in, OTHERS => '0')));
+        adder_carry_term <= to_signed(1, 33) WHEN adder_carry_in = '1' ELSE to_signed(0, 33);
+
+        extended_adder_result <= std_logic_vector( ('0' & signed(i_alu_x)) + ('0' & signed(adder_b_operand)) + adder_carry_term );
 	adder_result <= extended_adder_result(31 DOWNTO 0);
 
-	o_flags.carry <= extended_adder_result(32);
-	o_flags.overflow <= extended_adder_result(32) XOR extended_adder_result(31);
-	o_flags.negative <= adder_result(31);
-	o_flags.zero <= '1' WHEN adder_result = (OTHERS => '0') ELSE '0';
+        internal_flags.carry    <= extended_adder_result(32);
+        internal_flags.overflow <= extended_adder_result(32) XOR extended_adder_result(31); 
+        internal_flags.negative <= adder_result(31);
+        internal_flags.zero     <= '1' WHEN adder_result = (31 DOWNTO 0 => '0') ELSE '0';
 
         -- Logic Implementation for XOR | OR | AND
 	logic_operation : PROCESS (i_alu_opcode, i_alu_x, i_alu_y)
@@ -58,8 +63,8 @@ BEGIN
 	                  (OTHERS => '0');
 
         -- SLT|U Implementation 
-	slt_result <= (31 DOWNTO 1 => '0') & (o_flags.negative XOR o_flags.overflow) WHEN i_alu_opcode = ALU_SLT ELSE
-	              (31 DOWNTO 1 => '0') & (NOT o_flags.carry) WHEN i_alu_opcode = ALU_SLTU ELSE
+	slt_result <= (31 DOWNTO 1 => '0') & (internal_flags.negative XOR internal_flags.overflow) WHEN i_alu_opcode = ALU_SLT ELSE
+	              (31 DOWNTO 1 => '0') & (NOT internal_flags.carry) WHEN i_alu_opcode = ALU_SLTU ELSE
 	              (OTHERS => '0');
 
 	-- Final Multiplexer
@@ -74,5 +79,7 @@ BEGIN
 			WHEN OTHERS => o_result <= (OTHERS => 'X'); -- Undefined
 		END CASE;
 	END PROCESS;
+
+        o_flags <= internal_flags;
 
 END ARCHITECTURE structural;
