@@ -35,15 +35,6 @@
 
             texlive.combined.scheme-full
           ];
-          shellHook = ''
-            if [ -x "${pkgs.zsh}/bin/zsh" ]; then
-              export SHELL=${pkgs.zsh}/bin/zsh
-              echo "Using zsh shell"
-              exec ${pkgs.zsh}/bin/zsh
-            else
-              echo "zsh not found, skipping shell switch"
-            fi
-          '';
 
           GHDL_STD = "08";
         };
