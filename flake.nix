@@ -35,6 +35,11 @@
 
             texlive.combined.scheme-full
           ];
+          shellHook = ''
+            if command -v zsh &> /dev/null; then
+              exec zsh
+            fi
+          '';
 
           GHDL_STD = "08";
         };
