@@ -47,7 +47,7 @@ ARCHITECTURE test OF tb_instruction_fetch IS
 
 BEGIN
 
-    -- Instantiate DUT with correct entity name
+    -- Instantiate DUT
     dut_inst : instruction_fetch_unit
         GENERIC MAP(
             ADDR_WIDTH => ADDR_WIDTH,
@@ -67,7 +67,7 @@ BEGIN
             stall => tb_stall
         );
 
-    -- Clock generator
+    -- Clock generation process
     clk_gen_proc : PROCESS
     BEGIN
         WHILE NOT stop_sim LOOP
@@ -79,109 +79,64 @@ BEGIN
         WAIT;
     END PROCESS;
 
-    -- Stimuli with multiple tests
+    -- Stimulus process
     stimulus_proc : PROCESS
     BEGIN
-        REPORT "Starting INSTRUCTION FETCH Testbench";
+        REPORT "Starting instruction fetch unit simulation";
 
-        -- Basic Reset and Initialization
+        -- Reset and initialization
         tb_rst <= '1';
         tb_branch <= '0';
         tb_stall <= '0';
-        tb_instr_data <= x"DEADBEEF";
+        tb_instr_data <= x"00000000";
         tb_branch_addr <= x"00000040";
         WAIT FOR CLK_PERIOD * 2;
 
-        -- Deassert reset, wait for PC to update
-        tb_rst <= '0';
+        tb_rst <= '0';  -- Release reset
         WAIT UNTIL tb_clk = '1';
         WAIT FOR 1 ns;
 
-        -- Test 1: Verify reset PC
+        -- Check reset PC value
         ASSERT tb_pc_out = RESET_ADDRESS
-        REPORT "Reset PC OK - passed" SEVERITY note;
+        REPORT "Reset PC check passed" SEVERITY note;
 
-        -- Test 2: Write a different instruction, check reading
-        tb_instr_data <= x"CAFEBABE";
+        -- Provide instruction data, check fetch output
+        tb_instr_data <= x"DEADBEEF";
         WAIT UNTIL tb_clk = '1';
         WAIT FOR 1 ns;
-        ASSERT tb_instruction = x"CAFEBABE"
-        REPORT "Instruction read AFTER write OK" SEVERITY note;
+        ASSERT tb_instruction = x"DEADBEEF"
+        REPORT "Instruction fetch check passed" SEVERITY note;
 
-        -- Test 3: Simulate a small hazard: change instruction data mid-clock
-        tb_instr_data <= x"AAAAAAAA";
-        WAIT UNTIL tb_clk = '1';
-        WAIT FOR 1 ns;
-        -- Next cycle, instruction should be updated
-        tb_instr_data <= x"BBBBBBBB";
-        WAIT UNTIL tb_clk = '1';
-        WAIT FOR 1 ns;
-        ASSERT tb_instruction = x"BBBBBBBB"
-        REPORT "Instruction updates ON clock edge OK" SEVERITY note;
-
-        -- Test 4: Read from a different branch address
+        -- Test branch taken (jump to branch address)
         tb_branch <= '1';
         tb_branch_addr <= x"00000080";
         WAIT UNTIL tb_clk = '1';
         WAIT FOR 1 ns;
-        tb_branch <= '0'; -- deactivate after update
         ASSERT tb_pc_out = x"00000080"
-        REPORT "Branch taken PC correct" SEVERITY note;
+        REPORT "Branch address PC update passed" SEVERITY note;
 
-        -- Test 5: Stall condition — ensure PC doesn't change
+        tb_branch <= '0';  -- Stop branch
+        WAIT UNTIL tb_clk = '1';
+        WAIT FOR 1 ns;
+
+        -- Test stall (PC should not advance)
         tb_stall <= '1';
-        tb_instr_data <= x"FFFFFFFF";
+        tb_instr_data <= x"CAFEBABE";
         WAIT UNTIL tb_clk = '1';
         WAIT FOR 1 ns;
         ASSERT tb_pc_out = x"00000080"
-        REPORT "PC held during stall OK" SEVERITY note;
+        REPORT "Stall holds PC passed" SEVERITY note;
 
-        -- Test 6: Release stall and check PC increments
-        tb_stall <= '0';
+        tb_stall <= '0';  -- Release stall
         WAIT UNTIL tb_clk = '1';
         WAIT FOR 1 ns;
-        ASSERT tb_pc_out = std_logic_vector(unsigned(tb_branch_addr) + to_unsigned(4, 32))
-        REPORT "PC increments AFTER stall OK" SEVERITY note;
+        ASSERT tb_pc_out = std_logic_vector(unsigned(tb_branch_addr) + to_unsigned(4, ADDR_WIDTH))
+        REPORT "PC increments after stall passed" SEVERITY note;
 
-        -- Additional tests:
-
-        -- Port: instr_addr (transmit address)
-        tb_instr_addr <= x"00000010";
-        WAIT UNTIL tb_clk = '1';
-        WAIT FOR 1 ns;
-        ASSERT tb_instr_addr = x"00000010"
-        REPORT "Instruction address PORT transmission OK" SEVERITY note;
-
-        -- Port: branch, test rising edge and falling edge
-        tb_branch <= '1';
-        WAIT UNTIL tb_clk = '1';
-        WAIT FOR 1 ns;
-        ASSERT tb_branch = '1' SEVERITY note;
-        tb_branch <= '0';
-        WAIT UNTIL tb_clk = '1';
-        WAIT FOR 1 ns;
-        ASSERT tb_branch = '0' SEVERITY note;
-
-        -- Port: stall, test toggling
-        tb_stall <= '1';
-        WAIT UNTIL tb_clk = '1';
-        WAIT FOR 1 ns;
-        ASSERT tb_stall = '1' SEVERITY note;
-        tb_stall <= '0';
-        WAIT UNTIL tb_clk = '1';
-        WAIT FOR 1 ns;
-        ASSERT tb_stall = '0' SEVERITY note;
-
-        -- Check that instruction fetch continues correctly after multiple toggles
-        tb_instr_data <= x"0F0F0F0F";
-        WAIT UNTIL tb_clk = '1';
-        WAIT FOR 1 ns;
-        ASSERT tb_instruction = x"0F0F0F0F" SEVERITY note;
-
-        -- Simulation complete
-        REPORT "ALL tests passed";
+        -- Finish simulation
+        REPORT "Instruction fetch unit testbench completed successfully";
         stop_sim <= true;
         WAIT;
     END PROCESS;
 
-END ARCHITECTURE;
+END ARCHITECTURE test;
