@@ -5,9 +5,9 @@ USE work.rv32i_pkg.ALL;
 
 ENTITY instruction_fetch_unit IS
 	PORT (
-		clk : IN STD_LOGIC;
-		rst : IN STD_LOGIC;
-		stall : IN STD_LOGIC;
+		i_clk : IN STD_LOGIC;
+		i_rst : IN STD_LOGIC;
+		i_stall : IN STD_LOGIC;
 
 		-- Control signal for selecting the next PC source
 		i_pc_src : IN t_PcSrc;
@@ -48,12 +48,12 @@ BEGIN
 		s_pc WHEN OTHERS; 
 
 	-- Sequential logic for updating the PC register
-	pc_logic : PROCESS (clk, rst)
+	pc_logic : PROCESS (i_clk, i_rst)
 	BEGIN
-		IF rst = '1' THEN
+		IF i_rst = '1' THEN
 			s_pc <= RESET_ADDRESS;
-		ELSIF rising_edge(clk) THEN
-			IF stall = '0' THEN
+		ELSIF rising_edge(i_clk) THEN
+			IF i_stall = '0' THEN
 				s_pc <= s_next_pc;
 			END IF;
 		END IF;
