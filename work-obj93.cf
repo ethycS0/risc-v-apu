@@ -1,36 +1,36 @@
 v 4
-file . "src/decode_control_unit.vhd" "05b25e2cc9fc3f95d7f83c2d278ffabba47ca201" "20251111104853.490":
-  entity decode_control_unit at 1( 0) + 0 on 65;
-  architecture behavioral of decode_control_unit at 27( 615) + 0 on 66;
-file . "src/branch_control.vhd" "a356019c51a7b748c2135b00a18a345a1f078ebb" "20251111104853.489":
-  entity branch_adder at 1( 0) + 0 on 63;
-  architecture behavioral of branch_adder at 13( 274) + 0 on 64;
-file . "src/branch_adder.vhd" "671d96c12d1198a9e35c82d197ee2d58e9e0e2f2" "20251111104853.489":
-  entity branch_condition_unit at 1( 0) + 0 on 61;
-  architecture behavioral of branch_condition_unit at 15( 438) + 0 on 62;
-file . "src/alu_control.vhd" "cbe6a0e025565b7062f0841b98d65ce084193841" "20251111104853.488":
-  entity alu_control_unit at 1( 0) + 0 on 59;
-  architecture behavioral of alu_control_unit at 15( 321) + 0 on 60;
-file . "src/common.vhd" "76f2e6deea429ae925b89494fa771db2789cadad" "20251111104853.486":
-  package rv32i_pkg at 1( 0) + 0 on 56;
-file . "src/alu.vhd" "04f243b30a2eab4a901cbdfa656795312b4477a4" "20251111104853.488":
-  entity alu at 1( 0) + 0 on 57;
-  architecture structural of alu at 19( 341) + 0 on 58;
-file . "src/decode_unit.vhd" "0b3e8001f6156fd71b136b55d8270942ce6f3104" "20251110071616.536":
-  entity decode_unit at 1( 0) + 0 on 44;
-  architecture behavioral of decode_unit at 16( 239) + 0 on 45;
-file . "src/execution_unit.vhd" "95f839a49c635b8b85854a1afb20a3d0ecf2bd7d" "20251111104853.491":
-  entity execution_unit at 1( 0) + 0 on 67;
-  architecture structural of execution_unit at 48( 1596) + 0 on 68;
-file . "src/immediate_constructor.vhd" "a49f6dc858f30adcd22a0bd32da5e634c6c001f1" "20251111104853.492":
-  entity immediate_constructor_unit at 1( 0) + 0 on 69;
-  architecture behavioral of immediate_constructor_unit at 13( 258) + 0 on 70;
-file . "src/instruction_fetch.vhd" "1cc8eb7f361359be0bbe6458446f8eb41b0c50f5" "20251111104853.493":
-  entity instruction_fetch_unit at 1( 0) + 0 on 71;
-  architecture behavioral of instruction_fetch_unit at 30( 795) + 1 on 72;
-file . "src/register_file.vhd" "5c52fc9e091b40cc7b11159bef70f10296652ff3" "20251111104853.493":
-  entity register_file at 1( 0) + 0 on 73;
-  architecture behavioral of register_file at 29( 633) + 0 on 74;
-file . "tb/tb_immediate_constructor.vhd" "0501442249fc5199e71f0a82ae97dd2411e3708e" "20251111104853.494":
-  entity tb_immediate_constructor at 1( 0) + 0 on 75;
-  architecture test of tb_immediate_constructor at 8( 143) + 0 on 76;
+file . "tb/tb_branch_adder.vhd" "fad492247e429839684f01113d48b1ffd8a275c9" "20251112105624.173":
+  entity tb_branch_adder at 1( 0) + 0 on 32;
+  architecture behavioral of tb_branch_adder at 8( 125) + 0 on 33;
+file . "src/register_file.vhd" "5c52fc9e091b40cc7b11159bef70f10296652ff3" "20251112105624.172":
+  entity register_file at 1( 0) + 0 on 30;
+  architecture behavioral of register_file at 29( 633) + 0 on 31;
+file . "src/memory_unit.vhd" "555d597dd530b649700852aa57fd60f7a2e19611" "20251112105624.172":
+  entity memory_stage at 1( 0) + 0 on 28;
+  architecture structural of memory_stage at 41( 1455) + 0 on 29;
+file . "src/instruction_fetch.vhd" "3c9f59faeea605dd540eb58738506e5186f36114" "20251112105624.171":
+  entity instruction_fetch_unit at 1( 0) + 0 on 26;
+  architecture behavioral of instruction_fetch_unit at 30( 781) + 0 on 27;
+file . "src/immediate_constructor.vhd" "a49f6dc858f30adcd22a0bd32da5e634c6c001f1" "20251112105624.170":
+  entity immediate_constructor_unit at 1( 0) + 0 on 24;
+  architecture behavioral of immediate_constructor_unit at 13( 258) + 0 on 25;
+file . "src/execution_unit.vhd" "7d2c74876fc3187a25613a6ac167d037f00bb563" "20251112105624.170":
+  entity execution_unit at 1( 0) + 0 on 22;
+  architecture structural of execution_unit at 45( 1332) + 0 on 23;
+file . "src/decode_control_unit.vhd" "05b25e2cc9fc3f95d7f83c2d278ffabba47ca201" "20251112105624.169":
+  entity decode_control_unit at 1( 0) + 0 on 20;
+  architecture behavioral of decode_control_unit at 27( 615) + 0 on 21;
+file . "src/branch_control.vhd" "6ba2723414abbcbab0338b22af81844720a304c8" "20251112105624.168":
+  entity branch_condition_unit at 1( 0) + 0 on 18;
+  architecture behavioral of branch_condition_unit at 15( 438) + 0 on 19;
+file . "src/branch_adder.vhd" "1229b3d5c6c5d73cba28b65cc75f9f05c4c60535" "20251112105624.168":
+  entity branch_adder at 1( 0) + 0 on 16;
+  architecture behavioral of branch_adder at 13( 274) + 0 on 17;
+file . "src/alu_control.vhd" "8dd1d4887cd7778278383a0dd757171cb33e4553" "20251112105624.167":
+  entity alu_control_unit at 1( 0) + 0 on 14;
+  architecture behavioral of alu_control_unit at 15( 321) + 0 on 15;
+file . "src/alu.vhd" "04f243b30a2eab4a901cbdfa656795312b4477a4" "20251112105624.167":
+  entity alu at 1( 0) + 0 on 12;
+  architecture structural of alu at 19( 341) + 0 on 13;
+file . "src/common.vhd" "76f2e6deea429ae925b89494fa771db2789cadad" "20251112105624.165":
+  package rv32i_pkg at 1( 0) + 0 on 11;

@@ -15,6 +15,7 @@ SRC_FILES = src/alu.vhd \
 	src/execution_unit.vhd \
         src/immediate_constructor.vhd \
 	src/instruction_fetch.vhd \
+	src/memory_unit.vhd \
         src/register_file.vhd 
 
 # The testbench to run, can be overridden from the command line
