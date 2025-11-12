@@ -1,4 +1,5 @@
 v 4
+<<<<<<< Updated upstream
 file . "tb/tb_branch_adder.vhd" "fad492247e429839684f01113d48b1ffd8a275c9" "20251112105624.173":
   entity tb_branch_adder at 1( 0) + 0 on 32;
   architecture behavioral of tb_branch_adder at 8( 125) + 0 on 33;
@@ -34,3 +35,49 @@ file . "src/alu.vhd" "04f243b30a2eab4a901cbdfa656795312b4477a4" "20251112105624.
   architecture structural of alu at 19( 341) + 0 on 13;
 file . "src/common.vhd" "76f2e6deea429ae925b89494fa771db2789cadad" "20251112105624.165":
   package rv32i_pkg at 1( 0) + 0 on 11;
+=======
+file . "src/alu_control.vhd" "8dd1d4887cd7778278383a0dd757171cb33e4553" "20251112110629.500":
+  entity alu_control_unit at 1( 0) + 0 on 331;
+  architecture behavioral of alu_control_unit at 15( 321) + 0 on 332;
+file . "tb/tb_branch_adder.vhd" "564b9752be8597624e5c78a6f293c70b71c8b217" "20251112094358.927":
+  entity tb_branch_adder at 1( 0) + 0 on 180;
+  architecture behavioral of tb_branch_adder at 8( 125) + 0 on 181;
+file . "tb/tb_instruction_fetch.vhd" "2250ac2504b9e3a21e44fe0f8b882309d2ea5371" "20251112051726.919":
+  entity tb_instruction_fetch at 1( 0) + 0 on 96;
+  architecture test of tb_instruction_fetch at 8( 135) + 0 on 97;
+file . "tb/tb_immediate_constructor.vhd" "63f3b673bddc8e11c0f8f8e63492eafb21f88908" "20251112052545.013":
+  entity tb_immediate_constructor at 1( 0) + 0 on 117;
+  architecture test of tb_immediate_constructor at 8( 143) + 0 on 118;
+file . "src/register_file.vhd" "5c52fc9e091b40cc7b11159bef70f10296652ff3" "20251112110629.507":
+  entity register_file at 1( 0) + 0 on 345;
+  architecture behavioral of register_file at 29( 633) + 0 on 346;
+file . "src/instruction_fetch.vhd" "1cc8eb7f361359be0bbe6458446f8eb41b0c50f5" "20251112110629.506":
+  entity instruction_fetch_unit at 1( 0) + 0 on 343;
+  architecture behavioral of instruction_fetch_unit at 30( 795) + 1 on 344;
+file . "src/immediate_constructor.vhd" "a49f6dc858f30adcd22a0bd32da5e634c6c001f1" "20251112110629.505":
+  entity immediate_constructor_unit at 1( 0) + 0 on 341;
+  architecture behavioral of immediate_constructor_unit at 13( 258) + 0 on 342;
+file . "src/execution_unit.vhd" "7d2c74876fc3187a25613a6ac167d037f00bb563" "20251112110629.504":
+  entity execution_unit at 1( 0) + 0 on 339;
+  architecture structural of execution_unit at 45( 1332) + 0 on 340;
+file . "src/decode_unit.vhd" "0b3e8001f6156fd71b136b55d8270942ce6f3104" "20251110071616.536":
+  entity decode_unit at 1( 0) + 0 on 44;
+  architecture behavioral of decode_unit at 16( 239) + 0 on 45;
+file . "src/alu.vhd" "04f243b30a2eab4a901cbdfa656795312b4477a4" "20251112110629.498":
+  entity alu at 1( 0) + 0 on 329;
+  architecture structural of alu at 19( 341) + 0 on 330;
+file . "src/common.vhd" "76f2e6deea429ae925b89494fa771db2789cadad" "20251112110629.490":
+  package rv32i_pkg at 1( 0) + 0 on 328;
+file . "src/branch_adder.vhd" "1229b3d5c6c5d73cba28b65cc75f9f05c4c60535" "20251112110629.501":
+  entity branch_adder at 1( 0) + 0 on 333;
+  architecture behavioral of branch_adder at 13( 274) + 0 on 334;
+file . "src/branch_control.vhd" "6ba2723414abbcbab0338b22af81844720a304c8" "20251112110629.502":
+  entity branch_condition_unit at 1( 0) + 0 on 335;
+  architecture behavioral of branch_condition_unit at 15( 438) + 0 on 336;
+file . "src/decode_control_unit.vhd" "05b25e2cc9fc3f95d7f83c2d278ffabba47ca201" "20251112110629.503":
+  entity decode_control_unit at 1( 0) + 0 on 337;
+  architecture behavioral of decode_control_unit at 27( 615) + 0 on 338;
+file . "tb/tb_alu_control.vhd" "efb2f6ec8c1532626833274ffb1855585c73450e" "20251112110629.508":
+  entity tb_alu_control at 1( 0) + 0 on 347;
+  architecture behavioral of tb_alu_control at 9( 147) + 0 on 348;
+>>>>>>> Stashed changes
