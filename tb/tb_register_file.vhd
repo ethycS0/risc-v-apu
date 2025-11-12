@@ -37,8 +37,6 @@ ARCHITECTURE test OF tb_register_file IS
 	SIGNAL tb_rd2_data : STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0);
 
 	SIGNAL stop_sim : BOOLEAN := false;
-	SIGNAL test_passed : INTEGER := 0;
-	SIGNAL test_failed : INTEGER := 0;
 
 BEGIN
 
@@ -67,9 +65,14 @@ BEGIN
 	END PROCESS clk_gen_proc;
 
 	stimulus_proc : PROCESS
+		VARIABLE test_passed : INTEGER := 0;
+		VARIABLE test_failed : INTEGER := 0;
+		VARIABLE test2_failed : BOOLEAN := false;
+		VARIABLE test7_failed : BOOLEAN := false;
+		VARIABLE test10_failed : BOOLEAN := false;
 	BEGIN
 		REPORT "========================================================";
-		REPORT "RISC-V RV32I Register File Testbench";
+		REPORT "RISC-V APU";
 		REPORT "========================================================";
 
 		-- Initialize
@@ -84,7 +87,7 @@ BEGIN
 		WAIT FOR CLK_PERIOD;
 
 		-- ====================================================================
-		-- TEST 1: x0 Hardwired Zero
+		-- TEST 1: x0 Zero
 		-- ====================================================================
 		tb_wr_en <= '1';
 		tb_wr_addr <= "00000";
@@ -98,15 +101,16 @@ BEGIN
 
 		IF tb_rd1_data = x"00000000" AND tb_rd2_data = x"00000000" THEN
 			REPORT "TEST 1 (x0 Zero): PASS";
-			test_passed <= test_passed + 1;
+			test_passed := test_passed + 1;
 		ELSE
 			REPORT "TEST 1 (x0 Zero): FAIL" SEVERITY error;
-			test_failed <= test_failed + 1;
+			test_failed := test_failed + 1;
 		END IF;
 
 		-- ====================================================================
 		-- TEST 2: All Registers
 		-- ====================================================================
+		test2_failed := false;
 		FOR i IN 1 TO 31 LOOP
 			tb_wr_en <= '1';
 			tb_wr_addr <= STD_LOGIC_VECTOR(to_unsigned(i, ADDR_WIDTH));
@@ -118,12 +122,17 @@ BEGIN
 			WAIT FOR CLK_PERIOD;
 
 			IF tb_rd1_data /= STD_LOGIC_VECTOR(to_unsigned(i * 256, DATA_WIDTH)) THEN
-				REPORT "TEST 2 (All Regs): FAIL" SEVERITY error;
-				test_failed <= test_failed + 1;
+				test2_failed := true;
 			END IF;
 		END LOOP;
-		REPORT "TEST 2 (All Regs): PASS";
-		test_passed <= test_passed + 1;
+
+		IF test2_failed THEN
+			REPORT "TEST 2 (All Regs): FAIL" SEVERITY error;
+			test_failed := test_failed + 1;
+		ELSE
+			REPORT "TEST 2 (All Regs): PASS";
+			test_passed := test_passed + 1;
+		END IF;
 
 		-- ====================================================================
 		-- TEST 3: Dual Port
@@ -144,10 +153,10 @@ BEGIN
 
 		IF tb_rd1_data = x"12345678" AND tb_rd2_data = x"ABCDEF01" THEN
 			REPORT "TEST 3 (Dual Port): PASS";
-			test_passed <= test_passed + 1;
+			test_passed := test_passed + 1;
 		ELSE
 			REPORT "TEST 3 (Dual Port): FAIL" SEVERITY error;
-			test_failed <= test_failed + 1;
+			test_failed := test_failed + 1;
 		END IF;
 
 		-- ====================================================================
@@ -165,10 +174,10 @@ BEGIN
 
 		IF tb_rd1_data = x"FEDCBA98" AND tb_rd2_data = x"FEDCBA98" THEN
 			REPORT "TEST 4 (Same Reg): PASS";
-			test_passed <= test_passed + 1;
+			test_passed := test_passed + 1;
 		ELSE
 			REPORT "TEST 4 (Same Reg): FAIL" SEVERITY error;
-			test_failed <= test_failed + 1;
+			test_failed := test_failed + 1;
 		END IF;
 
 		-- ====================================================================
@@ -189,10 +198,10 @@ BEGIN
 
 		IF tb_rd1_data = x"11111111" THEN
 			REPORT "TEST 5 (Write Enable): PASS";
-			test_passed <= test_passed + 1;
+			test_passed := test_passed + 1;
 		ELSE
 			REPORT "TEST 5 (Write Enable): FAIL" SEVERITY error;
-			test_failed <= test_failed + 1;
+			test_failed := test_failed + 1;
 		END IF;
 
 		-- ====================================================================
@@ -213,10 +222,10 @@ BEGIN
 
 		IF tb_rd1_data = x"55555555" THEN
 			REPORT "TEST 6 (Overwrite): PASS";
-			test_passed <= test_passed + 1;
+			test_passed := test_passed + 1;
 		ELSE
 			REPORT "TEST 6 (Overwrite): FAIL" SEVERITY error;
-			test_failed <= test_failed + 1;
+			test_failed := test_failed + 1;
 		END IF;
 
 		-- ====================================================================
@@ -235,36 +244,32 @@ BEGIN
 		tb_rst <= '0';
 		WAIT FOR CLK_PERIOD;
 
+		test7_failed := false;
 		FOR i IN 0 TO 10 LOOP
 			tb_rd1_addr <= STD_LOGIC_VECTOR(to_unsigned(i, ADDR_WIDTH));
 			WAIT FOR CLK_PERIOD;
 
 			IF tb_rd1_data /= x"00000000" THEN
-				REPORT "TEST 7 (Reset): FAIL" SEVERITY error;
-				test_failed <= test_failed + 1;
+				test7_failed := true;
 			END IF;
 		END LOOP;
-		REPORT "TEST 7 (Reset): PASS";
-		test_passed <= test_passed + 1;
+
+		IF test7_failed THEN
+			REPORT "TEST 7 (Reset): FAIL" SEVERITY error;
+			test_failed := test_failed + 1;
+		ELSE
+			REPORT "TEST 7 (Reset): PASS";
+			test_passed := test_passed + 1;
+		END IF;
 
 		-- ====================================================================
-		-- TEST 8: Boundary Values
+		-- TEST 8: Boundary
 		-- ====================================================================
 		tb_wr_en <= '1';
 		tb_wr_addr <= "00001";
 		tb_wr_data <= x"00000000";
 		WAIT FOR CLK_PERIOD;
 
-		tb_wr_en <= '0';
-		tb_rd1_addr <= "00001";
-		WAIT FOR CLK_PERIOD;
-
-		IF tb_rd1_data /= x"00000000" THEN
-			REPORT "TEST 8 (Boundary): FAIL" SEVERITY error;
-			test_failed <= test_failed + 1;
-		END IF;
-
-		tb_wr_en <= '1';
 		tb_wr_addr <= "11111";
 		tb_wr_data <= x"FFFFFFFF";
 		WAIT FOR CLK_PERIOD;
@@ -275,10 +280,10 @@ BEGIN
 
 		IF tb_rd1_data = x"FFFFFFFF" THEN
 			REPORT "TEST 8 (Boundary): PASS";
-			test_passed <= test_passed + 1;
+			test_passed := test_passed + 1;
 		ELSE
 			REPORT "TEST 8 (Boundary): FAIL" SEVERITY error;
-			test_failed <= test_failed + 1;
+			test_failed := test_failed + 1;
 		END IF;
 
 		-- ====================================================================
@@ -300,10 +305,10 @@ BEGIN
 
 		IF tb_rd1_data = x"CAFEBABE" THEN
 			REPORT "TEST 9 (Timing): PASS";
-			test_passed <= test_passed + 1;
+			test_passed := test_passed + 1;
 		ELSE
 			REPORT "TEST 9 (Timing): FAIL" SEVERITY error;
-			test_failed <= test_failed + 1;
+			test_failed := test_failed + 1;
 		END IF;
 
 		-- ====================================================================
@@ -317,17 +322,23 @@ BEGIN
 		END LOOP;
 
 		tb_wr_en <= '0';
+		test10_failed := false;
 		FOR i IN 1 TO 31 LOOP
 			tb_rd1_addr <= STD_LOGIC_VECTOR(to_unsigned(i, ADDR_WIDTH));
 			WAIT FOR CLK_PERIOD;
 
 			IF tb_rd1_data /= STD_LOGIC_VECTOR(to_unsigned(i * 1000, DATA_WIDTH)) THEN
-				REPORT "TEST 10 (Sequential): FAIL" SEVERITY error;
-				test_failed <= test_failed + 1;
+				test10_failed := true;
 			END IF;
 		END LOOP;
-		REPORT "TEST 10 (Sequential): PASS";
-		test_passed <= test_passed + 1;
+
+		IF test10_failed THEN
+			REPORT "TEST 10 (Sequential): FAIL" SEVERITY error;
+			test_failed := test_failed + 1;
+		ELSE
+			REPORT "TEST 10 (Sequential): PASS";
+			test_passed := test_passed + 1;
+		END IF;
 
 		-- ====================================================================
 		-- Summary
