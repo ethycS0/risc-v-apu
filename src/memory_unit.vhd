@@ -22,7 +22,7 @@ ENTITY memory_stage IS
 		i_mem_read_data : IN STD_LOGIC_VECTOR(31 DOWNTO 0); -- Data coming IN from Data Memory
 
 		-- Memory Interface Ports (Output) 
-		o_mem_addr : OUT STD_LOGIC_VECTOR(31 DOWNTO 0); -- Address going OUT to Data Memory
+		o_mem_addr : OUT STD_LOGIC_VECTOR(MEMORY_ADDR_WIDTH - 1 DOWNTO 0);
 		o_mem_write_data : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		o_mem_write_en : OUT STD_LOGIC;
 		o_mem_byte_en : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
@@ -41,7 +41,7 @@ END ENTITY memory_stage;
 ARCHITECTURE structural OF memory_stage IS
 BEGIN
 
-	load_extension_logic : PROCESS (i_mem_read_ex, i_funct3_ex, i_mem_read_data, i_alu_result_ex)
+	load_logic : PROCESS (i_mem_read_ex, i_funct3_ex, i_mem_read_data, i_alu_result_ex)
 		VARIABLE byte_val : STD_LOGIC_VECTOR(7 DOWNTO 0);
 		VARIABLE half_val : STD_LOGIC_VECTOR(15 DOWNTO 0);
 
@@ -92,13 +92,13 @@ BEGIN
 			END CASE;
 		END IF;
 
-	END PROCESS load_extension_logic;
+	END PROCESS load_logic;
 
 	o_mem_addr <= i_alu_result_ex;
 	o_mem_write_en <= i_mem_write_ex;
 	o_mem_write_data <= i_rs2_data_ex;
 
-	store_byte_enable_logic : PROCESS (i_mem_write_ex, i_funct3_ex, i_alu_result_ex)
+	store_logic : PROCESS (i_mem_write_ex, i_funct3_ex, i_alu_result_ex)
 	BEGIN
 		o_mem_byte_en <= "0000";
 
@@ -128,7 +128,7 @@ BEGIN
 
 			END CASE;
 		END IF;
-	END PROCESS store_byte_enable_logic;
+	END PROCESS store_logic;
 
         o_alu_result_mem <= i_alu_result_ex;
         o_pc4_mem        <= i_pc4_ex;

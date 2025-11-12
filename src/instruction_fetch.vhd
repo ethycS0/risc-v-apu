@@ -1,53 +1,60 @@
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
+USE work.rv32i_pkg.ALL;
 
 ENTITY instruction_fetch_unit IS
-	GENERIC (
-		ADDR_WIDTH : INTEGER := 32;
-		INSTRUCTION_WIDTH : INTEGER := 32;
-		RESET_ADDRESS : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0')
-	);
-
 	PORT (
 		clk : IN STD_LOGIC;
 		rst : IN STD_LOGIC;
+		stall : IN STD_LOGIC;
 
-		instr_addr : OUT STD_LOGIC_VECTOR(ADDR_WIDTH - 1 DOWNTO 0);
-		instr_data : IN STD_LOGIC_VECTOR(INSTRUCTION_WIDTH - 1 DOWNTO 0);
-		branch_address : IN STD_LOGIC_VECTOR(ADDR_WIDTH - 1 DOWNTO 0);
+		-- Control signal for selecting the next PC source
+		i_pc_src : IN t_PcSrc;
 
-		instruction : OUT STD_LOGIC_VECTOR(INSTRUCTION_WIDTH - 1 DOWNTO 0);
-		pc_out : OUT STD_LOGIC_VECTOR(ADDR_WIDTH - 1 DOWNTO 0);
-		pc_plus_4 : OUT STD_LOGIC_VECTOR(ADDR_WIDTH - 1 DOWNTO 0);
+		-- Address inputs from different pipeline stages
+		i_branch_addr : IN STD_LOGIC_VECTOR(MEMORY_ADDR_WIDTH - 1 DOWNTO 0);
+		i_jump_addr : IN STD_LOGIC_VECTOR(MEMORY_ADDR_WIDTH - 1 DOWNTO 0); 
 
-		branch : IN STD_LOGIC;
-		stall : IN STD_LOGIC
+		-- Memory Interface
+		o_instr_addr : OUT STD_LOGIC_VECTOR(MEMORY_ADDR_WIDTH - 1 DOWNTO 0);
+		i_instr_data : IN STD_LOGIC_VECTOR(INSTRUCTION_WIDTH - 1 DOWNTO 0);
+
+		-- Outputs 
+		o_instruction : OUT STD_LOGIC_VECTOR(INSTRUCTION_WIDTH - 1 DOWNTO 0);
+		o_pc : OUT STD_LOGIC_VECTOR(MEMORY_ADDR_WIDTH - 1 DOWNTO 0);
+		o_pc_plus_4 : OUT STD_LOGIC_VECTOR(MEMORY_ADDR_WIDTH - 1 DOWNTO 0)
 	);
-
 END ENTITY instruction_fetch_unit;
 
 ARCHITECTURE behavioral OF instruction_fetch_unit IS
-	SIGNAL pc : STD_LOGIC_VECTOR(ADDR_WIDTH - 1 DOWNTO 0);
-	SIGNAL pc_increment : STD_LOGIC_VECTOR(ADDR_WIDTH - 1 DOWNTO 0);
+	SIGNAL s_pc : STD_LOGIC_VECTOR(MEMORY_ADDR_WIDTH - 1 DOWNTO 0);
+	SIGNAL s_pc_plus_4 : STD_LOGIC_VECTOR(MEMORY_ADDR_WIDTH - 1 DOWNTO 0);
+	SIGNAL s_next_pc : STD_LOGIC_VECTOR(MEMORY_ADDR_WIDTH - 1 DOWNTO 0);
 BEGIN
-	instr_addr <= pc;
-	instruction <= instr_data;
-	pc_out <= pc;
-	pc_plus_4 <= pc_increment;
-	pc_increment <= STD_LOGIC_VECTOR(unsigned(pc) + 4);
+	o_instr_addr <= s_pc;
+	o_instruction <= i_instr_data;
+	o_pc <= s_pc;
+	o_pc_plus_4 <= s_pc_plus_4;
 
+        -- PC+4 Adder
+	s_pc_plus_4 <= STD_LOGIC_VECTOR(unsigned(s_pc) + 4);
+
+        -- MUX from PC selection
+	WITH i_pc_src SELECT
+		s_next_pc <= s_pc_plus_4 WHEN PC_SRC_PC4,
+		i_branch_addr WHEN PC_SRC_BRANCH,
+		i_jump_addr WHEN PC_SRC_JUMP,
+		s_pc WHEN OTHERS; 
+
+	-- Sequential logic for updating the PC register
 	pc_logic : PROCESS (clk, rst)
 	BEGIN
 		IF rst = '1' THEN
-			pc <= RESET_ADDRESS;
+			s_pc <= RESET_ADDRESS;
 		ELSIF rising_edge(clk) THEN
 			IF stall = '0' THEN
-				IF branch = '1' THEN
-					pc <= branch_address;
-				ELSE
-					pc <= pc_increment;
-				END IF;
+				s_pc <= s_next_pc;
 			END IF;
 		END IF;
 	END PROCESS pc_logic;

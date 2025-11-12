@@ -16,7 +16,7 @@ ENTITY alu IS
 
 END ENTITY alu;
 
-ARCHITECTURE structural OF alu IS
+ARCHITECTURE behavioral OF alu IS
 	-- Internal signals for the adder/subtractor
 	SIGNAL adder_b_operand : std_logic_vector(31 DOWNTO 0);
 	SIGNAL adder_carry_in : std_logic;
@@ -29,7 +29,7 @@ ARCHITECTURE structural OF alu IS
 	SIGNAL slt_result : std_logic_vector(31 DOWNTO 0);
         SIGNAL adder_carry_term : signed(32 DOWNTO 0);
 
-        SIGNAL internal_flags   : t_AluFlags;
+        SIGNAL internal_flags : t_AluFlags;
 
 BEGIN
         -- Adder Implementation for ADD | SUB | SLT | SLTU
@@ -82,4 +82,4 @@ BEGIN
 
         o_flags <= internal_flags;
 
-END ARCHITECTURE structural;
+END ARCHITECTURE behavioral;
