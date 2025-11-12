@@ -5,19 +5,18 @@ USE work.rv32i_pkg.ALL;
 
 ENTITY decode_control_unit IS
 	PORT (
-		i_instruction : IN  std_logic_vector(31 DOWNTO 0);
+		i_instruction : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 
 		-- Primary control signals
-		o_reg_write   : OUT std_logic;
-		o_mem_read    : OUT std_logic;
-		o_mem_write   : OUT std_logic;
-		o_branch      : OUT std_logic;
-		o_jump        : OUT std_logic;
+		o_reg_write : OUT STD_LOGIC;
+		o_mem_read : OUT STD_LOGIC;
+		o_mem_write : OUT STD_LOGIC;
 
-		-- Mux select signals 
-		o_alu_src_a   : OUT t_AluSrc_A;
-		o_alu_src_b   : OUT t_AluSrc_B;
-		o_wb_src      : OUT t_WritebackSrc;
+		-- Mux select signals
+		o_alu_src_a : OUT t_AluSrc_A;
+		o_alu_src_b : OUT t_AluSrc_B;
+		o_wb_src : OUT t_WritebackSrc;
+		o_pc_src : OUT t_PcSrc; 
 
 		-- Intermediate ALUOp type
 		o_alu_op_type : OUT t_ExecControl
@@ -28,100 +27,90 @@ ARCHITECTURE behavioral OF decode_control_unit IS
 BEGIN
 	decode_process : PROCESS (i_instruction)
 	BEGIN
-		-- Default assignments (safer design)
-		o_reg_write   <= '0';
-		o_mem_read    <= '0';
-		o_mem_write   <= '0';
-		o_branch      <= '0';
-		o_jump        <= '0';
-		o_alu_src_a   <= ALU_A_RS1;  -- Default to rs1
-		o_alu_src_b   <= ALU_B_RS2;  -- Default to rs2
-		o_wb_src      <= WB_SRC_ALU;
-		o_alu_op_type <= OP_R_TYPE; -- Default to a safe type
+		-- Default assignments for a "NOP" or safe state
+		o_reg_write <= '0';
+		o_mem_read <= '0';
+		o_mem_write <= '0';
+		o_alu_src_a <= ALU_A_RS1;
+		o_alu_src_b <= ALU_B_RS2;
+		o_wb_src <= WB_SRC_ALU;
+		o_pc_src <= PC_SRC_PC4; 
+		o_alu_op_type <= OP_ILLEGAL;
 
-		-- Decode based on the full 7-bit opcode
 		CASE i_instruction(6 DOWNTO 0) IS
 
-			-- U-Type: LUI
+                        -- U-Type: LUI
 			WHEN "0110111" =>
-				o_reg_write   <= '1';
-				o_alu_src_a   <= ALU_A_ZERO; -- Input A is 0 for LUI (0 + imm) or ignored for COPY_B
-				o_alu_src_b   <= ALU_B_IMM;
+				o_reg_write <= '1';
+				o_alu_src_a <= ALU_A_ZERO;
+				o_alu_src_b <= ALU_B_IMM;
 				o_alu_op_type <= OP_LUI;
 
-			-- U-Type: AUIPC
+                        -- U-Type: AUIPC
 			WHEN "0010111" =>
-				o_reg_write   <= '1';
-				o_alu_src_a   <= ALU_A_PC; -- PC + imm
-				o_alu_src_b   <= ALU_B_IMM;
+				o_reg_write <= '1';
+				o_alu_src_a <= ALU_A_PC;
+				o_alu_src_b <= ALU_B_IMM;
 				o_alu_op_type <= OP_AUIPC;
 
-			-- J-Type: JAL
+                        -- J-Type: JAL
 			WHEN "1101111" =>
-				o_reg_write   <= '1';
-				o_jump        <= '1';
-				o_alu_src_a   <= ALU_A_PC; -- ALU calculates target addr: PC + imm
-				o_alu_src_b   <= ALU_B_IMM;
-				o_wb_src      <= WB_SRC_PC4;
+				o_reg_write <= '1';
+				o_pc_src <= PC_SRC_JUMP;
+				o_alu_src_a <= ALU_A_PC;
+				o_alu_src_b <= ALU_B_IMM;
+				o_wb_src <= WB_SRC_PC4;
 				o_alu_op_type <= OP_JUMP;
 
-			-- I-Type: JALR
+                        -- I-Type: JALR
 			WHEN "1100111" =>
-				o_reg_write   <= '1';
-				o_jump        <= '1';
-				o_alu_src_a   <= ALU_A_RS1; -- ALU calculates target addr: rs1 + imm
-				o_alu_src_b   <= ALU_B_IMM;
-				o_wb_src      <= WB_SRC_PC4;
+				o_reg_write <= '1';
+				o_pc_src <= PC_SRC_JUMP;
+				o_alu_src_a <= ALU_A_RS1;
+				o_alu_src_b <= ALU_B_IMM;
+				o_wb_src <= WB_SRC_PC4;
 				o_alu_op_type <= OP_JUMP;
 
-			-- B-Type: Branches
+                        -- B-Type: Branches
 			WHEN "1100011" =>
-				o_branch      <= '1';
-				o_alu_src_a   <= ALU_A_RS1; -- ALU does comparison: rs1 - rs2
-				o_alu_src_b   <= ALU_B_RS2;
+				o_pc_src <= PC_SRC_BRANCH;
+				o_alu_src_a <= ALU_A_RS1;
+				o_alu_src_b <= ALU_B_RS2;
 				o_alu_op_type <= OP_BRANCH;
 
-			-- I-Type: Loads
+                        -- I-Type: Loads
 			WHEN "0000011" =>
-				o_reg_write   <= '1';
-				o_mem_read    <= '1';
-				o_alu_src_a   <= ALU_A_RS1; -- ALU calculates address: rs1 + imm
-				o_alu_src_b   <= ALU_B_IMM;
-				o_wb_src      <= WB_SRC_MEM;
+				o_reg_write <= '1';
+				o_mem_read <= '1';
+				o_alu_src_a <= ALU_A_RS1;
+				o_alu_src_b <= ALU_B_IMM;
+				o_wb_src <= WB_SRC_MEM;
 				o_alu_op_type <= OP_LOAD_STORE;
 
-			-- S-Type: Stores
+                        -- S-Type: Stores
 			WHEN "0100011" =>
-				o_mem_write   <= '1';
-				o_alu_src_a   <= ALU_A_RS1; -- ALU calculates address: rs1 + imm
-				o_alu_src_b   <= ALU_B_IMM;
+				o_mem_write <= '1';
+				o_alu_src_a <= ALU_A_RS1;
+				o_alu_src_b <= ALU_B_IMM;
 				o_alu_op_type <= OP_LOAD_STORE;
 
-			-- I-Type: Immediate arithmetic/logic
+                        -- I-Type: Immediate arithmetic/logic
 			WHEN "0010011" =>
-				o_reg_write   <= '1';
-				o_alu_src_a   <= ALU_A_RS1; -- rs1 op imm
-				o_alu_src_b   <= ALU_B_IMM;
+				o_reg_write <= '1';
+				o_alu_src_a <= ALU_A_RS1;
+				o_alu_src_b <= ALU_B_IMM;
 				o_alu_op_type <= OP_I_TYPE;
 
-			-- R-Type: Register arithmetic/logic
+                        -- R-Type: Register arithmetic/logic
 			WHEN "0110011" =>
-				o_reg_write   <= '1';
-				o_alu_src_a   <= ALU_A_RS1; -- rs1 op rs2
-				o_alu_src_b   <= ALU_B_RS2;
+				o_reg_write <= '1';
+				o_alu_src_a <= ALU_A_RS1;
+				o_alu_src_b <= ALU_B_RS2;
 				o_alu_op_type <= OP_R_TYPE;
 
-			-- FENCE
-			WHEN "0001111" =>
-				NULL; -- NOP in a simple pipeline
-
-			-- SYSTEM (ECALL/EBREAK)
-			WHEN "1110011" =>
-				NULL; -- Handle exceptions/interrupts
-
-			-- OTHERS (Invalid opcode)
+                        -- FENCE, SYSTEM, and other unimplemented or invalid opcodes
 			WHEN OTHERS =>
-				-- All signals remain at their default '0' state
+				-- All signals remain at their default '0' or "safe" state.
 				NULL;
 
 		END CASE;

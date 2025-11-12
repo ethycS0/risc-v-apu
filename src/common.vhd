@@ -2,11 +2,17 @@ LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 
 PACKAGE rv32i_pkg IS
+        CONSTANT REGFILE_DATA_WIDTH : INTEGER := 32;
+        CONSTANT REGFILE_ADDR_WIDTH : INTEGER := 5;
+
+        CONSTANT MEMORY_ADDR_WIDTH : INTEGER := 32;
+        CONSTANT INSTRUCTION_WIDTH : INTEGER := 32;
+        CONSTANT RESET_ADDRESS : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0');
 
         -- Control Signals for ALU Control
 	TYPE t_ExecControl IS (
                 OP_R_TYPE, OP_I_TYPE, OP_LUI, OP_AUIPC,
-                OP_LOAD_STORE, OP_BRANCH, OP_JUMP
+                OP_LOAD_STORE, OP_BRANCH, OP_JUMP, OP_ILLEGAL
 	);
 
         -- Final Opcode for ALU
@@ -41,5 +47,8 @@ PACKAGE rv32i_pkg IS
                 carry    : std_logic;
                 overflow : std_logic;
         END RECORD t_AluFlags;
+
+        TYPE t_PcSrc IS (PC_SRC_PC4, PC_SRC_BRANCH, PC_SRC_JUMP);
+
 
 END PACKAGE rv32i_pkg;

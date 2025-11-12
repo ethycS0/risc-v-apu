@@ -5,18 +5,21 @@ USE work.rv32i_pkg.ALL;
 
 ENTITY alu_control_unit IS
 	PORT (
-		i_opcode : IN t_ExecControl;
+		i_alu_op_type : IN t_ExecControl;
 		i_funct3 : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
 		i_funct7 : IN STD_LOGIC_VECTOR(6 DOWNTO 0);
+
 		o_alu_command : OUT t_AluOpcodes
 	);
 END ENTITY alu_control_unit;
 
 ARCHITECTURE behavioral OF alu_control_unit IS
 BEGIN
-	PROCESS (i_opcode, i_funct3, i_funct7)
+	PROCESS (i_alu_op_type, i_funct3, i_funct7)
 	BEGIN
-		CASE i_opcode IS
+                o_alu_command <= ALU_ADD;
+
+		CASE i_alu_op_type IS
 			WHEN OP_LUI =>
 				o_alu_command <= ALU_COPY_B;
 
@@ -29,13 +32,13 @@ BEGIN
 			WHEN OP_R_TYPE | OP_I_TYPE =>
 				CASE i_funct3 IS
 					WHEN "000" =>
-						IF i_opcode = OP_R_TYPE AND i_funct7(5) = '1' THEN
+						IF i_alu_op_type = OP_R_TYPE AND i_funct7(5) = '1' THEN
 							o_alu_command <= ALU_SUB;
 						ELSE
 							o_alu_command <= ALU_ADD;
 						END IF;
 					WHEN "101" =>
-						IF i_opcode = OP_R_TYPE AND i_funct7(5) = '1' THEN
+						IF i_funct7(5) = '1' THEN
 							o_alu_command <= ALU_SRA;
 						ELSE
 							o_alu_command <= ALU_SRL;

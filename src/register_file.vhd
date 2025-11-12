@@ -1,49 +1,53 @@
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
+USE work.rv32i_pkg.ALL;
 
 ENTITY register_file IS
-	GENERIC (
-		DATA_WIDTH : INTEGER := 32;
-		ADDR_WIDTH : INTEGER := 5
-	);
-
 	PORT (
-		clk : IN std_logic;
-		rst : IN std_logic;
-		wr_en : IN std_logic;
+		-- Clock and Reset
+		i_clk           : IN  std_logic;
+		i_rst           : IN  std_logic;
 
-		wr_addr : IN std_logic_vector(ADDR_WIDTH - 1 DOWNTO 0);
-		wr_data : IN std_logic_vector(DATA_WIDTH - 1 DOWNTO 0);
+		-- Write Port 
+		i_wr_en         : IN  std_logic;
+		i_wr_addr       : IN  std_logic_vector(REGFILE_ADDR_WIDTH - 1 DOWNTO 0);
+		i_wr_data       : IN  std_logic_vector(REGFILE_DATA_WIDTH - 1 DOWNTO 0);
 
-		rd1_addr : IN std_logic_vector(ADDR_WIDTH - 1 DOWNTO 0);
-		rd1_data : OUT std_logic_vector(DATA_WIDTH - 1 DOWNTO 0);
+		-- Read Port 1 
+		i_rd1_addr      : IN  std_logic_vector(REGFILE_ADDR_WIDTH - 1 DOWNTO 0);
+		o_rd1_data      : OUT std_logic_vector(REGFILE_DATA_WIDTH - 1 DOWNTO 0);
 
-		rd2_addr : IN std_logic_vector(ADDR_WIDTH - 1 DOWNTO 0);
-		rd2_data : OUT std_logic_vector(DATA_WIDTH - 1 DOWNTO 0)
+		-- Read Port 2
+		i_rd2_addr      : IN  std_logic_vector(REGFILE_ADDR_WIDTH - 1 DOWNTO 0);
+		o_rd2_data      : OUT std_logic_vector(REGFILE_DATA_WIDTH - 1 DOWNTO 0)
 	);
-
 END ENTITY register_file;
 
 
 ARCHITECTURE behavioral OF register_file IS
-	SUBTYPE reg_word_t IS std_logic_vector(DATA_WIDTH - 1 DOWNTO 0);
-	TYPE reg_array_t IS ARRAY(0 TO 2 ** ADDR_WIDTH - 1) OF reg_word_t;
+	-- Internal type definitions
+	SUBTYPE t_reg_word IS std_logic_vector(REGFILE_DATA_WIDTH - 1 DOWNTO 0);
+	TYPE t_reg_array IS ARRAY(0 TO 2**REGFILE_ADDR_WIDTH - 1) OF t_reg_word;
 
-	SIGNAL registers : reg_array_t := (OTHERS => (OTHERS => '0'));
+	-- Internal signal for the register bank
+	SIGNAL s_registers : t_reg_array := (OTHERS => (OTHERS => '0'));
+
 BEGIN
-	write_process : PROCESS (clk, rst)
+	-- Synchronous Write Process
+	write_process : PROCESS (i_clk, i_rst)
 	BEGIN
-		IF rst = '1' THEN
-			registers <= (OTHERS => (OTHERS => '0'));
-		ELSIF rising_edge(clk) THEN
-			IF wr_en = '1' AND to_integer(unsigned(wr_addr)) /= 0 THEN
-				registers(to_integer(unsigned(wr_addr))) <= wr_data;
+		IF i_rst = '1' THEN
+			s_registers <= (OTHERS => (OTHERS => '0'));
+		ELSIF rising_edge(i_clk) THEN
+			IF i_wr_en = '1' AND to_integer(unsigned(i_wr_addr)) /= 0 THEN
+				s_registers(to_integer(unsigned(i_wr_addr))) <= i_wr_data;
 			END IF;
 		END IF;
 	END PROCESS write_process;
 
-        rd1_data <= registers(to_integer(unsigned(rd1_addr)));
-        rd2_data <= registers(to_integer(unsigned(rd2_addr)));
+	o_rd1_data <= s_registers(to_integer(unsigned(i_rd1_addr)));
+	o_rd2_data <= s_registers(to_integer(unsigned(i_rd2_addr)));
 
 END ARCHITECTURE behavioral;
+
