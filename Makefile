@@ -13,7 +13,9 @@ SRC_FILES = src/alu.vhd \
 	src/branch_control.vhd \
 	src/decode_control_unit.vhd \
 	src/execution_unit.vhd \
+	src/forwarding_unit.vhd \
         src/immediate_constructor.vhd \
+	src/instruction_decode.vhd \
 	src/instruction_fetch.vhd \
 	src/memory_unit.vhd \
         src/register_file.vhd \
