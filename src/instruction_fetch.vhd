@@ -49,6 +49,7 @@ BEGIN
 
 	-- Sequential logic for updating the PC register
 	pc_logic : PROCESS (i_clk, i_rst)
+
 	BEGIN
 		IF i_rst = '1' THEN
 			s_pc <= RESET_ADDRESS;

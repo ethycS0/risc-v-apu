@@ -11,6 +11,7 @@ SRC_FILES = src/alu.vhd \
 	src/alu_control.vhd \
 	src/branch_adder.vhd \
 	src/branch_control.vhd \
+	src/rv32i.vhd \
 	src/decode_control_unit.vhd \
 	src/execution_unit.vhd \
 	src/forwarding_unit.vhd \
@@ -53,7 +54,7 @@ run: elaborate
 # View the corresponding waveform
 view:
 	@echo "Opening waveform $(WAVEFORM_FILE)..."
-	$(GTKWAVE) $(WAVEFORM_FILE)
+	$(GTKWAVE) --dark $(WAVEFORM_FILE)
 
 # Clean up all generated files
 clean:

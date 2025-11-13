@@ -49,7 +49,7 @@ PACKAGE rv32i_pkg IS
         END RECORD t_AluFlags;
 
         TYPE t_PcSrc IS (PC_SRC_PC4, PC_SRC_BRANCH, PC_SRC_JUMP);
-        TYPE t_Forward is (FWD_NONE, FWD_FROM_EX, FWD_FROM_MEM);
+        TYPE t_Forward is (FWD_NONE, FWD_FROM_EX_MEM, FWD_FROM_MEM_WB);
 
 
 END PACKAGE rv32i_pkg;
