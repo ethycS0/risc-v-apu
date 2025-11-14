@@ -15,6 +15,7 @@ SRC_FILES = src/alu.vhd \
 	src/decode_control_unit.vhd \
 	src/execution_unit.vhd \
 	src/forwarding_unit.vhd \
+	src/hazard_detection_unit.vhd \
         src/immediate_constructor.vhd \
 	src/instruction_decode.vhd \
 	src/instruction_fetch.vhd \

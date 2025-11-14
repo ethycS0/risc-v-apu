@@ -1,7 +1,7 @@
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
-USE work.rv32i_pkg.ALL; -- Make sure your package is compiled
+USE work.rv32i_pkg.ALL; 
 
 ENTITY tb_rv32i IS
 END ENTITY tb_rv32i;
@@ -43,46 +43,42 @@ ARCHITECTURE behavioral OF tb_rv32i IS
     TYPE t_memory IS ARRAY(0 TO 63) OF STD_LOGIC_VECTOR(31 DOWNTO 0);
     
         -- Instruction Memory (Program ROM)
+-- Instruction Memory (Program ROM)
+    -- This program tests the forwarding unit and load-use hazards.
+    -- It contains NO NOPs.
     CONSTANT c_INSTR_MEM : t_memory := (
-        -- Test: (5 + 10) - 3 = 12
-        -- This program requires 3 NOPs between a write
-        -- and a read to avoid data hazards.
+        -- Program:
+        -- 1. addi x1, x0, 10           (x1 = 10)
+        -- 2. add x2, x1, x1           (x2 = 10 + 10 = 20)
+        --    -> Tests EX/MEM -> EX forwarding for x1
+        -- 3. sub x3, x2, x1           (x3 = 20 - 10 = 10)
+        --    -> Tests EX/MEM -> EX forwarding for x2
+        --    -> Tests MEM/WB -> EX forwarding for x1
+        -- 4. sw x3, 0(x0)             (Store 10 at Mem[0])
+        --    -> This checks our first result.
+        --
+        -- 5. lw x4, 0(x0)             (Load 10 from Mem[0])
+        -- 6. add x5, x4, x4           (x5 = 10 + 10 = 20)
+        --    -> !!! TESTS LOAD-USE HAZARD !!!
+        --    -> CPU must stall for 1 cycle, then forward from MEM/WB
+        -- 7. sw x5, 4(x0)             (Store 20 at Mem[4])
+        --    -> This checks our second result.
         
-        -- Setup initial values
-        0  => x"00500093", -- 0x00: addi x1, x0, 5
-        1  => x"00A00113", -- 0x04: addi x2, x0, 10
+        -- Assembler output:
+        0  => x"00A00093", -- 1. addi x1, x0, 10
+        1  => x"00108133", -- 2. add  x2, x1, x1
+        2  => x"401101B3", -- 3. sub  x3, x2, x1
+        3  => x"00302023", -- 4. sw   x3, 0(x0)
+        4  => x"00002203", -- 5. lw   x4, 0(x0)
+        5  => x"004202B3", -- 6. add  x5, x4, x4
+        6  => x"00502223", -- 7. sw   x5, 4(x0)
         
-        -- 3-cycle bubble
-        2  => x"00000013", -- 0x08: nop
-        3  => x"00000013", -- 0x0C: nop
-        4  => x"00000013", -- 0x10: nop
-        
-        -- First calculation
-        5  => x"002081B3", -- 0x14: add x3, x1, x2  (x3 = 5 + 10 = 15)
-        6  => x"00300213", -- 0x18: addi x4, x0, 3
-        
-        -- 3-cycle bubble
-        7  => x"00000013", -- 0x1C: nop
-        8  => x"00000013", -- 0x20: nop
-        9  => x"00000013", -- 0x24: nop
-
-        -- Second calculation
-        10 => x"404182B3", -- 0x28: sub x5, x3, x4  (x5 = 15 - 3 = 12)
-        
-        -- 3-cycle bubble
-        11 => x"00000013", -- 0x2C: nop
-        12 => x"00000013", -- 0x30: nop
-        13 => x"00000013", -- 0x34: nop
-        
-        -- Store result
-        14 => x"00502023", -- 0x38: sw x5, 0(x0)
-        
-        -- End
-        15 => x"00000013", -- 0x3C: nop
+        -- Loop
+        7  => x"00000013", -- 8. nop
         
         OTHERS => x"00000013"
-    );
-
+    );    
+    
     -- Data Memory (RAM)
     SIGNAL s_DATA_MEM : t_memory := (OTHERS => (OTHERS => '0'));
 
@@ -170,12 +166,18 @@ BEGIN
         END IF;
     END PROCESS data_mem_proc;
 
-    -- 5. Stimulus and Verification Process
+-- 5. Stimulus and Verification Process
     stim_proc : PROCESS
         -- Variables for checking results
-        VARIABLE v_gotten_result   : STD_LOGIC_VECTOR(31 DOWNTO 0);
-        -- The expected result is 12
-        CONSTANT c_expected_result : STD_LOGIC_VECTOR(31 DOWNTO 0) := x"0000000C";
+        VARIABLE v_gotten_result_1 : STD_LOGIC_VECTOR(31 DOWNTO 0);
+        VARIABLE v_gotten_result_2 : STD_LOGIC_VECTOR(31 DOWNTO 0);
+        VARIABLE v_test_passed     : BOOLEAN := TRUE;
+        
+        -- Expected result 1 (from ALU-ALU forwarding)
+        CONSTANT c_expected_1 : STD_LOGIC_VECTOR(31 DOWNTO 0) := x"0000000A"; -- 10
+        -- Expected result 2 (from Load-Use hazard)
+        CONSTANT c_expected_2 : STD_LOGIC_VECTOR(31 DOWNTO 0) := x"00000014"; -- 20
+        
     BEGIN
         REPORT "TB: Starting simulation.";
         -- Assert Reset
@@ -184,41 +186,70 @@ BEGIN
         s_rst <= '0';
         REPORT "TB: Reset de-asserted. CPU is running.";
 
-        -- This program is 15 instructions long.
-        -- The final 'sw' is at index 14.
-        -- IF(sw) is in C15
-        -- ID(sw) is in C16
-        -- EX(sw) is in C17
-        -- MEM(sw) is in C18 -> Writes to data memory
-        -- Let's wait for 25 cycles just to be safe.
-        
-        WAIT FOR 25 * CLK_PERIOD;
+        -- This program has 7 instructions + 1 load-use stall cycle
+        -- The first 'sw' (inst 4) writes to memory in its MEM stage
+        -- The second 'sw' (inst 7) writes to memory in its MEM stage
+        -- Let's trace the second 'sw' (instruction 7):
+        -- C1: IF(i1)
+        -- ...
+        -- C5: IF(i5:lw)
+        -- C6: IF(i6:add), ID(i5:lw)
+        -- C7: IF(i7:sw),  ID(i6:add), EX(i5:lw)
+        -- C8: IF(nop),    ID(i7:sw),  EX(i6:add)  -> Load-Use Hazard Detected in previous cycle!
+        --    -> Corrected trace:
+        -- C7: IF(i7:sw),  ID(i6:add), EX(i5:lw), MEM(i4:sw) -> 1st result (10) written to Mem[0]
+        -- C8: IF(nop),    ID(i7:sw),  EX(i6:add), MEM(i5:lw) -> Hazard Detected! ID(i6) needs EX(i5) which is 'lw'.
+        -- C9: IF(nop),    ID(i7:sw),  EX(bubble), MEM(i6:add), WB(i5:lw)
+        -- C10: IF(nop),   ID(bubble), EX(i7:sw),  MEM(bubble), WB(i6:add) -> Data forwarded from WB(i5) to EX(i6) in C9
+        -- C11: IF(nop),   ID(nop),    EX(bubble), MEM(i7:sw),  WB(bubble)
+        -- C12: IF(nop),   ID(nop),    EX(nop),    MEM(bubble), WB(i7:sw)  -> 2nd result (20) written to Mem[4]
+
+        -- We must wait at least 13 cycles. Let's wait 30.
+        WAIT FOR 30 * CLK_PERIOD;
 
         REPORT "TB: Checking results...";
         
-        -- Read the result from our simulated Data Memory
-        -- The SW instruction was `sw x5, 0(x0)`, so we check address 0.
-        v_gotten_result := s_DATA_MEM(0);
+        -- Read the results from our simulated Data Memory
+        v_gotten_result_1 := s_DATA_MEM(0); -- Address 0
+        v_gotten_result_2 := s_DATA_MEM(1); -- Address 4 (index 1)
         
         -- Print and Check
-        REPORT "========================================";
-        REPORT "TEST CASE: (5 + 10) - 3 = 12";
-        REPORT "  Expected Result at Mem[0]: x""0000000C""";
+        REPORT "----------------------------------------";
+        REPORT "Part 1: ALU-ALU Forwarding Test";
+        REPORT "  Expected Result at Mem[0]: x""0000000A""";
         
-        IF v_gotten_result = c_expected_result THEN
-            REPORT "  Gotten Result at Mem[0]:   x""0000000C""";
-            REPORT "  TEST PASSED!";
+        IF v_gotten_result_1 = c_expected_1 THEN
+            REPORT "  Gotten Result at Mem[0] (see waveform).";
+            REPORT "  ALU-ALU TEST: PASSED";
         ELSE
-            -- You can use VHDL-2008's to_hstring() here if your simulator supports it
-            REPORT "  Gotten Result is (see waveform).";
-            REPORT "  TEST FAILED!";
-            ASSERT FALSE REPORT "Test Failed" SEVERITY ERROR;
+            REPORT "  Gotten Result at Mem[0] (see waveform).";
+            REPORT "  ALU-ALU TEST: FAILED!";
+            v_test_passed := FALSE;
         END IF;
+        
+        REPORT "----------------------------------------";
+        REPORT "Part 2: Load-Use Hazard Test";
+        REPORT "  Expected Result at Mem[4]: x""00000014""";
+        
+        IF v_gotten_result_2 = c_expected_2 THEN
+            REPORT "  Gotten Result at Mem[4] (see waveform).";
+            REPORT "  LOAD-USE TEST: PASSED";
+        ELSE
+            REPORT "  Gotten Result at Mem[4] (see waveform).";
+            REPORT "  LOAD-USE TEST: FAILED!";
+            v_test_passed := FALSE;
+        END IF;
+        
         REPORT "========================================";
+        
+        IF v_test_passed THEN
+            REPORT "OVERALL RESULT: ALL TESTS PASSED!";
+        ELSE
+            ASSERT FALSE REPORT "One or more forwarding tests FAILED" SEVERITY ERROR;
+        END IF;
 
         REPORT "TB: Simulation finished.";
         WAIT; -- Stop the process
     END PROCESS stim_proc;
-
 
 END ARCHITECTURE behavioral;
