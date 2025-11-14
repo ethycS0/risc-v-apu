@@ -157,84 +157,93 @@ ARCHITECTURE structural OF rv32i IS
 		);
 	END COMPONENT writeback_unit;
 
-	-- || Hazard Detection Unit ||
+	-- Hazards
 	SIGNAL s_hz_pipeline_stall_out : STD_LOGIC;
+	SIGNAL s_pipeline_flush : STD_LOGIC;
 
 	-- || Pipeline Registers || 
 	-- IF Stage Outputs -> to IF/ID Register
-	SIGNAL s_if_pc_out          : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL s_if_pc4_out         : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL s_if_pc_out : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL s_if_pc4_out : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL s_if_instruction_out : STD_LOGIC_VECTOR(31 DOWNTO 0);
 
 	-- ID Stage Inputs <- from IF/ID Register
-	SIGNAL s_id_pc_in          : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL s_id_pc4_in         : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL s_id_pc_in : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL s_id_pc4_in : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL s_id_instruction_in : STD_LOGIC_VECTOR(31 DOWNTO 0);
 
 	-- ID Stage Outputs -> to ID/EX Register
-	SIGNAL s_id_reg_write_out, s_id_mem_read_out, s_id_mem_write_out       : STD_LOGIC;
-	SIGNAL s_id_wb_src_out                                                 : t_WritebackSrc;
-	SIGNAL s_id_alu_src_a_out                                              : t_AluSrc_A;
-	SIGNAL s_id_alu_src_b_out                                              : t_AluSrc_B;
-	SIGNAL s_id_pc_src_ctrl_out                                            : t_PcSrc;
-	SIGNAL s_id_alu_op_type_out                                            : t_ExecControl;
-	SIGNAL s_id_immediate_out                                              : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL s_id_reg_write_out, s_id_mem_read_out, s_id_mem_write_out : STD_LOGIC;
+	SIGNAL s_id_wb_src_out : t_WritebackSrc;
+	SIGNAL s_id_alu_src_a_out : t_AluSrc_A;
+	SIGNAL s_id_alu_src_b_out : t_AluSrc_B;
+	SIGNAL s_id_pc_src_ctrl_out : t_PcSrc;
+	SIGNAL s_id_alu_op_type_out : t_ExecControl;
+	SIGNAL s_id_immediate_out : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL s_id_rs1_data_out, s_id_rs2_data_out, s_id_pc_out, s_id_pc4_out : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL s_id_rd_addr_out, s_id_rs1_addr_out, s_id_rs2_addr_out          : STD_LOGIC_VECTOR(4 DOWNTO 0);
-	SIGNAL s_id_funct3_out                                                 : STD_LOGIC_VECTOR(2 DOWNTO 0);
-	SIGNAL s_id_funct7_out                                                 : STD_LOGIC_VECTOR(6 DOWNTO 0);
+	SIGNAL s_id_rd_addr_out, s_id_rs1_addr_out, s_id_rs2_addr_out : STD_LOGIC_VECTOR(4 DOWNTO 0);
+	SIGNAL s_id_funct3_out : STD_LOGIC_VECTOR(2 DOWNTO 0);
+	SIGNAL s_id_funct7_out : STD_LOGIC_VECTOR(6 DOWNTO 0);
 
 	-- EX Stage Inputs <- from ID/EX Register
-	SIGNAL s_ex_reg_write_in, s_ex_mem_read_in, s_ex_mem_write_in      : STD_LOGIC;
-	SIGNAL s_ex_wb_src_in                                              : t_WritebackSrc;
-	SIGNAL s_ex_alu_src_a_in                                           : t_AluSrc_A;
-	SIGNAL s_ex_alu_src_b_in                                           : t_AluSrc_B;
-	SIGNAL s_ex_pc_src_ctrl_in                                         : t_PcSrc;
-	SIGNAL s_ex_alu_op_type_in                                         : t_ExecControl;
-	SIGNAL s_ex_immediate_in                                           : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL s_ex_reg_write_in, s_ex_mem_read_in, s_ex_mem_write_in : STD_LOGIC;
+	SIGNAL s_ex_wb_src_in : t_WritebackSrc;
+	SIGNAL s_ex_alu_src_a_in : t_AluSrc_A;
+	SIGNAL s_ex_alu_src_b_in : t_AluSrc_B;
+	SIGNAL s_ex_pc_src_ctrl_in : t_PcSrc;
+	SIGNAL s_ex_alu_op_type_in : t_ExecControl;
+	SIGNAL s_ex_immediate_in : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL s_ex_rs1_data_in, s_ex_rs2_data_in, s_ex_pc_in, s_ex_pc4_in : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL s_ex_rd_addr_in, s_ex_rs1_addr_in, s_ex_rs2_addr_in         : STD_LOGIC_VECTOR(4 DOWNTO 0);
-	SIGNAL s_ex_funct3_in                                              : STD_LOGIC_VECTOR(2 DOWNTO 0);
-	SIGNAL s_ex_funct7_in                                              : STD_LOGIC_VECTOR(6 DOWNTO 0);
+	SIGNAL s_ex_rd_addr_in, s_ex_rs1_addr_in, s_ex_rs2_addr_in : STD_LOGIC_VECTOR(4 DOWNTO 0);
+	SIGNAL s_ex_funct3_in : STD_LOGIC_VECTOR(2 DOWNTO 0);
+	SIGNAL s_ex_funct7_in : STD_LOGIC_VECTOR(6 DOWNTO 0);
 
 	-- EX Stage Outputs -> to EX/MEM Register
-	SIGNAL s_ex_branch_taken_out                                     : STD_LOGIC;
-	SIGNAL s_ex_pc_target_addr_out                                   : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL s_ex_alu_result_out, s_ex_rs2_data_out, s_ex_pc4_out      : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL s_ex_branch_taken_out : STD_LOGIC;
+	SIGNAL s_ex_pc_target_addr_out : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL s_ex_alu_result_out, s_ex_rs2_data_out, s_ex_pc4_out : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL s_ex_mem_read_out, s_ex_mem_write_out, s_ex_reg_write_out : STD_LOGIC;
-	SIGNAL s_ex_wb_src_out                                           : t_WritebackSrc;
-	SIGNAL s_ex_funct3_out                                           : STD_LOGIC_VECTOR(2 DOWNTO 0);
-	SIGNAL s_ex_rd_addr_out                                          : STD_LOGIC_VECTOR(4 DOWNTO 0);
-	SIGNAL s_ex_is_branch_out                                        : STD_LOGIC;
+	SIGNAL s_ex_wb_src_out : t_WritebackSrc;
+	SIGNAL s_ex_funct3_out : STD_LOGIC_VECTOR(2 DOWNTO 0);
+	SIGNAL s_ex_rd_addr_out : STD_LOGIC_VECTOR(4 DOWNTO 0);
 
 	-- MEM Stage Inputs <- from EX/MEM Register
-	SIGNAL s_mem_alu_result_in, s_mem_rs2_data_in, s_mem_pc4_in      : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL s_mem_alu_result_in, s_mem_rs2_data_in, s_mem_pc4_in : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL s_mem_mem_read_in, s_mem_mem_write_in, s_mem_reg_write_in : STD_LOGIC;
-	SIGNAL s_mem_wb_src_in                                           : t_WritebackSrc;
-	SIGNAL s_mem_funct3_in                                           : STD_LOGIC_VECTOR(2 DOWNTO 0);
-	SIGNAL s_mem_rd_addr_in                                          : STD_LOGIC_VECTOR(4 DOWNTO 0);
+	SIGNAL s_mem_wb_src_in : t_WritebackSrc;
+	SIGNAL s_mem_funct3_in : STD_LOGIC_VECTOR(2 DOWNTO 0);
+	SIGNAL s_mem_rd_addr_in : STD_LOGIC_VECTOR(4 DOWNTO 0);
 
 	-- MEM Stage Outputs -> to MEM/WB Register
 	SIGNAL s_mem_alu_result_out, s_mem_pc4_out, s_mem_final_read_data_out : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL s_mem_wb_src_out                                               : t_WritebackSrc;
-	SIGNAL s_mem_reg_write_out                                            : STD_LOGIC;
-	SIGNAL s_mem_rd_addr_out                                              : STD_LOGIC_VECTOR(4 DOWNTO 0);
+	SIGNAL s_mem_wb_src_out : t_WritebackSrc;
+	SIGNAL s_mem_reg_write_out : STD_LOGIC;
+	SIGNAL s_mem_rd_addr_out : STD_LOGIC_VECTOR(4 DOWNTO 0);
 
 	-- WB Stage Inputs <- from MEM/WB Register
 	SIGNAL s_wb_alu_result_in, s_wb_pc4_in, s_wb_final_read_data_in : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL s_wb_wb_src_in                                           : t_WritebackSrc;
-	SIGNAL s_wb_reg_write_in                                        : STD_LOGIC;
-	SIGNAL s_wb_rd_addr_in                                          : STD_LOGIC_VECTOR(4 DOWNTO 0);
+	SIGNAL s_wb_wb_src_in : t_WritebackSrc;
+	SIGNAL s_wb_reg_write_in : STD_LOGIC;
+	SIGNAL s_wb_rd_addr_in : STD_LOGIC_VECTOR(4 DOWNTO 0);
 
 	-- WB Stage Outputs
 	SIGNAL s_wb_reg_write_en_out : STD_LOGIC;
-	SIGNAL s_wb_rd_addr_out      : STD_LOGIC_VECTOR(4 DOWNTO 0);
-	SIGNAL s_wb_rd_data_out      : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL s_wb_rd_addr_out : STD_LOGIC_VECTOR(4 DOWNTO 0);
+	SIGNAL s_wb_rd_data_out : STD_LOGIC_VECTOR(31 DOWNTO 0);
 
 	-- Final PC source control
 	SIGNAL s_final_pc_src_ctrl : t_PcSrc;
 
 BEGIN
+
+	s_pipeline_flush <= '1' WHEN (s_ex_branch_taken_out = '1') OR
+		(s_ex_pc_src_ctrl_in = PC_SRC_JUMP)
+		ELSE '0';
+
+	-- PC Source Control Logic
+	s_final_pc_src_ctrl <= PC_SRC_JUMP WHEN (s_ex_pc_src_ctrl_in = PC_SRC_JUMP) ELSE
+		PC_SRC_BRANCH WHEN (s_ex_branch_taken_out = '1') ELSE
+		s_id_pc_src_ctrl_out;
 
 	U_HZ_UNIT : hazard_detection_unit
 	PORT MAP(
@@ -261,18 +270,22 @@ BEGIN
 		o_pc_plus_4   => s_if_pc4_out
 	);
 
-	-- IF/ID Pipeline Register 
 	IF_ID_Register_Proc : PROCESS (i_clk, i_rst)
 	BEGIN
 		IF i_rst = '1' THEN
-			s_id_pc_in          <= (OTHERS => '0');
-			s_id_pc4_in         <= (OTHERS => '0');
+			s_id_pc_in <= (OTHERS => '0');
+			s_id_pc4_in <= (OTHERS => '0');
 			s_id_instruction_in <= X"00000013";
 		ELSIF rising_edge(i_clk) THEN
-			IF (s_hz_pipeline_stall_out = '0') THEN
-				s_id_pc_in          <= s_if_pc_out;
-				s_id_pc4_in         <= s_if_pc4_out;
+			IF (s_pipeline_flush = '1') THEN
+				s_id_pc_in <= (OTHERS => '0');
+				s_id_pc4_in <= (OTHERS => '0');
+				s_id_instruction_in <= X"00000013";
+			ELSIF (s_hz_pipeline_stall_out = '0') THEN
+				s_id_pc_in <= s_if_pc_out;
+				s_id_pc4_in <= s_if_pc4_out;
 				s_id_instruction_in <= s_if_instruction_out;
+
 			END IF;
 		END IF;
 	END PROCESS IF_ID_Register_Proc;
@@ -312,63 +325,63 @@ BEGIN
 	ID_EX_Register_Proc : PROCESS (i_clk, i_rst)
 	BEGIN
 		IF i_rst = '1' THEN
-			s_ex_reg_write_in   <= '0';
-			s_ex_mem_read_in    <= '0';
-			s_ex_mem_write_in   <= '0';
-			s_ex_wb_src_in      <= WB_SRC_ALU;
-			s_ex_alu_src_a_in   <= ALU_A_RS1;
-			s_ex_alu_src_b_in   <= ALU_B_RS2;
+			s_ex_reg_write_in <= '0';
+			s_ex_mem_read_in <= '0';
+			s_ex_mem_write_in <= '0';
+			s_ex_wb_src_in <= WB_SRC_ALU;
+			s_ex_alu_src_a_in <= ALU_A_RS1;
+			s_ex_alu_src_b_in <= ALU_B_RS2;
 			s_ex_pc_src_ctrl_in <= PC_SRC_PC4;
 			s_ex_alu_op_type_in <= OP_R_TYPE;
-			s_ex_immediate_in   <= (OTHERS => '0');
-			s_ex_rs1_data_in    <= (OTHERS => '0');
-			s_ex_rs2_data_in    <= (OTHERS => '0');
-			s_ex_pc_in          <= (OTHERS => '0');
-			s_ex_pc4_in         <= (OTHERS => '0');
-			s_ex_rd_addr_in     <= (OTHERS => '0');
-			s_ex_rs1_addr_in    <= (OTHERS => '0');
-			s_ex_rs2_addr_in    <= (OTHERS => '0');
-			s_ex_funct3_in      <= (OTHERS => '0');
-			s_ex_funct7_in      <= (OTHERS => '0');
+			s_ex_immediate_in <= (OTHERS => '0');
+			s_ex_rs1_data_in <= (OTHERS => '0');
+			s_ex_rs2_data_in <= (OTHERS => '0');
+			s_ex_pc_in <= (OTHERS => '0');
+			s_ex_pc4_in <= (OTHERS => '0');
+			s_ex_rd_addr_in <= (OTHERS => '0');
+			s_ex_rs1_addr_in <= (OTHERS => '0');
+			s_ex_rs2_addr_in <= (OTHERS => '0');
+			s_ex_funct3_in <= (OTHERS => '0');
+			s_ex_funct7_in <= (OTHERS => '0');
 		ELSIF rising_edge(i_clk) THEN
-			IF (s_hz_pipeline_stall_out = '1') THEN
-				s_ex_reg_write_in   <= '0';
-				s_ex_mem_read_in    <= '0';
-				s_ex_mem_write_in   <= '0';
-				s_ex_wb_src_in      <= WB_SRC_ALU;
-				s_ex_alu_src_a_in   <= ALU_A_RS1;
-				s_ex_alu_src_b_in   <= ALU_B_RS2;
+			IF (s_hz_pipeline_stall_out = '1') OR (s_pipeline_flush = '1') THEN
+				s_ex_reg_write_in <= '0';
+				s_ex_mem_read_in <= '0';
+				s_ex_mem_write_in <= '0';
+				s_ex_wb_src_in <= WB_SRC_ALU;
+				s_ex_alu_src_a_in <= ALU_A_RS1;
+				s_ex_alu_src_b_in <= ALU_B_RS2;
 				s_ex_pc_src_ctrl_in <= PC_SRC_PC4;
 				s_ex_alu_op_type_in <= OP_R_TYPE;
-				s_ex_immediate_in   <= (OTHERS => '0');
-				s_ex_rs1_data_in    <= (OTHERS => '0');
-				s_ex_rs2_data_in    <= (OTHERS => '0');
-				s_ex_pc_in          <= (OTHERS => '0');
-				s_ex_pc4_in         <= (OTHERS => '0');
-				s_ex_rd_addr_in     <= (OTHERS => '0');
-				s_ex_rs1_addr_in    <= (OTHERS => '0');
-				s_ex_rs2_addr_in    <= (OTHERS => '0');
-				s_ex_funct3_in      <= (OTHERS => '0');
-				s_ex_funct7_in      <= (OTHERS => '0');
+				s_ex_immediate_in <= (OTHERS => '0');
+				s_ex_rs1_data_in <= (OTHERS => '0');
+				s_ex_rs2_data_in <= (OTHERS => '0');
+				s_ex_pc_in <= (OTHERS => '0');
+				s_ex_pc4_in <= (OTHERS => '0');
+				s_ex_rd_addr_in <= (OTHERS => '0');
+				s_ex_rs1_addr_in <= (OTHERS => '0');
+				s_ex_rs2_addr_in <= (OTHERS => '0');
+				s_ex_funct3_in <= (OTHERS => '0');
+				s_ex_funct7_in <= (OTHERS => '0');
 			ELSE
-				s_ex_reg_write_in   <= s_id_reg_write_out;
-				s_ex_mem_read_in    <= s_id_mem_read_out;
-				s_ex_mem_write_in   <= s_id_mem_write_out;
-				s_ex_wb_src_in      <= s_id_wb_src_out;
-				s_ex_alu_src_a_in   <= s_id_alu_src_a_out;
-				s_ex_alu_src_b_in   <= s_id_alu_src_b_out;
+				s_ex_reg_write_in <= s_id_reg_write_out;
+				s_ex_mem_read_in <= s_id_mem_read_out;
+				s_ex_mem_write_in <= s_id_mem_write_out;
+				s_ex_wb_src_in <= s_id_wb_src_out;
+				s_ex_alu_src_a_in <= s_id_alu_src_a_out;
+				s_ex_alu_src_b_in <= s_id_alu_src_b_out;
 				s_ex_pc_src_ctrl_in <= s_id_pc_src_ctrl_out;
 				s_ex_alu_op_type_in <= s_id_alu_op_type_out;
-				s_ex_immediate_in   <= s_id_immediate_out;
-				s_ex_rs1_data_in    <= s_id_rs1_data_out;
-				s_ex_rs2_data_in    <= s_id_rs2_data_out;
-				s_ex_pc_in          <= s_id_pc_out;
-				s_ex_pc4_in         <= s_id_pc4_out;
-				s_ex_rd_addr_in     <= s_id_rd_addr_out;
-				s_ex_rs1_addr_in    <= s_id_rs1_addr_out;
-				s_ex_rs2_addr_in    <= s_id_rs2_addr_out;
-				s_ex_funct3_in      <= s_id_funct3_out;
-				s_ex_funct7_in      <= s_id_funct7_out;
+				s_ex_immediate_in <= s_id_immediate_out;
+				s_ex_rs1_data_in <= s_id_rs1_data_out;
+				s_ex_rs2_data_in <= s_id_rs2_data_out;
+				s_ex_pc_in <= s_id_pc_out;
+				s_ex_pc4_in <= s_id_pc4_out;
+				s_ex_rd_addr_in <= s_id_rd_addr_out;
+				s_ex_rs1_addr_in <= s_id_rs1_addr_out;
+				s_ex_rs2_addr_in <= s_id_rs2_addr_out;
+				s_ex_funct3_in <= s_id_funct3_out;
+				s_ex_funct7_in <= s_id_funct7_out;
 			END IF;
 		END IF;
 	END PROCESS ID_EX_Register_Proc;
@@ -394,13 +407,10 @@ BEGIN
 		i_rd_addr     => s_ex_rd_addr_in,
 		i_rs1_addr    => s_ex_rs1_addr_in,
 		i_rs2_addr    => s_ex_rs2_addr_in,
-
 		i_rd_addr_ex_mem => s_mem_rd_addr_in,
 		i_rd_ex_mem      => s_mem_alu_result_in,
-
 		i_rd_addr_mem_wb => s_wb_rd_addr_in,
 		i_rd_mem_wb      => s_wb_rd_data_out,
-
 		o_branch_taken   => s_ex_branch_taken_out,
 		o_pc_target_addr => s_ex_pc_target_addr_out,
 		o_alu_result     => s_ex_alu_result_out,
@@ -414,33 +424,29 @@ BEGIN
 		o_rd_addr        => s_ex_rd_addr_out
 	);
 
-	-- PC Source Control Logic
-	s_ex_is_branch_out  <= '1' WHEN s_id_pc_src_ctrl_out = PC_SRC_BRANCH ELSE '0';
-	s_final_pc_src_ctrl <= PC_SRC_BRANCH WHEN (s_ex_is_branch_out = '1' AND s_ex_branch_taken_out = '1') ELSE s_id_pc_src_ctrl_out;
-
 	-- EX/MEM Pipeline Register
 	EX_MEM_Register_Proc : PROCESS (i_clk, i_rst)
 	BEGIN
 		IF i_rst = '1' THEN
 			s_mem_alu_result_in <= (OTHERS => '0');
-			s_mem_rs2_data_in   <= (OTHERS => '0');
-			s_mem_pc4_in        <= (OTHERS => '0');
-			s_mem_funct3_in     <= (OTHERS => '0');
-			s_mem_mem_read_in   <= '0';
-			s_mem_mem_write_in  <= '0';
-			s_mem_reg_write_in  <= '0';
-			s_mem_wb_src_in     <= WB_SRC_ALU;
-			s_mem_rd_addr_in    <= (OTHERS => '0');
+			s_mem_rs2_data_in <= (OTHERS => '0');
+			s_mem_pc4_in <= (OTHERS => '0');
+			s_mem_funct3_in <= (OTHERS => '0');
+			s_mem_mem_read_in <= '0';
+			s_mem_mem_write_in <= '0';
+			s_mem_reg_write_in <= '0';
+			s_mem_wb_src_in <= WB_SRC_ALU;
+			s_mem_rd_addr_in <= (OTHERS => '0');
 		ELSIF rising_edge(i_clk) THEN
 			s_mem_alu_result_in <= s_ex_alu_result_out;
-			s_mem_rs2_data_in   <= s_ex_rs2_data_out;
-			s_mem_pc4_in        <= s_ex_pc4_out;
-			s_mem_funct3_in     <= s_ex_funct3_out;
-			s_mem_mem_read_in   <= s_ex_mem_read_out;
-			s_mem_mem_write_in  <= s_ex_mem_write_out;
-			s_mem_reg_write_in  <= s_ex_reg_write_out;
-			s_mem_wb_src_in     <= s_ex_wb_src_out;
-			s_mem_rd_addr_in    <= s_ex_rd_addr_out;
+			s_mem_rs2_data_in <= s_ex_rs2_data_out;
+			s_mem_pc4_in <= s_ex_pc4_out;
+			s_mem_funct3_in <= s_ex_funct3_out;
+			s_mem_mem_read_in <= s_ex_mem_read_out;
+			s_mem_mem_write_in <= s_ex_mem_write_out;
+			s_mem_reg_write_in <= s_ex_reg_write_out;
+			s_mem_wb_src_in <= s_ex_wb_src_out;
+			s_mem_rd_addr_in <= s_ex_rd_addr_out;
 		END IF;
 	END PROCESS EX_MEM_Register_Proc;
 
@@ -474,18 +480,18 @@ BEGIN
 	BEGIN
 		IF i_rst = '1' THEN
 			s_wb_final_read_data_in <= (OTHERS => '0');
-			s_wb_alu_result_in      <= (OTHERS => '0');
-			s_wb_pc4_in             <= (OTHERS => '0');
-			s_wb_reg_write_in       <= '0';
-			s_wb_wb_src_in          <= WB_SRC_ALU;
-			s_wb_rd_addr_in         <= (OTHERS => '0');
+			s_wb_alu_result_in <= (OTHERS => '0');
+			s_wb_pc4_in <= (OTHERS => '0');
+			s_wb_reg_write_in <= '0';
+			s_wb_wb_src_in <= WB_SRC_ALU;
+			s_wb_rd_addr_in <= (OTHERS => '0');
 		ELSIF rising_edge(i_clk) THEN
 			s_wb_final_read_data_in <= s_mem_final_read_data_out;
-			s_wb_alu_result_in      <= s_mem_alu_result_out;
-			s_wb_pc4_in             <= s_mem_pc4_out;
-			s_wb_reg_write_in       <= s_mem_reg_write_out;
-			s_wb_wb_src_in          <= s_mem_wb_src_out;
-			s_wb_rd_addr_in         <= s_mem_rd_addr_out;
+			s_wb_alu_result_in <= s_mem_alu_result_out;
+			s_wb_pc4_in <= s_mem_pc4_out;
+			s_wb_reg_write_in <= s_mem_reg_write_out;
+			s_wb_wb_src_in <= s_mem_wb_src_out;
+			s_wb_rd_addr_in <= s_mem_rd_addr_out;
 		END IF;
 	END PROCESS MEM_WB_Register_Proc;
 
