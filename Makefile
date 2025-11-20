@@ -31,6 +31,7 @@ TB ?= tb_core
 VHDL_TESTBENCH = tb/$(TB).vhd
 TOP_LEVEL = $(TB)
 WAVEFORM_FILE = sim/$(TOP_LEVEL).ghw
+GHDL_FLAGS = --std=08
 
 # --- Targets ---
 # Default target
@@ -39,18 +40,18 @@ all: run
 # Compile all VHDL source and the specified testbench
 compile:
 	@echo "Compiling VHDL sources..."
-	$(GHDL) -a $(PKG_FILES) $(SRC_FILES) $(VHDL_TESTBENCH)
+	$(GHDL) -a $(GHDL_FLAGS) $(PKG_FILES) $(SRC_FILES) $(VHDL_TESTBENCH)
 
 # Elaborate the specified testbench
 elaborate: compile
 	@echo "Elaborating design for $(TOP_LEVEL)..."
-	$(GHDL) -e $(TOP_LEVEL)
+	$(GHDL) -e $(GHDL_FLAGS) $(TOP_LEVEL)
 
 # Run the simulation
 run: elaborate
 	@echo "Running simulation for $(TOP_LEVEL)..."
 	@mkdir -p sim
-	$(GHDL) -r $(TOP_LEVEL) --wave=$(WAVEFORM_FILE)
+	$(GHDL) -r $(GHDL_FLAGS) $(TOP_LEVEL) --wave=$(WAVEFORM_FILE)
 
 # View the corresponding waveform
 view:
