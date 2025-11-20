@@ -63,14 +63,14 @@ ARCHITECTURE structural OF execution_unit IS
 		);
 	END COMPONENT alu;
 
-	COMPONENT alu_control_unit IS
+	COMPONENT alu_control IS
 		PORT (
 			i_alu_op_type : IN  t_ExecControl;
 			i_funct3      : IN  STD_LOGIC_VECTOR(2 DOWNTO 0);
 			i_funct7      : IN  STD_LOGIC_VECTOR(6 DOWNTO 0);
 			o_alu_command : OUT t_AluOpcodes
 		);
-	END COMPONENT alu_control_unit;
+	END COMPONENT alu_control;
 
 	COMPONENT branch_adder IS
 		PORT (
@@ -132,7 +132,7 @@ BEGIN
 		i_immediate WHEN OTHERS; -- ALU_B_IMM
 
 	-- Instantiate ALU Control Unit
-	U_ALU_CONTROL : alu_control_unit
+	U_ALU_CONTROL : alu_control
 	PORT MAP(
 		i_alu_op_type => i_alu_op_type,
 		i_funct3      => i_funct3,

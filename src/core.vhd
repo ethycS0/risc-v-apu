@@ -3,7 +3,7 @@ USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
 USE work.rv32i_pkg.ALL;
 
-ENTITY rv32i IS
+ENTITY core IS
 	PORT (
 		i_clk : IN STD_LOGIC;
 		i_rst : IN STD_LOGIC;
@@ -19,9 +19,9 @@ ENTITY rv32i IS
 		o_data_write_en : OUT STD_LOGIC;
 		o_data_byte_en  : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
 	);
-END ENTITY rv32i;
+END ENTITY core;
 
-ARCHITECTURE structural OF rv32i IS
+ARCHITECTURE structural OF core IS
 
 	COMPONENT hazard_detection_unit IS
 		PORT (

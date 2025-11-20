@@ -3,7 +3,7 @@ USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
 USE work.rv32i_pkg.ALL;
 
-ENTITY alu_control_unit IS
+ENTITY alu_control IS
 	PORT (
 		i_alu_op_type : IN t_ExecControl;
 		i_funct3 : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
@@ -11,9 +11,9 @@ ENTITY alu_control_unit IS
 
 		o_alu_command : OUT t_AluOpcodes
 	);
-END ENTITY alu_control_unit;
+END ENTITY alu_control;
 
-ARCHITECTURE behavioral OF alu_control_unit IS
+ARCHITECTURE behavioral OF alu_control IS
 BEGIN
 	PROCESS (i_alu_op_type, i_funct3, i_funct7)
 	BEGIN

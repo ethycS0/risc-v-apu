@@ -1,7 +1,7 @@
 {
   description = "RISC-V VHDL Development Environment with GHDL and GTKWave";
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.05";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
   };
   outputs =
@@ -14,6 +14,13 @@
       system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
+        riscvPkgs =
+          (import nixpkgs {
+            inherit system;
+            crossSystem = {
+              config = "riscv32-unknown-linux-gnu";
+            };
+          }).buildPackages;
       in
       {
         devShells.default = pkgs.mkShell {
@@ -24,16 +31,24 @@
             gtkwave # Waveform viewer
             # Synthesis tools (for future use)
             yosys # Logic synthesizer
-            # Development tools
+            yosys-ghdl
             gnumake # Build automation
-            python3 # Scripting support
-            python3Packages.matplotlib # For plotting/analysis
-            python3Packages.numpy # Numerical computing
+            python312
+            python312Packages.riscof
+            python312Packages.distutils
+
             # Documentation tools
             pandoc # Document conversion
             graphviz # Diagram generation
+            netlistsvg
 
             texlive.combined.scheme-full
+
+            riscvPkgs.gcc
+            riscvPkgs.gdb
+
+            sail-riscv
+            spike
           ];
           shellHook = ''
             if command -v zsh &> /dev/null; then

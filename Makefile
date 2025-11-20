@@ -11,7 +11,7 @@ SRC_FILES = src/alu.vhd \
 	src/alu_control.vhd \
 	src/branch_adder.vhd \
 	src/branch_control.vhd \
-	src/rv32i.vhd \
+	src/core.vhd \
 	src/decode_control_unit.vhd \
 	src/execution_unit.vhd \
 	src/forwarding_unit.vhd \
@@ -25,7 +25,7 @@ SRC_FILES = src/alu.vhd \
 
 # The testbench to run, can be overridden from the command line
 # e.g., make run TB=tb_alu
-TB ?= tb_register_file
+TB ?= tb_core
 
 # --- File Definitions (based on TB variable) ---
 VHDL_TESTBENCH = tb/$(TB).vhd
