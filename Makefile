@@ -31,7 +31,7 @@ TB ?= tb_core
 VHDL_TESTBENCH = tb/$(TB).vhd
 TOP_LEVEL = $(TB)
 WAVEFORM_FILE = sim/$(TOP_LEVEL).ghw
-GHDL_FLAGS = --std=08
+GHDL_FLAGS = --std=08 -frelaxed
 
 # --- Targets ---
 # Default target
@@ -60,7 +60,8 @@ view:
 
 # Clean up all generated files
 clean:
-	@echo "Cleaning up..."
+	@echo "Cleaning up Root..."
 	$(GHDL) --clean
-	rm -rf sim work-obj93.cf
-
+	rm -rf sim work-obj08.cf imem.hex
+	@echo "Cleaning up Software..."
+	$(MAKE) -C software/asm clean
