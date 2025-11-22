@@ -10,11 +10,8 @@ ENTITY instruction_fetch_unit IS
 		i_stall : IN STD_LOGIC;
 
 		-- Control signal for selecting the next PC source
-		i_pc_src : IN t_PcSrc;
-
-		-- Address inputs from different pipeline stages
-		i_branch_addr : IN STD_LOGIC_VECTOR(MEMORY_ADDR_WIDTH - 1 DOWNTO 0);
-		i_jump_addr : IN STD_LOGIC_VECTOR(MEMORY_ADDR_WIDTH - 1 DOWNTO 0); 
+                i_pc_redirect : IN STD_LOGIC;
+                i_target_addr : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 
 		-- Memory Interface
 		o_instr_addr : OUT STD_LOGIC_VECTOR(MEMORY_ADDR_WIDTH - 1 DOWNTO 0);
@@ -41,11 +38,9 @@ BEGIN
 	s_pc_plus_4 <= STD_LOGIC_VECTOR(unsigned(s_pc) + 4);
 
         -- MUX from PC selection
-	WITH i_pc_src SELECT
-		s_next_pc <= s_pc_plus_4 WHEN PC_SRC_PC4,
-		i_branch_addr WHEN PC_SRC_BRANCH,
-		i_jump_addr WHEN PC_SRC_JUMP,
-		s_pc WHEN OTHERS; 
+        WITH i_pc_redirect SELECT 
+                s_next_pc <= i_target_addr WHEN '1',
+                             s_pc_plus_4 WHEN OTHERS;
 
 	-- Sequential logic for updating the PC register
 	pc_logic : PROCESS (i_clk, i_rst)

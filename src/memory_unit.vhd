@@ -67,23 +67,23 @@ BEGIN
 			END IF;
 
 			CASE i_funct3_ex IS
-					-- LW (Load Word): No extension needed, pass the full 32-bit word.
+                                -- LW (Load Word): No extension needed, pass the full 32-bit word.
 				WHEN "010" =>
 					o_final_read_data <= i_mem_read_data;
 
-					-- LH (Load Half-word, signed): Sign-extend the 16-bit value to 32 bits.
+                                -- LH (Load Half-word, signed): Sign-extend the 16-bit value to 32 bits.
 				WHEN "001" =>
 					o_final_read_data <= STD_LOGIC_VECTOR(resize(signed(half_val), 32));
 
-					-- LB (Load Byte, signed): Sign-extend the 8-bit value to 32 bits.
+                                -- LB (Load Byte, signed): Sign-extend the 8-bit value to 32 bits.
 				WHEN "000" =>
 					o_final_read_data <= STD_LOGIC_VECTOR(resize(signed(byte_val), 32));
 
-					-- LHU (Load Half-word, unsigned): Zero-extend the 16-bit value to 32 bits.
+                                -- LHU (Load Half-word, unsigned): Zero-extend the 16-bit value to 32 bits.
 				WHEN "101" =>
 					o_final_read_data <= STD_LOGIC_VECTOR(resize(unsigned(half_val), 32));
 
-					-- LBU (Load Byte, unsigned): Zero-extend the 8-bit value to 32 bits.
+                                -- LBU (Load Byte, unsigned): Zero-extend the 8-bit value to 32 bits.
 				WHEN "100" =>
 					o_final_read_data <= STD_LOGIC_VECTOR(resize(unsigned(byte_val), 32));
 
@@ -97,7 +97,6 @@ BEGIN
 
 	o_mem_addr <= i_result_rd_ex;
 	o_mem_write_en <= i_mem_write_ex;
-	o_mem_write_data <= i_rs2_data_ex;
 
 	store_logic : PROCESS (i_mem_write_ex, i_funct3_ex, i_result_rd_ex, i_rs2_data_ex)
 	BEGIN

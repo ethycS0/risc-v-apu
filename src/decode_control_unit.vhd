@@ -16,7 +16,6 @@ ENTITY decode_control_unit IS
 		o_src_a : OUT t_SrcA;
 		o_src_b : OUT t_SrcB;
 		o_wb_src : OUT t_WritebackSrc;
-		o_pc_src : OUT t_PcSrc; 
 
 		-- Intermediate ALUOp type
                 o_unit_en_type : OUT t_OperationUnit;
@@ -28,14 +27,12 @@ ARCHITECTURE behavioral OF decode_control_unit IS
 BEGIN
 	decode_process : PROCESS (i_instruction)
 	BEGIN
-		-- Default assignments for a "NOP" or safe state
 		o_reg_write <= '0';
 		o_mem_read <= '0';
 		o_mem_write <= '0';
 		o_src_a <= SRC_A_RS1;
 		o_src_b <= SRC_B_RS2;
 		o_wb_src <= WB_SRC_EX_RESULT;
-		o_pc_src <= PC_SRC_PC4; 
 		o_ex_op_type <= OP_ILLEGAL;
                 o_unit_en_type <= UNIT_ALU;
 
@@ -58,7 +55,6 @@ BEGIN
                         -- J-Type: JAL
 			WHEN "1101111" =>
 				o_reg_write <= '1';
-				o_pc_src <= PC_SRC_JUMP;
 				o_src_a <= SRC_A_PC;
 				o_src_b <= SRC_B_IMM;
 				o_wb_src <= WB_SRC_PC4;
@@ -67,7 +63,6 @@ BEGIN
                         -- I-Type: JALR
 			WHEN "1100111" =>
 				o_reg_write <= '1';
-				o_pc_src <= PC_SRC_JUMP;
 				o_src_a <= SRC_A_RS1;
 				o_src_b <= SRC_B_IMM;
 				o_wb_src <= WB_SRC_PC4;
@@ -75,7 +70,6 @@ BEGIN
 
                         -- B-Type: Branches
 			WHEN "1100011" =>
-				o_pc_src <= PC_SRC_BRANCH;
 				o_src_a <= SRC_A_RS1;
 				o_src_b <= SRC_B_RS2;
 				o_ex_op_type <= OP_BRANCH;

@@ -103,7 +103,7 @@ BEGIN
 	END PROCESS;
 
 	-- CHANGE 3: Read process reads from Shared Variable
-	p_memory_read : PROCESS (s_instr_addr, s_data_addr)
+	p_memory_read : PROCESS (s_instr_addr, s_data_addr, s_clk)
 		VARIABLE v_instr_idx : INTEGER;
 		VARIABLE v_data_idx : INTEGER;
 	BEGIN

@@ -3,6 +3,7 @@ USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
 USE work.rv32i_pkg.ALL;
 
+-- Handle MRET 
 ENTITY csr_unit IS
 	PORT (
 		i_clk : IN STD_LOGIC;
@@ -16,7 +17,12 @@ ENTITY csr_unit IS
 		i_csr_addr : IN STD_LOGIC_VECTOR(CSR_ADDR_WIDTH - 1 DOWNTO 0);
 		i_csr_data : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 
+                i_trap_triggered : IN STD_LOGIC;
+                i_pc_at_trap : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+                i_cause_code : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+
 		-- Outputs 
+                o_mtvec : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		o_read_data : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
 	);
 END ENTITY csr_unit;
@@ -24,7 +30,8 @@ END ENTITY csr_unit;
 ARCHITECTURE behavioral OF csr_unit IS
 	SIGNAL s_selected_reg_val : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL s_new_csr_value : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	-- || Internal Register ||
+
+	-- || Internal Registers ||
 
 	-- Status and Information
 	SIGNAL r_misa : STD_LOGIC_VECTOR(31 DOWNTO 0) := x"00000000"; -- x301: Set to RV32I later 
@@ -60,6 +67,8 @@ BEGIN
 			WHEN OTHERS => s_selected_reg_val <= (OTHERS => '0');
 		END CASE;
 	END PROCESS p_csr_select;
+
+
 	p_csr_atomic_logic : PROCESS (s_selected_reg_val, i_csr_data, i_csr_op)
 	BEGIN
 		CASE i_csr_op IS
@@ -73,6 +82,8 @@ BEGIN
 				s_new_csr_value <= s_selected_reg_val;
 		END CASE;
 	END PROCESS p_csr_atomic_logic;
+
+
 	p_csr_registers : PROCESS (i_clk, i_rst)
 	BEGIN
 		IF i_rst = '1' THEN
@@ -88,7 +99,16 @@ BEGIN
 			r_minstret <= (OTHERS => '0');
 
 		ELSIF rising_edge(i_clk) THEN
-			IF i_write_en = '1' THEN
+                        IF i_trap_triggered = '1' THEN 
+                                r_mepc <= i_pc_at_trap;
+                                r_mcause <= i_cause_code;
+
+                                r_mstatus(3) <= '0';
+                                r_mstatus(7) <= r_mstatus(3);
+                        ELSIF (i_csr_addr = x"341" AND i_write_en = '0' AND i_csr_op = CSR_ILLEGAL) THEN 
+                                r_mstatus(3) <= r_mstatus(7); 
+                                r_mstatus(7) <= '1';
+			ELSIF i_write_en = '1' THEN
 				CASE i_csr_addr IS
 					WHEN x"301" => NULL;
 					WHEN x"F11" => NULL;
@@ -117,6 +137,7 @@ BEGIN
 		END IF;
 	END PROCESS p_csr_registers;
         
+        o_mtvec <= r_mtvec;
 	o_read_data <= s_selected_reg_val;
 
 END ARCHITECTURE behavioral;

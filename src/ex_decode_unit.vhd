@@ -7,11 +7,11 @@ ENTITY ex_decode_unit IS
 	PORT (
 		i_ex_op_type : IN t_ExecControl;
 		i_funct3     : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
-		i_funct7     : IN STD_LOGIC_VECTOR(6 DOWNTO 0);
+		i_funct12     : IN STD_LOGIC_VECTOR(11 DOWNTO 0);
 		i_src_a_data : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 
-		o_trap         : OUT STD_LOGIC;
 		o_csr_write_en : OUT STD_LOGIC;
+                o_trap_type : OUT t_TrapType;
 		o_alu_command : OUT t_AluOpcodes;
 		o_csr_command : OUT t_CsrOpcodes
 
@@ -19,13 +19,16 @@ ENTITY ex_decode_unit IS
 END ENTITY ex_decode_unit;
 
 ARCHITECTURE behavioral OF ex_decode_unit IS
+        SIGNAL funct7 : STD_LOGIC_VECTOR(6 DOWNTO 0);
 BEGIN
-	PROCESS (i_ex_op_type, i_funct3, i_funct7, i_src_a_data)
+        funct7 <= i_funct12(11 DOWNTO 5);
+
+	PROCESS (i_ex_op_type, i_funct3, funct7, i_funct12, i_src_a_data)
 		VARIABLE v_src_is_zero : BOOLEAN;
 	BEGIN
 		o_alu_command <= ALU_ADD;
 		o_csr_command <= CSR_ILLEGAL;
-		o_trap <= '0';
+		o_trap_type <= TRAP_NONE;
 		o_csr_write_en <= '0';
 
 		IF unsigned(i_src_a_data) = 0 THEN
@@ -47,13 +50,13 @@ BEGIN
 			WHEN OP_R_TYPE | OP_I_TYPE =>
 				CASE i_funct3 IS
 					WHEN "000" =>
-						IF i_ex_op_type = OP_R_TYPE AND i_funct7(5) = '1' THEN
+						IF i_ex_op_type = OP_R_TYPE AND funct7(5) = '1' THEN
 							o_alu_command <= ALU_SUB;
 						ELSE
 							o_alu_command <= ALU_ADD;
 						END IF;
 					WHEN "101" =>
-						IF i_funct7(5) = '1' THEN
+						IF funct7(5) = '1' THEN
 							o_alu_command <= ALU_SRA;
 						ELSE
 							o_alu_command <= ALU_SRL;
@@ -70,7 +73,12 @@ BEGIN
 				CASE i_funct3 IS
                                         -- SYSTEM Instructions
 					WHEN "000" =>
-						o_trap <= '1';
+                                                CASE i_funct12 IS
+                                                        WHEN x"000" => o_trap_type <= TRAP_CALL;
+                                                        WHEN x"001" => o_trap_type <= TRAP_BREAK;
+                                                        WHEN x"302" => o_trap_type <= TRAP_MRET;
+                                                        WHEN OTHERS => o_trap_type <= TRAP_NONE;
+                                                END CASE;
 
                                         -- CSR Instructions
 					WHEN "001" | "101" => -- CSRRW

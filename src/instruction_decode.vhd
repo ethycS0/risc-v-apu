@@ -26,7 +26,6 @@ ENTITY instruction_decode_unit IS
 
 		o_src_a_ex : OUT t_SrcA;
 		o_src_b_ex : OUT t_SrcB;
-		o_pc_src : OUT t_PcSrc;
 		o_op_type_ex : OUT t_ExecControl;
 
 		-- Outputs
@@ -41,19 +40,18 @@ ENTITY instruction_decode_unit IS
                 o_rs1_addr : OUT STD_LOGIC_VECTOR(REGFILE_ADDR_WIDTH - 1 DOWNTO 0);
                 o_rs2_addr : OUT STD_LOGIC_VECTOR(REGFILE_ADDR_WIDTH - 1 DOWNTO 0);
 		o_funct3 : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
-		o_funct7 : OUT STD_LOGIC_VECTOR(6 DOWNTO 0)
+		o_funct12 : OUT STD_LOGIC_VECTOR(11 DOWNTO 0)
 	);
 END ENTITY instruction_decode_unit;
 
 ARCHITECTURE structural OF instruction_decode_unit IS
 
-	SIGNAL s_pc_src : t_PcSrc;
 	SIGNAL s_rs1_addr : STD_LOGIC_VECTOR(REGFILE_ADDR_WIDTH - 1 DOWNTO 0);
 	SIGNAL s_rs2_addr : STD_LOGIC_VECTOR(REGFILE_ADDR_WIDTH - 1 DOWNTO 0);
 	SIGNAL s_uimm : STD_LOGIC_VECTOR(4 DOWNTO 0);
 	SIGNAL s_rd_addr : STD_LOGIC_VECTOR(REGFILE_ADDR_WIDTH - 1 DOWNTO 0);
         SIGNAL s_funct3 : STD_LOGIC_VECTOR(2 DOWNTO 0);
-        SIGNAL s_funct7 : STD_LOGIC_VECTOR(6 DOWNTO 0);
+        SIGNAL s_funct12 : STD_LOGIC_VECTOR(11 DOWNTO 0);
 
 	COMPONENT decode_control_unit IS
 		PORT (
@@ -66,7 +64,6 @@ ARCHITECTURE structural OF instruction_decode_unit IS
 			o_src_a : OUT t_SrcA;
 			o_src_b : OUT t_SrcB;
 			o_wb_src : OUT t_WritebackSrc;
-			o_pc_src : OUT t_PcSrc;
 
                         o_unit_en_type : OUT t_OperationUnit;
 			o_ex_op_type : OUT t_ExecControl
@@ -98,7 +95,7 @@ BEGIN
 	s_rs2_addr <= i_instruction(24 DOWNTO 20);
         s_rd_addr  <= i_instruction(11 DOWNTO 7);
         s_funct3 <= i_instruction(14 DOWNTO 12);
-        s_funct7 <= i_instruction(31 DOWNTO 25);
+        s_funct12 <= i_instruction(31 DOWNTO 20);
         s_uimm <= i_instruction(19 DOWNTO 15);
 
 	U_DECODE_CONTROL : decode_control_unit
@@ -110,7 +107,6 @@ BEGIN
 		o_src_a => o_src_a_ex,
 		o_src_b => o_src_b_ex,
 		o_wb_src => o_wb_src_ex,
-		o_pc_src => s_pc_src,
                 o_unit_en_type => o_ex_unit_type,
 		o_ex_op_type => o_op_type_ex
 	);
@@ -134,8 +130,6 @@ BEGIN
 		o_rd2_data => o_rs2_data
 	);
 
-	o_pc_src <= s_pc_src;
-
 	o_pc <= i_pc;
 	o_pc4 <= i_pc4;
 
@@ -145,7 +139,7 @@ BEGIN
         o_uimm <= s_uimm;
 
         o_funct3 <= s_funct3;
-        o_funct7 <= s_funct7;
+        o_funct12 <= s_funct12;
 
 END ARCHITECTURE structural;
 

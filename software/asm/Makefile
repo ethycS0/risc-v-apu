@@ -10,7 +10,7 @@ LDFLAGS = -T link.ld
 
 # Directories
 ROOT_DIR = ../..
-TEST    ?= add
+TEST    ?= add csr stest
 TEST_DIR = $(TEST)
 
 # Files
