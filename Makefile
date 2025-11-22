@@ -8,7 +8,7 @@ GTKWAVE = gtkwave
 # All VHDL source files in the src directory
 PKG_FILES = src/common.vhd
 SRC_FILES = src/alu.vhd \
-	src/alu_control.vhd \
+	src/ex_decode_unit.vhd \
 	src/branch_adder.vhd \
 	src/branch_control.vhd \
 	src/core.vhd \

@@ -5,7 +5,7 @@ LD      = $(PREFIX)ld
 OBJCOPY = $(PREFIX)objcopy
 
 # Flags
-ASFLAGS = -march=rv32i -mabi=ilp32
+ASFLAGS = -march=rv32i_zicsr -mabi=ilp32
 LDFLAGS = -T link.ld
 
 # Directories

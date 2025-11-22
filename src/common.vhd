@@ -11,10 +11,10 @@ PACKAGE rv32i_pkg IS
 	CONSTANT INSTRUCTION_WIDTH : INTEGER := 32;
 	CONSTANT RESET_ADDRESS : STD_LOGIC_VECTOR(31 DOWNTO 0) := x"80000000";
 
-	-- Control Signals for ALU Control
+	-- Control Signals 
 	TYPE t_ExecControl IS (
 		OP_R_TYPE, OP_I_TYPE, OP_LUI, OP_AUIPC,
-		OP_LOAD_STORE, OP_BRANCH, OP_JUMP, OP_ILLEGAL
+		OP_LOAD_STORE, OP_BRANCH, OP_JUMP, OP_SYSTEM, OP_ILLEGAL
 	);
 
 	-- Final Opcode for ALU
@@ -24,20 +24,21 @@ PACKAGE rv32i_pkg IS
 	);
 
 	-- Selects the operand for the ALU.
-	TYPE t_AluSrc_A IS (
-		ALU_A_RS1,
-		ALU_A_PC,
-		ALU_A_ZERO
+	TYPE t_SrcA IS (
+                SRC_A_UIMM,
+		SRC_A_RS1,
+                SRC_A_PC,
+		SRC_A_ZERO
 	);
 
-	TYPE t_AluSrc_B IS (
-		ALU_B_RS2,
-		ALU_B_IMM
+	TYPE t_SrcB IS (
+		SRC_B_RS2,
+		SRC_B_IMM
 	);
 
 	-- Selects the data source for the register file write-back.
 	TYPE t_WritebackSrc IS (
-		WB_SRC_ALU,
+		WB_SRC_EX_RESULT,
 		WB_SRC_MEM,
 		WB_SRC_PC4
 	);
@@ -53,7 +54,8 @@ PACKAGE rv32i_pkg IS
 	TYPE t_PcSrc IS (PC_SRC_PC4, PC_SRC_BRANCH, PC_SRC_JUMP);
 	TYPE t_Forward IS (FWD_NONE, FWD_FROM_EX_MEM, FWD_FROM_MEM_WB);
 
-	TYPE t_CsrOpcodes IS ( RW, RS, RC );
+	TYPE t_CsrOpcodes IS ( CSR_RW, CSR_RS, CSR_RC, CSR_ILLEGAL );
+        TYPE t_OperationUnit IS (UNIT_ALU, UNIT_CSR, UNIT_ILLEGAL);
 
 END PACKAGE rv32i_pkg;
 

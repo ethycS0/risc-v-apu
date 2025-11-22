@@ -17,9 +17,7 @@ ENTITY csr_unit IS
 		i_csr_data : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 
 		-- Outputs 
-		o_read_data : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-		o_epc       : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-		o_mtvec     : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
+		o_read_data : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
 	);
 END ENTITY csr_unit;
 
@@ -65,11 +63,11 @@ BEGIN
 	p_csr_atomic_logic : PROCESS (s_selected_reg_val, i_csr_data, i_csr_op)
 	BEGIN
 		CASE i_csr_op IS
-			WHEN RW => -- CSRRW (Write): New value = Input Data
+			WHEN CSR_RW => -- CSRRW (Write): New value = Input Data
 				s_new_csr_value <= i_csr_data;
-			WHEN RS => -- CSRRS (Set/OR): New value = Old OR Input
+			WHEN CSR_RS => -- CSRRS (Set/OR): New value = Old OR Input
 				s_new_csr_value <= s_selected_reg_val OR i_csr_data;
-			WHEN RC => -- CSRRC (Clear/AND NOT): New value = Old AND (NOT Input)
+			WHEN CSR_RC => -- CSRRC (Clear/AND NOT): New value = Old AND (NOT Input)
 				s_new_csr_value <= s_selected_reg_val AND (NOT i_csr_data);
 			WHEN OTHERS =>
 				s_new_csr_value <= s_selected_reg_val;
@@ -78,7 +76,7 @@ BEGIN
 	p_csr_registers : PROCESS (i_clk, i_rst)
 	BEGIN
 		IF i_rst = '1' THEN
-			r_misa <= x"40000001";
+			r_misa <= x"40000100";
 			r_mstatus <= (OTHERS => '0');
 			r_mvendorid <= (OTHERS => '0');
 			r_mtvec <= (OTHERS => '0');
@@ -100,8 +98,6 @@ BEGIN
 					WHEN x"342" => r_mcause <= s_new_csr_value;
 					WHEN x"304" => r_mie <= s_new_csr_value;
 					WHEN x"344" => r_mip <= s_new_csr_value;
-					WHEN x"B00" => r_mcycle <= s_new_csr_value;
-					WHEN x"B02" => r_minstret <= s_new_csr_value;
 					WHEN OTHERS => NULL;
 				END CASE;
 			END IF;
@@ -111,7 +107,8 @@ BEGIN
 			ELSE
 				r_mcycle <= STD_LOGIC_VECTOR(unsigned(r_mcycle) + 1);
 			END IF;
-
+                        
+                        -- Can be Improved
 			IF i_write_en = '1' AND i_csr_addr = x"B02" THEN
 				r_minstret <= s_new_csr_value;
 			ELSE
@@ -121,8 +118,6 @@ BEGIN
 	END PROCESS p_csr_registers;
         
 	o_read_data <= s_selected_reg_val;
-	o_epc <= r_mepc;
-	o_mtvec <= r_mtvec;
 
 END ARCHITECTURE behavioral;
 

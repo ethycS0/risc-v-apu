@@ -51,62 +51,68 @@ ARCHITECTURE structural OF core IS
 
 	COMPONENT instruction_decode_unit IS
 		PORT (
-			i_clk            : IN  STD_LOGIC;
-			i_rst            : IN  STD_LOGIC;
-			i_pc             : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
-			i_pc4            : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
-			i_instruction    : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
-			i_wr_addr_wb     : IN  STD_LOGIC_VECTOR(4 DOWNTO 0);
-			i_wr_data_wb     : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
-			i_wr_en_wb       : IN  STD_LOGIC;
-			o_reg_write_ex   : OUT STD_LOGIC;
-			o_mem_read_ex    : OUT STD_LOGIC;
-			o_mem_write_ex   : OUT STD_LOGIC;
-			o_wb_src_ex      : OUT t_WritebackSrc;
-			o_alu_src_a_ex   : OUT t_AluSrc_A;
-			o_alu_src_b_ex   : OUT t_AluSrc_B;
-			o_pc_src         : OUT t_PcSrc;
-			o_alu_op_type_ex : OUT t_ExecControl;
-			o_immediate      : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-			o_rs1_data       : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-			o_rs2_data       : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-			o_pc             : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-			o_pc4            : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-			o_rd_addr        : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
-			o_rs1_addr       : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
-			o_rs2_addr       : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
-			o_funct3         : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
-			o_funct7         : OUT STD_LOGIC_VECTOR(6 DOWNTO 0)
+			i_clk          : IN  STD_LOGIC;
+			i_rst          : IN  STD_LOGIC;
+			i_pc           : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+			i_pc4          : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+			i_instruction  : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+			i_wr_addr_wb   : IN  STD_LOGIC_VECTOR(4 DOWNTO 0);
+			i_wr_data_wb   : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+			i_wr_en_wb     : IN  STD_LOGIC;
+			o_reg_write_ex : OUT STD_LOGIC;
+			o_mem_read_ex  : OUT STD_LOGIC;
+			o_mem_write_ex : OUT STD_LOGIC;
+			o_wb_src_ex    : OUT t_WritebackSrc;
+			o_src_a_ex     : OUT t_SrcA;
+			o_src_b_ex     : OUT t_SrcB;
+			o_pc_src       : OUT t_PcSrc;
+			o_op_type_ex   : OUT t_ExecControl;
+			o_ex_unit_type : OUT t_OperationUnit;
+			o_immediate    : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			o_rs1_data     : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			o_rs2_data     : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			o_pc           : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			o_pc4          : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			o_rd_addr      : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
+			o_uimm         : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
+			o_rs1_addr     : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
+			o_rs2_addr     : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
+			o_funct3       : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
+			o_funct7       : OUT STD_LOGIC_VECTOR(6 DOWNTO 0)
 		);
 	END COMPONENT instruction_decode_unit;
 
 	COMPONENT execution_unit IS
 		PORT (
-			i_pc             : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
-			i_pc4            : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
-			i_rs1_data       : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
-			i_rs2_data       : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
-			i_immediate      : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
-			i_funct3         : IN  STD_LOGIC_VECTOR(2 DOWNTO 0);
-			i_funct7         : IN  STD_LOGIC_VECTOR(6 DOWNTO 0);
-			i_alu_op_type    : IN  t_ExecControl;
-			i_alu_src_a      : IN  t_AluSrc_A;
-			i_alu_src_b      : IN  t_AluSrc_B;
-			i_pc_src         : IN  t_PcSrc;
-			i_mem_read       : IN  STD_LOGIC;
-			i_mem_write      : IN  STD_LOGIC;
-			i_reg_write      : IN  STD_LOGIC;
-			i_wb_src         : IN  t_WritebackSrc;
-			i_rd_addr        : IN  STD_LOGIC_VECTOR(4 DOWNTO 0);
-			i_rs1_addr       : IN  STD_LOGIC_VECTOR(4 DOWNTO 0);
-			i_rs2_addr       : IN  STD_LOGIC_VECTOR(4 DOWNTO 0);
-			i_rd_addr_ex_mem : IN  STD_LOGIC_VECTOR(4 DOWNTO 0);
-			i_rd_addr_mem_wb : IN  STD_LOGIC_VECTOR(4 DOWNTO 0);
-			i_rd_ex_mem      : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
-			i_rd_mem_wb      : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+			i_clk            : IN  STD_LOGIC;
+			i_rst            : IN  STD_LOGIC;
+			i_pc_id          : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+			i_pc4_id         : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+			i_rs1_data_id    : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+			i_rs2_data_id    : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+			i_immediate_id   : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+			i_funct3_id      : IN  STD_LOGIC_VECTOR(2 DOWNTO 0);
+			i_funct7_id      : IN  STD_LOGIC_VECTOR(6 DOWNTO 0);
+			i_uimm_id        : IN  STD_LOGIC_VECTOR(4 DOWNTO 0);
+			i_ex_op_type_id  : IN  t_ExecControl;
+			i_src_a_id       : IN  t_SrcA;
+			i_src_b_id       : IN  t_SrcB;
+			i_pc_src_id      : IN  t_PcSrc;
+			i_unit_en_id     : IN  t_OperationUnit;
+			i_mem_read_id    : IN  STD_LOGIC;
+			i_mem_write_id   : IN  STD_LOGIC;
+			i_reg_write_id   : IN  STD_LOGIC;
+			i_wb_src_id      : IN  t_WritebackSrc;
+			i_rd_addr_id     : IN  STD_LOGIC_VECTOR(4 DOWNTO 0);
+			i_rs1_addr_id    : IN  STD_LOGIC_VECTOR(REGFILE_ADDR_WIDTH - 1 DOWNTO 0);
+			i_rs2_addr_id    : IN  STD_LOGIC_VECTOR(REGFILE_ADDR_WIDTH - 1 DOWNTO 0);
+			i_rd_addr_mem    : IN  STD_LOGIC_VECTOR(REGFILE_ADDR_WIDTH - 1 DOWNTO 0);
+			i_rd_addr_wb     : IN  STD_LOGIC_VECTOR(REGFILE_ADDR_WIDTH - 1 DOWNTO 0);
+			i_rd_data_mem    : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+			i_rd_data_wb     : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
 			o_branch_taken   : OUT STD_LOGIC;
 			o_pc_target_addr : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-			o_alu_result     : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			o_ex_result      : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			o_rs2_data       : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			o_pc4            : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			o_funct3         : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
@@ -114,13 +120,14 @@ ARCHITECTURE structural OF core IS
 			o_mem_write      : OUT STD_LOGIC;
 			o_reg_write      : OUT STD_LOGIC;
 			o_wb_src         : OUT t_WritebackSrc;
+			o_trap           : OUT STD_LOGIC;
 			o_rd_addr        : OUT STD_LOGIC_VECTOR(4 DOWNTO 0)
 		);
 	END COMPONENT execution_unit;
 
-	COMPONENT memory_stage IS
+	COMPONENT memory_unit IS
 		PORT (
-			i_alu_result_ex   : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+			i_result_rd_ex    : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
 			i_rs2_data_ex     : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
 			i_pc4_ex          : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
 			i_funct3_ex       : IN  STD_LOGIC_VECTOR(2 DOWNTO 0);
@@ -134,19 +141,19 @@ ARCHITECTURE structural OF core IS
 			o_mem_write_data  : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			o_mem_write_en    : OUT STD_LOGIC;
 			o_mem_byte_en     : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
-			o_alu_result_mem  : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			o_result_rd_mem   : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			o_pc4_mem         : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			o_wb_src_mem      : OUT t_WritebackSrc;
 			o_final_read_data : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			o_reg_write_mem   : OUT STD_LOGIC;
 			o_rd_addr_mem     : OUT STD_LOGIC_VECTOR(4 DOWNTO 0)
 		);
-	END COMPONENT memory_stage;
+	END COMPONENT memory_unit;
 
 	COMPONENT writeback_unit IS
 		PORT (
 			i_read_data    : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
-			i_alu_result   : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+			i_rd_result    : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
 			i_pc4          : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
 			i_reg_write    : IN  STD_LOGIC;
 			i_wb_src       : IN  t_WritebackSrc;
@@ -175,53 +182,58 @@ ARCHITECTURE structural OF core IS
 	-- ID Stage Outputs -> to ID/EX Register
 	SIGNAL s_id_reg_write_out, s_id_mem_read_out, s_id_mem_write_out : STD_LOGIC;
 	SIGNAL s_id_wb_src_out : t_WritebackSrc;
-	SIGNAL s_id_alu_src_a_out : t_AluSrc_A;
-	SIGNAL s_id_alu_src_b_out : t_AluSrc_B;
+	SIGNAL s_id_src_a_out : t_SrcA;
+	SIGNAL s_id_src_b_out : t_SrcB;
 	SIGNAL s_id_pc_src_ctrl_out : t_PcSrc;
-	SIGNAL s_id_alu_op_type_out : t_ExecControl;
+	SIGNAL s_id_op_type_out : t_ExecControl;
 	SIGNAL s_id_immediate_out : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL s_id_rs1_data_out, s_id_rs2_data_out, s_id_pc_out, s_id_pc4_out : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL s_id_rd_addr_out, s_id_rs1_addr_out, s_id_rs2_addr_out : STD_LOGIC_VECTOR(4 DOWNTO 0);
 	SIGNAL s_id_funct3_out : STD_LOGIC_VECTOR(2 DOWNTO 0);
 	SIGNAL s_id_funct7_out : STD_LOGIC_VECTOR(6 DOWNTO 0);
+	SIGNAL s_id_unit_type_out : t_OperationUnit;
+	SIGNAL s_id_uimm_out : STD_LOGIC_VECTOR(4 DOWNTO 0);
 
 	-- EX Stage Inputs <- from ID/EX Register
 	SIGNAL s_ex_reg_write_in, s_ex_mem_read_in, s_ex_mem_write_in : STD_LOGIC;
 	SIGNAL s_ex_wb_src_in : t_WritebackSrc;
-	SIGNAL s_ex_alu_src_a_in : t_AluSrc_A;
-	SIGNAL s_ex_alu_src_b_in : t_AluSrc_B;
+	SIGNAL s_ex_src_a_in : t_SrcA;
+	SIGNAL s_ex_src_b_in : t_SrcB;
 	SIGNAL s_ex_pc_src_ctrl_in : t_PcSrc;
-	SIGNAL s_ex_alu_op_type_in : t_ExecControl;
+	SIGNAL s_ex_op_type_in : t_ExecControl;
 	SIGNAL s_ex_immediate_in : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL s_ex_rs1_data_in, s_ex_rs2_data_in, s_ex_pc_in, s_ex_pc4_in : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL s_ex_rd_addr_in, s_ex_rs1_addr_in, s_ex_rs2_addr_in : STD_LOGIC_VECTOR(4 DOWNTO 0);
 	SIGNAL s_ex_funct3_in : STD_LOGIC_VECTOR(2 DOWNTO 0);
 	SIGNAL s_ex_funct7_in : STD_LOGIC_VECTOR(6 DOWNTO 0);
+	SIGNAL s_ex_unit_type_in : t_OperationUnit;
+	SIGNAL s_ex_uimm_in : STD_LOGIC_VECTOR(4 DOWNTO 0);
+	SIGNAL s_ex_trap_triggered : STD_LOGIC;
 
 	-- EX Stage Outputs -> to EX/MEM Register
 	SIGNAL s_ex_branch_taken_out : STD_LOGIC;
 	SIGNAL s_ex_pc_target_addr_out : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL s_ex_alu_result_out, s_ex_rs2_data_out, s_ex_pc4_out : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL s_ex_result_out, s_ex_rs2_data_out, s_ex_pc4_out : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL s_ex_mem_read_out, s_ex_mem_write_out, s_ex_reg_write_out : STD_LOGIC;
 	SIGNAL s_ex_wb_src_out : t_WritebackSrc;
 	SIGNAL s_ex_funct3_out : STD_LOGIC_VECTOR(2 DOWNTO 0);
 	SIGNAL s_ex_rd_addr_out : STD_LOGIC_VECTOR(4 DOWNTO 0);
 
 	-- MEM Stage Inputs <- from EX/MEM Register
-	SIGNAL s_mem_alu_result_in, s_mem_rs2_data_in, s_mem_pc4_in : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL s_mem_result_in, s_mem_rs2_data_in, s_mem_pc4_in : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL s_mem_mem_read_in, s_mem_mem_write_in, s_mem_reg_write_in : STD_LOGIC;
 	SIGNAL s_mem_wb_src_in : t_WritebackSrc;
 	SIGNAL s_mem_funct3_in : STD_LOGIC_VECTOR(2 DOWNTO 0);
 	SIGNAL s_mem_rd_addr_in : STD_LOGIC_VECTOR(4 DOWNTO 0);
 
 	-- MEM Stage Outputs -> to MEM/WB Register
-	SIGNAL s_mem_alu_result_out, s_mem_pc4_out, s_mem_final_read_data_out : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL s_mem_result_rd_out, s_mem_pc4_out, s_mem_final_read_data_out : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL s_mem_wb_src_out : t_WritebackSrc;
 	SIGNAL s_mem_reg_write_out : STD_LOGIC;
 	SIGNAL s_mem_rd_addr_out : STD_LOGIC_VECTOR(4 DOWNTO 0);
 
 	-- WB Stage Inputs <- from MEM/WB Register
-	SIGNAL s_wb_alu_result_in, s_wb_pc4_in, s_wb_final_read_data_in : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL s_wb_result_rd_in, s_wb_pc4_in, s_wb_final_read_data_in : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL s_wb_wb_src_in : t_WritebackSrc;
 	SIGNAL s_wb_reg_write_in : STD_LOGIC;
 	SIGNAL s_wb_rd_addr_in : STD_LOGIC_VECTOR(4 DOWNTO 0);
@@ -293,32 +305,34 @@ BEGIN
 	-- Stage 2: Instruction Decode (ID)
 	U_ID_STAGE : instruction_decode_unit
 	PORT MAP(
-		i_clk            => i_clk,
-		i_rst            => i_rst,
-		i_pc             => s_id_pc_in,
-		i_pc4            => s_id_pc4_in,
-		i_instruction    => s_id_instruction_in,
-		i_wr_addr_wb     => s_wb_rd_addr_out,
-		i_wr_data_wb     => s_wb_rd_data_out,
-		i_wr_en_wb       => s_wb_reg_write_en_out,
-		o_reg_write_ex   => s_id_reg_write_out,
-		o_mem_read_ex    => s_id_mem_read_out,
-		o_mem_write_ex   => s_id_mem_write_out,
-		o_wb_src_ex      => s_id_wb_src_out,
-		o_alu_src_a_ex   => s_id_alu_src_a_out,
-		o_alu_src_b_ex   => s_id_alu_src_b_out,
-		o_pc_src         => s_id_pc_src_ctrl_out,
-		o_alu_op_type_ex => s_id_alu_op_type_out,
-		o_immediate      => s_id_immediate_out,
-		o_rs1_data       => s_id_rs1_data_out,
-		o_rs2_data       => s_id_rs2_data_out,
-		o_pc             => s_id_pc_out,
-		o_pc4            => s_id_pc4_out,
-		o_rd_addr        => s_id_rd_addr_out,
-		o_rs1_addr       => s_id_rs1_addr_out,
-		o_rs2_addr       => s_id_rs2_addr_out,
-		o_funct3         => s_id_funct3_out,
-		o_funct7         => s_id_funct7_out
+		i_clk          => i_clk,
+		i_rst          => i_rst,
+		i_pc           => s_id_pc_in,
+		i_pc4          => s_id_pc4_in,
+		i_instruction  => s_id_instruction_in,
+		i_wr_addr_wb   => s_wb_rd_addr_out,
+		i_wr_data_wb   => s_wb_rd_data_out,
+		i_wr_en_wb     => s_wb_reg_write_en_out,
+		o_reg_write_ex => s_id_reg_write_out,
+		o_mem_read_ex  => s_id_mem_read_out,
+		o_mem_write_ex => s_id_mem_write_out,
+		o_wb_src_ex    => s_id_wb_src_out,
+		o_src_a_ex     => s_id_src_a_out,
+		o_src_b_ex     => s_id_src_b_out,
+		o_pc_src       => s_id_pc_src_ctrl_out,
+		o_op_type_ex   => s_id_op_type_out,
+		o_ex_unit_type => s_id_unit_type_out,
+		o_immediate    => s_id_immediate_out,
+		o_rs1_data     => s_id_rs1_data_out,
+		o_rs2_data     => s_id_rs2_data_out,
+		o_pc           => s_id_pc_out,
+		o_pc4          => s_id_pc4_out,
+		o_rd_addr      => s_id_rd_addr_out,
+		o_uimm         => s_id_uimm_out,
+		o_rs1_addr     => s_id_rs1_addr_out,
+		o_rs2_addr     => s_id_rs2_addr_out,
+		o_funct3       => s_id_funct3_out,
+		o_funct7       => s_id_funct7_out
 	);
 
 	-- ID/EX Pipeline Register
@@ -328,14 +342,16 @@ BEGIN
 			s_ex_reg_write_in <= '0';
 			s_ex_mem_read_in <= '0';
 			s_ex_mem_write_in <= '0';
-			s_ex_wb_src_in <= WB_SRC_ALU;
-			s_ex_alu_src_a_in <= ALU_A_RS1;
-			s_ex_alu_src_b_in <= ALU_B_RS2;
+			s_ex_wb_src_in <= WB_SRC_EX_RESULT;
+			s_ex_src_a_in <= SRC_A_RS1;
+			s_ex_src_b_in <= SRC_B_RS2;
 			s_ex_pc_src_ctrl_in <= PC_SRC_PC4;
-			s_ex_alu_op_type_in <= OP_R_TYPE;
+			s_ex_op_type_in <= OP_R_TYPE;
+			s_ex_unit_type_in <= UNIT_ALU;
 			s_ex_immediate_in <= (OTHERS => '0');
 			s_ex_rs1_data_in <= (OTHERS => '0');
 			s_ex_rs2_data_in <= (OTHERS => '0');
+			s_ex_uimm_in <= (OTHERS => '0');
 			s_ex_pc_in <= (OTHERS => '0');
 			s_ex_pc4_in <= (OTHERS => '0');
 			s_ex_rd_addr_in <= (OTHERS => '0');
@@ -348,14 +364,16 @@ BEGIN
 				s_ex_reg_write_in <= '0';
 				s_ex_mem_read_in <= '0';
 				s_ex_mem_write_in <= '0';
-				s_ex_wb_src_in <= WB_SRC_ALU;
-				s_ex_alu_src_a_in <= ALU_A_RS1;
-				s_ex_alu_src_b_in <= ALU_B_RS2;
+				s_ex_wb_src_in <= WB_SRC_EX_RESULT;
+				s_ex_src_a_in <= SRC_A_RS1;
+				s_ex_src_b_in <= SRC_B_RS2;
 				s_ex_pc_src_ctrl_in <= PC_SRC_PC4;
-				s_ex_alu_op_type_in <= OP_R_TYPE;
+				s_ex_op_type_in <= OP_R_TYPE;
+				s_ex_unit_type_in <= UNIT_ALU;
 				s_ex_immediate_in <= (OTHERS => '0');
 				s_ex_rs1_data_in <= (OTHERS => '0');
 				s_ex_rs2_data_in <= (OTHERS => '0');
+				s_ex_uimm_in <= (OTHERS => '0');
 				s_ex_pc_in <= (OTHERS => '0');
 				s_ex_pc4_in <= (OTHERS => '0');
 				s_ex_rd_addr_in <= (OTHERS => '0');
@@ -368,10 +386,12 @@ BEGIN
 				s_ex_mem_read_in <= s_id_mem_read_out;
 				s_ex_mem_write_in <= s_id_mem_write_out;
 				s_ex_wb_src_in <= s_id_wb_src_out;
-				s_ex_alu_src_a_in <= s_id_alu_src_a_out;
-				s_ex_alu_src_b_in <= s_id_alu_src_b_out;
+				s_ex_src_a_in <= s_id_src_a_out;
+				s_ex_src_b_in <= s_id_src_b_out;
+				s_ex_uimm_in <= s_id_uimm_out;
 				s_ex_pc_src_ctrl_in <= s_id_pc_src_ctrl_out;
-				s_ex_alu_op_type_in <= s_id_alu_op_type_out;
+				s_ex_op_type_in <= s_id_op_type_out;
+				s_ex_unit_type_in <= s_id_unit_type_out;
 				s_ex_immediate_in <= s_id_immediate_out;
 				s_ex_rs1_data_in <= s_id_rs1_data_out;
 				s_ex_rs2_data_in <= s_id_rs2_data_out;
@@ -389,31 +409,36 @@ BEGIN
 	-- Stage 3: Execute (EX)
 	U_EX_STAGE : execution_unit
 	PORT MAP(
-		i_pc          => s_ex_pc_in,
-		i_pc4         => s_ex_pc4_in,
-		i_rs1_data    => s_ex_rs1_data_in,
-		i_rs2_data    => s_ex_rs2_data_in,
-		i_immediate   => s_ex_immediate_in,
-		i_funct3      => s_ex_funct3_in,
-		i_funct7      => s_ex_funct7_in,
-		i_alu_op_type => s_ex_alu_op_type_in,
-		i_alu_src_a   => s_ex_alu_src_a_in,
-		i_alu_src_b   => s_ex_alu_src_b_in,
-		i_pc_src      => s_ex_pc_src_ctrl_in,
-		i_mem_read    => s_ex_mem_read_in,
-		i_mem_write   => s_ex_mem_write_in,
-		i_reg_write   => s_ex_reg_write_in,
-		i_wb_src      => s_ex_wb_src_in,
-		i_rd_addr     => s_ex_rd_addr_in,
-		i_rs1_addr    => s_ex_rs1_addr_in,
-		i_rs2_addr    => s_ex_rs2_addr_in,
-		i_rd_addr_ex_mem => s_mem_rd_addr_in,
-		i_rd_ex_mem      => s_mem_alu_result_in,
-		i_rd_addr_mem_wb => s_wb_rd_addr_in,
-		i_rd_mem_wb      => s_wb_rd_data_out,
+		i_clk            => i_clk,
+		i_rst            => i_rst,
+		i_pc_id          => s_ex_pc_in,
+		i_pc4_id         => s_ex_pc4_in,
+		i_rs1_data_id    => s_ex_rs1_data_in,
+		i_rs2_data_id    => s_ex_rs2_data_in,
+		i_immediate_id   => s_ex_immediate_in,
+		i_funct3_id      => s_ex_funct3_in,
+		i_funct7_id      => s_ex_funct7_in,
+		i_uimm_id        => s_ex_uimm_in,
+		i_ex_op_type_id  => s_ex_op_type_in,
+		i_src_a_id       => s_ex_src_a_in,
+		i_src_b_id       => s_ex_src_b_in,
+		i_pc_src_id      => s_ex_pc_src_ctrl_in,
+		i_unit_en_id     => s_ex_unit_type_in,
+		i_mem_read_id    => s_ex_mem_read_in,
+		i_mem_write_id   => s_ex_mem_write_in,
+		i_reg_write_id   => s_ex_reg_write_in,
+		i_wb_src_id      => s_ex_wb_src_in,
+		i_rd_addr_id     => s_ex_rd_addr_in,
+		i_rs1_addr_id    => s_ex_rs1_addr_in,
+		i_rs2_addr_id    => s_ex_rs2_addr_in,
+		i_rd_addr_mem    => s_mem_rd_addr_in,
+		i_rd_data_mem    => s_mem_result_in,
+		i_rd_addr_wb     => s_wb_rd_addr_in,
+		i_rd_data_wb     => s_wb_rd_data_out,
 		o_branch_taken   => s_ex_branch_taken_out,
+		o_trap           => s_ex_trap_triggered,
 		o_pc_target_addr => s_ex_pc_target_addr_out,
-		o_alu_result     => s_ex_alu_result_out,
+		o_ex_result      => s_ex_result_out,
 		o_rs2_data       => s_ex_rs2_data_out,
 		o_pc4            => s_ex_pc4_out,
 		o_funct3         => s_ex_funct3_out,
@@ -428,17 +453,17 @@ BEGIN
 	EX_MEM_Register_Proc : PROCESS (i_clk, i_rst)
 	BEGIN
 		IF i_rst = '1' THEN
-			s_mem_alu_result_in <= (OTHERS => '0');
+			s_mem_result_in <= (OTHERS => '0');
 			s_mem_rs2_data_in <= (OTHERS => '0');
 			s_mem_pc4_in <= (OTHERS => '0');
 			s_mem_funct3_in <= (OTHERS => '0');
 			s_mem_mem_read_in <= '0';
 			s_mem_mem_write_in <= '0';
 			s_mem_reg_write_in <= '0';
-			s_mem_wb_src_in <= WB_SRC_ALU;
+			s_mem_wb_src_in <= WB_SRC_EX_RESULT;
 			s_mem_rd_addr_in <= (OTHERS => '0');
 		ELSIF rising_edge(i_clk) THEN
-			s_mem_alu_result_in <= s_ex_alu_result_out;
+			s_mem_result_in <= s_ex_result_out;
 			s_mem_rs2_data_in <= s_ex_rs2_data_out;
 			s_mem_pc4_in <= s_ex_pc4_out;
 			s_mem_funct3_in <= s_ex_funct3_out;
@@ -451,9 +476,9 @@ BEGIN
 	END PROCESS EX_MEM_Register_Proc;
 
 	-- Stage 4: Memory (MEM)
-	U_MEM_STAGE : memory_stage
+	U_MEM_STAGE : memory_unit
 	PORT MAP(
-		i_alu_result_ex   => s_mem_alu_result_in,
+		i_result_rd_ex    => s_mem_result_in,
 		i_rs2_data_ex     => s_mem_rs2_data_in,
 		i_pc4_ex          => s_mem_pc4_in,
 		i_funct3_ex       => s_mem_funct3_in,
@@ -467,7 +492,7 @@ BEGIN
 		o_mem_write_data  => o_data_write,
 		o_mem_write_en    => o_data_write_en,
 		o_mem_byte_en     => o_data_byte_en,
-		o_alu_result_mem  => s_mem_alu_result_out,
+		o_result_rd_mem   => s_mem_result_rd_out,
 		o_pc4_mem         => s_mem_pc4_out,
 		o_wb_src_mem      => s_mem_wb_src_out,
 		o_final_read_data => s_mem_final_read_data_out,
@@ -480,14 +505,14 @@ BEGIN
 	BEGIN
 		IF i_rst = '1' THEN
 			s_wb_final_read_data_in <= (OTHERS => '0');
-			s_wb_alu_result_in <= (OTHERS => '0');
+			s_wb_result_rd_in <= (OTHERS => '0');
 			s_wb_pc4_in <= (OTHERS => '0');
 			s_wb_reg_write_in <= '0';
-			s_wb_wb_src_in <= WB_SRC_ALU;
+			s_wb_wb_src_in <= WB_SRC_EX_RESULT;
 			s_wb_rd_addr_in <= (OTHERS => '0');
 		ELSIF rising_edge(i_clk) THEN
 			s_wb_final_read_data_in <= s_mem_final_read_data_out;
-			s_wb_alu_result_in <= s_mem_alu_result_out;
+			s_wb_result_rd_in <= s_mem_result_rd_out;
 			s_wb_pc4_in <= s_mem_pc4_out;
 			s_wb_reg_write_in <= s_mem_reg_write_out;
 			s_wb_wb_src_in <= s_mem_wb_src_out;
@@ -499,7 +524,7 @@ BEGIN
 	U_WB_STAGE : writeback_unit
 	PORT MAP(
 		i_read_data    => s_wb_final_read_data_in,
-		i_alu_result   => s_wb_alu_result_in,
+		i_rd_result    => s_wb_result_rd_in,
 		i_pc4          => s_wb_pc4_in,
 		i_reg_write    => s_wb_reg_write_in,
 		i_wb_src       => s_wb_wb_src_in,
