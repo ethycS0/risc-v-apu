@@ -108,6 +108,9 @@ BEGIN
 				o_alu_src_b <= ALU_B_RS2;
 				o_alu_op_type <= OP_R_TYPE;
 
+                        -- System and CSR
+                        WHEN "1110011" =>
+
                         -- FENCE, SYSTEM, and other unimplemented or invalid opcodes
 			WHEN OTHERS =>
 				-- All signals remain at their default '0' or "safe" state.

@@ -1,7 +1,6 @@
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
-
 USE work.rv32i_pkg.ALL;
 
 ENTITY alu IS

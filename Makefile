@@ -12,6 +12,7 @@ SRC_FILES = src/alu.vhd \
 	src/branch_adder.vhd \
 	src/branch_control.vhd \
 	src/core.vhd \
+	src/csr_unit.vhd \
 	src/decode_control_unit.vhd \
 	src/execution_unit.vhd \
 	src/forwarding_unit.vhd \
