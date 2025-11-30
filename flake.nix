@@ -34,15 +34,37 @@
             texlive.combined.scheme-full
             sail-riscv
             spike
-
-            # RISC-V 32-bit bare-metal toolchain
-            pkgsCross.riscv32-embedded.stdenv.cc
-
+            dtc
             asm-lsp
             clang
+            autoconf
+            automake
+            libtool
+            patchutils
+            gcc
+            cmake
+            ninja
+            pkg-config
+            gawk
+            bison
+            flex
+            texinfo
+            gperf
+            bc
+            libmpc
+            mpfr
+            gmp
+            zlib
+            expat
+            curl
+            wget
+            git
+            util-linux
+            binutils
           ];
 
           shellHook = ''
+            export PATH=$PWD/toolchain/bin:$PATH
             if command -v zsh &> /dev/null; then
               exec zsh
             fi

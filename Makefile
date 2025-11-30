@@ -6,30 +6,31 @@ GTKWAVE = gtkwave
 
 # --- Smart Configuration ---
 # All VHDL source files in the src directory
-PKG_FILES = src/common.vhd
-SRC_FILES = src/alu.vhd \
-	src/ex_decode_unit.vhd \
-	src/branch_adder.vhd \
-	src/branch_control.vhd \
-	src/core.vhd \
-	src/csr_unit.vhd \
-	src/decode_control_unit.vhd \
-	src/execution_unit.vhd \
-	src/forwarding_unit.vhd \
-	src/hazard_detection_unit.vhd \
-        src/immediate_constructor.vhd \
-	src/instruction_decode.vhd \
-	src/instruction_fetch.vhd \
-	src/memory_unit.vhd \
-        src/register_file.vhd \
-	src/writeback_unit.vhd
+ROOT_DIR := $(shell pwd)
 
-# The testbench to run, can be overridden from the command line
-# e.g., make run TB=tb_alu
+# All VHDL source files (Prepend ROOT_DIR to make paths absolute)
+PKG_FILES = $(ROOT_DIR)/src/common.vhd
+
+SRC_FILES = $(ROOT_DIR)/src/alu.vhd \
+    $(ROOT_DIR)/src/ex_decode_unit.vhd \
+    $(ROOT_DIR)/src/branch_adder.vhd \
+    $(ROOT_DIR)/src/branch_control.vhd \
+    $(ROOT_DIR)/src/core.vhd \
+    $(ROOT_DIR)/src/csr_unit.vhd \
+    $(ROOT_DIR)/src/decode_control_unit.vhd \
+    $(ROOT_DIR)/src/execution_unit.vhd \
+    $(ROOT_DIR)/src/forwarding_unit.vhd \
+    $(ROOT_DIR)/src/hazard_detection_unit.vhd \
+    $(ROOT_DIR)/src/immediate_constructor.vhd \
+    $(ROOT_DIR)/src/instruction_decode.vhd \
+    $(ROOT_DIR)/src/instruction_fetch.vhd \
+    $(ROOT_DIR)/src/memory_unit.vhd \
+    $(ROOT_DIR)/src/register_file.vhd \
+    $(ROOT_DIR)/src/writeback_unit.vhd
+
+# The testbench
 TB ?= tb_core
-
-# --- File Definitions (based on TB variable) ---
-VHDL_TESTBENCH = tb/$(TB).vhd
+VHDL_TESTBENCH = $(ROOT_DIR)/tb/$(TB).vhd
 TOP_LEVEL = $(TB)
 WAVEFORM_FILE = sim/$(TOP_LEVEL).ghw
 GHDL_FLAGS = --std=08 -frelaxed

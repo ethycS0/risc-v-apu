@@ -11,6 +11,7 @@ ENTITY csr_unit IS
 
 		-- Control Signals
 		i_write_en : IN STD_LOGIC;
+                i_minstret_increment : IN STD_LOGIC;
 
 		-- Data from Decode/Execute Stage
 		i_csr_op   : IN t_CsrOpcodes; -- RW, RS, RC, etc.
@@ -131,8 +132,10 @@ BEGIN
                         -- Can be Improved
 			IF i_write_en = '1' AND i_csr_addr = x"B02" THEN
 				r_minstret <= s_new_csr_value;
-			ELSE
+                        ELSIF i_minstret_increment = '1' THEN
 				r_minstret <= STD_LOGIC_VECTOR(unsigned(r_minstret) + 1);
+                        ELSE
+                                NULL;
 			END IF;
 		END IF;
 	END PROCESS p_csr_registers;

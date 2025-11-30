@@ -1,0 +1,6 @@
+using /home/arjun/projects/final_year/verification/riscof_work/src/lhu-align-01.S/ref/Reference-sail_c_simulator.signature for test-signature output.
+ELF Entry @ 0x80000000
+HTIF located at 0x80001000
+begin_signature: 0x80003110
+end_signature: 0x800031a0
+SUCCESS

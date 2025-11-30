@@ -99,6 +99,7 @@ ARCHITECTURE structural OF core IS
 			i_mem_read_id    : IN  STD_LOGIC;
 			i_mem_write_id   : IN  STD_LOGIC;
 			i_reg_write_id   : IN  STD_LOGIC;
+                        i_minstret_increment_wb : IN STD_LOGIC;
 			i_wb_src_id      : IN  t_WritebackSrc;
 			i_rd_addr_id     : IN  STD_LOGIC_VECTOR(4 DOWNTO 0);
 			i_rs1_addr_id    : IN  STD_LOGIC_VECTOR(REGFILE_ADDR_WIDTH - 1 DOWNTO 0);
@@ -156,9 +157,11 @@ ARCHITECTURE structural OF core IS
 			i_reg_write    : IN  STD_LOGIC;
 			i_wb_src       : IN  t_WritebackSrc;
 			i_rd_addr      : IN  STD_LOGIC_VECTOR(4 DOWNTO 0);
+                        i_instruction_valid : IN STD_LOGIC; 
 			o_reg_write_en : OUT STD_LOGIC;
 			o_rd_addr      : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
-			o_rd_data      : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
+			o_rd_data      : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+                        o_instructions_retired : OUT STD_LOGIC
 		);
 	END COMPONENT writeback_unit;
 
@@ -212,6 +215,7 @@ ARCHITECTURE structural OF core IS
 	SIGNAL s_ex_wb_src_out : t_WritebackSrc;
 	SIGNAL s_ex_funct3_out : STD_LOGIC_VECTOR(2 DOWNTO 0);
 	SIGNAL s_ex_rd_addr_out : STD_LOGIC_VECTOR(4 DOWNTO 0);
+        SIGNAL s_ex_valid : STD_LOGIC;
 
 	-- MEM Stage Inputs <- from EX/MEM Register
 	SIGNAL s_mem_result_in, s_mem_rs2_data_in, s_mem_pc4_in : STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -219,12 +223,14 @@ ARCHITECTURE structural OF core IS
 	SIGNAL s_mem_wb_src_in : t_WritebackSrc;
 	SIGNAL s_mem_funct3_in : STD_LOGIC_VECTOR(2 DOWNTO 0);
 	SIGNAL s_mem_rd_addr_in : STD_LOGIC_VECTOR(4 DOWNTO 0);
+        SIGNAL s_mem_valid : STD_LOGIC;
 
 	-- MEM Stage Outputs -> to MEM/WB Register
 	SIGNAL s_mem_result_rd_out, s_mem_pc4_out, s_mem_final_read_data_out : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL s_mem_wb_src_out : t_WritebackSrc;
 	SIGNAL s_mem_reg_write_out : STD_LOGIC;
 	SIGNAL s_mem_rd_addr_out : STD_LOGIC_VECTOR(4 DOWNTO 0);
+        SIGNAL s_wb_valid : STD_LOGIC;
 
 	-- WB Stage Inputs <- from MEM/WB Register
 	SIGNAL s_wb_result_rd_in, s_wb_pc4_in, s_wb_final_read_data_in : STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -236,8 +242,8 @@ ARCHITECTURE structural OF core IS
 	SIGNAL s_wb_reg_write_en_out : STD_LOGIC;
 	SIGNAL s_wb_rd_addr_out : STD_LOGIC_VECTOR(4 DOWNTO 0);
 	SIGNAL s_wb_rd_data_out : STD_LOGIC_VECTOR(31 DOWNTO 0);
-
         SIGNAL s_ex_pc_redirect_out : STD_LOGIC;
+        SIGNAL s_csr_retire_en : STD_LOGIC;
 
 BEGIN
 
@@ -329,6 +335,7 @@ BEGIN
 			s_ex_wb_src_in <= WB_SRC_EX_RESULT;
 			s_ex_src_a_in <= SRC_A_RS1;
 			s_ex_src_b_in <= SRC_B_RS2;
+                        s_ex_valid <= '0';
 			s_ex_op_type_in <= OP_R_TYPE;
 			s_ex_unit_type_in <= UNIT_ALU;
 			s_ex_immediate_in <= (OTHERS => '0');
@@ -349,6 +356,7 @@ BEGIN
 				s_ex_mem_write_in <= '0';
 				s_ex_wb_src_in <= WB_SRC_EX_RESULT;
 				s_ex_src_a_in <= SRC_A_RS1;
+                                s_ex_valid <= '0';
 				s_ex_src_b_in <= SRC_B_RS2;
 				s_ex_op_type_in <= OP_R_TYPE;
 				s_ex_unit_type_in <= UNIT_ALU;
@@ -371,6 +379,7 @@ BEGIN
 				s_ex_src_a_in <= s_id_src_a_out;
 				s_ex_src_b_in <= s_id_src_b_out;
 				s_ex_uimm_in <= s_id_uimm_out;
+                                s_ex_valid <= '1';
 				s_ex_op_type_in <= s_id_op_type_out;
 				s_ex_unit_type_in <= s_id_unit_type_out;
 				s_ex_immediate_in <= s_id_immediate_out;
@@ -408,6 +417,7 @@ BEGIN
 		i_mem_write_id   => s_ex_mem_write_in,
 		i_reg_write_id   => s_ex_reg_write_in,
 		i_wb_src_id      => s_ex_wb_src_in,
+                i_minstret_increment_wb => s_csr_retire_en,
 		i_rd_addr_id     => s_ex_rd_addr_in,
 		i_rs1_addr_id    => s_ex_rs1_addr_in,
 		i_rs2_addr_id    => s_ex_rs2_addr_in,
@@ -440,6 +450,7 @@ BEGIN
 			s_mem_funct3_in <= (OTHERS => '0');
 			s_mem_mem_read_in <= '0';
 			s_mem_mem_write_in <= '0';
+                        s_mem_valid <= '0';
 			s_mem_reg_write_in <= '0';
 			s_mem_wb_src_in <= WB_SRC_EX_RESULT;
 			s_mem_rd_addr_in <= (OTHERS => '0');
@@ -449,6 +460,7 @@ BEGIN
 			s_mem_pc4_in <= s_ex_pc4_out;
 			s_mem_funct3_in <= s_ex_funct3_out;
 			s_mem_mem_read_in <= s_ex_mem_read_out;
+                        s_mem_valid <= s_ex_valid;
 			s_mem_mem_write_in <= s_ex_mem_write_out;
 			s_mem_reg_write_in <= s_ex_reg_write_out;
 			s_mem_wb_src_in <= s_ex_wb_src_out;
@@ -491,6 +503,7 @@ BEGIN
 			s_wb_reg_write_in <= '0';
 			s_wb_wb_src_in <= WB_SRC_EX_RESULT;
 			s_wb_rd_addr_in <= (OTHERS => '0');
+                        s_wb_valid <= '0';
 		ELSIF rising_edge(i_clk) THEN
 			s_wb_final_read_data_in <= s_mem_final_read_data_out;
 			s_wb_result_rd_in <= s_mem_result_rd_out;
@@ -498,6 +511,7 @@ BEGIN
 			s_wb_reg_write_in <= s_mem_reg_write_out;
 			s_wb_wb_src_in <= s_mem_wb_src_out;
 			s_wb_rd_addr_in <= s_mem_rd_addr_out;
+                        s_wb_valid <= s_mem_valid;
 		END IF;
 	END PROCESS MEM_WB_Register_Proc;
 
@@ -510,9 +524,11 @@ BEGIN
 		i_reg_write    => s_wb_reg_write_in,
 		i_wb_src       => s_wb_wb_src_in,
 		i_rd_addr      => s_wb_rd_addr_in,
+                i_instruction_valid => s_wb_valid,
 		o_reg_write_en => s_wb_reg_write_en_out,
 		o_rd_addr      => s_wb_rd_addr_out,
-		o_rd_data      => s_wb_rd_data_out
+		o_rd_data      => s_wb_rd_data_out,
+                o_instructions_retired => s_csr_retire_en
 	);
 
 END ARCHITECTURE structural;

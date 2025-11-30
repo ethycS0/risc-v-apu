@@ -17,6 +17,7 @@ ENTITY execution_unit IS
 		i_funct3_id    : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
 		i_funct12_id   : IN STD_LOGIC_VECTOR(11 DOWNTO 0);
 		i_uimm_id      : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
+                i_minstret_increment_wb : IN STD_LOGIC;
 
 		-- Control Signals
 		i_ex_op_type_id : IN t_ExecControl;
@@ -116,6 +117,7 @@ ARCHITECTURE structural OF execution_unit IS
 			i_clk            : IN  STD_LOGIC;
 			i_rst            : IN  STD_LOGIC;
 			i_write_en       : IN  STD_LOGIC;
+                        i_minstret_increment : IN STD_LOGIC;
 			i_csr_op         : IN  t_CsrOpcodes;
 			i_csr_addr       : IN  STD_LOGIC_VECTOR(CSR_ADDR_WIDTH - 1 DOWNTO 0);
 			i_csr_data       : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -235,6 +237,7 @@ BEGIN
 		i_csr_op         => s_csr_command,
 		i_csr_data       => s_input_a,
 		i_csr_addr       => s_csr_addr_mux,
+                i_minstret_increment => i_minstret_increment_wb,
 		i_trap_triggered => s_trap_trigger,
 		i_pc_at_trap     => i_pc_id,
 		i_cause_code     => s_cause_code,
