@@ -74,9 +74,9 @@ class core(pluginTemplate):
         logger.info("VHDL compilation complete.")
 
         # 3. COMPILER SETUP
-        # Adjusted for riscv32-unknown-elf and ILP32 ABI
+        # Adjusted for riscv32-none-elf and ILP32 ABI
         self.compile_cmd = (
-            "riscv32-unknown-elf-gcc "
+            "riscv32-none-elf-gcc "
             "-march=rv32i_zicsr -mabi=ilp32 "
             "-DXLEN=32 "
             "-mstrict-align "
@@ -93,7 +93,7 @@ class core(pluginTemplate):
         )
         # self.compile_cmd = (
         #
-        #     "riscv32-unknown-elf-gcc -march=rv32i_zicsr -mabi=ilp32 "
+        #     "riscv32-none-elf-gcc -march=rv32i_zicsr -mabi=ilp32 "
         #     "-static -mcmodel=medany -fvisibility=hidden "
         #     "-nostdlib -nostartfiles -fno-plt -fno-pic -g "
         #     f"-T {self.pluginpath}/env/link.ld "
@@ -145,7 +145,7 @@ class core(pluginTemplate):
             # Note: --verilog-data-width=4 creates 32-bit words
 
             bin_file = os.path.join(test_dir, "mem.bin")
-            objcopy_cmd = f"riscv32-unknown-elf-objcopy -O binary " f"{elf} {bin_file}"
+            objcopy_cmd = f"riscv32-none-elf-objcopy -O binary " f"{elf} {bin_file}"
             utils.shellCommand(objcopy_cmd).run(cwd=test_dir)
 
             # Now, read that binary and write a clean hex text file
@@ -174,7 +174,7 @@ class core(pluginTemplate):
                 continue
 
             # STEP 3: Extract Signature Addresses
-            nm_cmd = f"riscv32-unknown-elf-nm {elf}"
+            nm_cmd = f"riscv32-none-elf-nm {elf}"
             try:
                 output = subprocess.check_output(
                     shlex.split(nm_cmd), cwd=test_dir

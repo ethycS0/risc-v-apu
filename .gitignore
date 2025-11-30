@@ -4,3 +4,4 @@ work-obj93.cf
 sim/*.ghw
 *.o
 *.cf
+riscof_work
