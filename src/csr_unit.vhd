@@ -3,27 +3,26 @@ USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
 USE work.rv32i_pkg.ALL;
 
--- Handle MRET 
 ENTITY csr_unit IS
 	PORT (
 		i_clk : IN STD_LOGIC;
 		i_rst : IN STD_LOGIC;
 
-		-- Control Signals
-		i_write_en : IN STD_LOGIC;
-                i_minstret_increment : IN STD_LOGIC;
+		i_write_en           : IN STD_LOGIC;
+		i_minstret_increment : IN STD_LOGIC;
+		i_is_mret            : IN STD_LOGIC;
 
-		-- Data from Decode/Execute Stage
-		i_csr_op   : IN t_CsrOpcodes; -- RW, RS, RC, etc.
-		i_csr_addr : IN STD_LOGIC_VECTOR(CSR_ADDR_WIDTH - 1 DOWNTO 0);
+		i_csr_op   : IN t_CsrOpcodes;
+		i_csr_addr : IN STD_LOGIC_VECTOR(11 DOWNTO 0);
 		i_csr_data : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 
-                i_trap_triggered : IN STD_LOGIC;
-                i_pc_at_trap : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-                i_cause_code : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+		i_trap_triggered : IN STD_LOGIC;
+		i_pc_at_trap     : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+		i_cause_code     : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+		i_trap_mtval     : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 
-		-- Outputs 
-                o_mtvec : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+		o_mtvec     : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+		o_mepc      : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		o_read_data : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
 	);
 END ENTITY csr_unit;
@@ -32,115 +31,124 @@ ARCHITECTURE behavioral OF csr_unit IS
 	SIGNAL s_selected_reg_val : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL s_new_csr_value : STD_LOGIC_VECTOR(31 DOWNTO 0);
 
-	-- || Internal Registers ||
+	CONSTANT c_mvendorid : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0');
+	CONSTANT c_misa_val : STD_LOGIC_VECTOR(31 DOWNTO 0) := x"40000100";
 
-	-- Status and Information
-	SIGNAL r_misa : STD_LOGIC_VECTOR(31 DOWNTO 0) := x"00000000"; -- x301: Set to RV32I later 
-	SIGNAL r_mvendorid : STD_LOGIC_VECTOR(31 DOWNTO 0) := x"00000000"; -- xF11: Read-Only
-	SIGNAL r_mstatus : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0'); -- x300
+	SIGNAL r_mie_bit : STD_LOGIC := '0';
+	SIGNAL r_mpie_bit : STD_LOGIC := '0';
 
-	-- Exception and Trap 
-	SIGNAL r_mtvec : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0'); -- x305
-	SIGNAL r_mepc : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0'); -- x341
-	SIGNAL r_mcause : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0'); -- x342
-	SIGNAL r_mie : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0'); -- x304 
-	SIGNAL r_mip : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0'); -- x344
+	SIGNAL r_mtvec : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0');
+	SIGNAL r_mtval : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0');
+	SIGNAL r_mepc : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0');
+	SIGNAL r_mcause : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0');
+	SIGNAL r_mie_reg : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0');
+	SIGNAL r_mip_reg : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0');
 
-	-- Verification Registers (Counters)
-	SIGNAL r_mcycle : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0'); -- xB00
-	SIGNAL r_minstret : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0'); -- xB02
+	SIGNAL r_mcycle : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0');
+	SIGNAL r_minstret : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0');
+	SIGNAL r_mscratch : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0');
 
 BEGIN
 
-	p_csr_select : PROCESS (i_csr_addr, r_misa, r_mvendorid, r_mstatus, r_mtvec, r_mepc, r_mcause, r_mie, r_mip, r_mcycle, r_minstret)
+	p_csr_select : PROCESS (i_csr_addr, r_mtvec, r_mepc, r_mcause, r_mtval, r_mie_reg, r_mip_reg, r_mcycle, r_minstret, r_mie_bit, r_mpie_bit, r_mscratch)
 	BEGIN
+		s_selected_reg_val <= (OTHERS => '0');
 		CASE i_csr_addr IS
-			WHEN x"301" => s_selected_reg_val <= r_misa;
-			WHEN x"F11" => s_selected_reg_val <= r_mvendorid;
-			WHEN x"300" => s_selected_reg_val <= r_mstatus;
+			WHEN x"F11" => s_selected_reg_val <= c_mvendorid;
+			WHEN x"301" => s_selected_reg_val <= c_misa_val;
+
+			WHEN x"300" =>
+				s_selected_reg_val(31 DOWNTO 13) <= (OTHERS => '0');
+				s_selected_reg_val(12 DOWNTO 11) <= "11";
+				s_selected_reg_val(10 DOWNTO 8) <= (OTHERS => '0');
+				s_selected_reg_val(7) <= r_mpie_bit;
+				s_selected_reg_val(6 DOWNTO 4) <= (OTHERS => '0');
+				s_selected_reg_val(3) <= r_mie_bit;
+				s_selected_reg_val(2 DOWNTO 0) <= (OTHERS => '0');
+
 			WHEN x"305" => s_selected_reg_val <= r_mtvec;
 			WHEN x"341" => s_selected_reg_val <= r_mepc;
 			WHEN x"342" => s_selected_reg_val <= r_mcause;
-			WHEN x"304" => s_selected_reg_val <= r_mie;
-			WHEN x"344" => s_selected_reg_val <= r_mip;
+			WHEN x"343" => s_selected_reg_val <= r_mtval;
+			WHEN x"304" => s_selected_reg_val <= r_mie_reg;
+			WHEN x"340" => s_selected_reg_val <= r_mscratch;
+			WHEN x"344" => s_selected_reg_val <= r_mip_reg;
 			WHEN x"B00" => s_selected_reg_val <= r_mcycle;
 			WHEN x"B02" => s_selected_reg_val <= r_minstret;
 			WHEN OTHERS => s_selected_reg_val <= (OTHERS => '0');
 		END CASE;
-	END PROCESS p_csr_select;
+	END PROCESS;
 
-
-	p_csr_atomic_logic : PROCESS (s_selected_reg_val, i_csr_data, i_csr_op)
+	PROCESS (s_selected_reg_val, i_csr_data, i_csr_op)
 	BEGIN
 		CASE i_csr_op IS
-			WHEN CSR_RW => -- CSRRW (Write): New value = Input Data
-				s_new_csr_value <= i_csr_data;
-			WHEN CSR_RS => -- CSRRS (Set/OR): New value = Old OR Input
-				s_new_csr_value <= s_selected_reg_val OR i_csr_data;
-			WHEN CSR_RC => -- CSRRC (Clear/AND NOT): New value = Old AND (NOT Input)
-				s_new_csr_value <= s_selected_reg_val AND (NOT i_csr_data);
-			WHEN OTHERS =>
-				s_new_csr_value <= s_selected_reg_val;
+			WHEN CSR_RW => s_new_csr_value <= i_csr_data;
+			WHEN CSR_RS => s_new_csr_value <= s_selected_reg_val OR i_csr_data;
+			WHEN CSR_RC => s_new_csr_value <= s_selected_reg_val AND (NOT i_csr_data);
+			WHEN OTHERS => s_new_csr_value <= s_selected_reg_val;
 		END CASE;
-	END PROCESS p_csr_atomic_logic;
+	END PROCESS;
 
-
-	p_csr_registers : PROCESS (i_clk, i_rst)
+	PROCESS (i_clk, i_rst)
 	BEGIN
 		IF i_rst = '1' THEN
-			r_misa <= x"40000100";
-			r_mstatus <= (OTHERS => '0');
-			r_mvendorid <= (OTHERS => '0');
+			r_mie_bit <= '0';
+			r_mpie_bit <= '0';
 			r_mtvec <= (OTHERS => '0');
 			r_mepc <= (OTHERS => '0');
 			r_mcause <= (OTHERS => '0');
-			r_mie <= (OTHERS => '0');
-			r_mip <= (OTHERS => '0');
+			r_mtval <= (OTHERS => '0');
+			r_mie_reg <= (OTHERS => '0');
 			r_mcycle <= (OTHERS => '0');
 			r_minstret <= (OTHERS => '0');
-
+			r_mscratch <= (OTHERS => '0');
 		ELSIF rising_edge(i_clk) THEN
-                        IF i_trap_triggered = '1' THEN 
-                                r_mepc <= i_pc_at_trap;
-                                r_mcause <= i_cause_code;
 
-                                r_mstatus(3) <= '0';
-                                r_mstatus(7) <= r_mstatus(3);
-                        ELSIF (i_csr_addr = x"341" AND i_write_en = '0' AND i_csr_op = CSR_ILLEGAL) THEN 
-                                r_mstatus(3) <= r_mstatus(7); 
-                                r_mstatus(7) <= '1';
+			IF i_trap_triggered = '1' THEN
+				r_mepc <= i_pc_at_trap;
+				r_mcause <= i_cause_code;
+				r_mtval <= i_trap_mtval;
+				r_mpie_bit <= r_mie_bit;
+				r_mie_bit <= '0';
+
+			ELSIF i_is_mret = '1' THEN
+				r_mie_bit <= r_mpie_bit;
+				r_mpie_bit <= '1';
+
 			ELSIF i_write_en = '1' THEN
 				CASE i_csr_addr IS
-					WHEN x"301" => NULL;
-					WHEN x"F11" => NULL;
-					WHEN x"300" => r_mstatus <= s_new_csr_value;
+					WHEN x"300" =>
+						r_mie_bit <= s_new_csr_value(3);
+						r_mpie_bit <= s_new_csr_value(7);
 					WHEN x"305" => r_mtvec <= s_new_csr_value;
+					WHEN x"340" => r_mscratch <= s_new_csr_value;
 					WHEN x"341" => r_mepc <= s_new_csr_value;
 					WHEN x"342" => r_mcause <= s_new_csr_value;
-					WHEN x"304" => r_mie <= s_new_csr_value;
-					WHEN x"344" => r_mip <= s_new_csr_value;
+					WHEN x"343" => r_mtval <= s_new_csr_value;
+					WHEN x"304" => r_mie_reg <= s_new_csr_value;
+					WHEN x"B00" => r_mcycle <= s_new_csr_value;
+					WHEN x"B02" => r_minstret <= s_new_csr_value;
 					WHEN OTHERS => NULL;
 				END CASE;
 			END IF;
 
-			IF i_write_en = '1' AND i_csr_addr = x"B00" THEN
-				r_mcycle <= s_new_csr_value;
+			IF (i_write_en = '1' AND i_csr_addr = x"B00") THEN
+				NULL;
 			ELSE
 				r_mcycle <= STD_LOGIC_VECTOR(unsigned(r_mcycle) + 1);
 			END IF;
-                        
-                        -- Can be Improved
-			IF i_write_en = '1' AND i_csr_addr = x"B02" THEN
-				r_minstret <= s_new_csr_value;
-                        ELSIF i_minstret_increment = '1' THEN
+
+			IF (i_write_en = '1' AND i_csr_addr = x"B02") THEN
+				NULL;
+			ELSIF i_minstret_increment = '1' THEN
 				r_minstret <= STD_LOGIC_VECTOR(unsigned(r_minstret) + 1);
-                        ELSE
-                                NULL;
 			END IF;
+
 		END IF;
-	END PROCESS p_csr_registers;
-        
-        o_mtvec <= r_mtvec;
+	END PROCESS;
+
+	o_mtvec <= r_mtvec;
+	o_mepc <= r_mepc;
 	o_read_data <= s_selected_reg_val;
 
 END ARCHITECTURE behavioral;

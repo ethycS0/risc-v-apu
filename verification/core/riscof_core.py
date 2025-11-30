@@ -75,31 +75,31 @@ class core(pluginTemplate):
 
         # 3. COMPILER SETUP
         # Adjusted for riscv32-none-elf and ILP32 ABI
-        self.compile_cmd = (
-            "riscv32-none-elf-gcc "
-            "-march=rv32i_zicsr -mabi=ilp32 "
-            "-DXLEN=32 "
-            "-mstrict-align "
-            "-mno-save-restore "
-            "-nodefaultlibs "
-            "-Wl,--no-relax "
-            # CHANGE HERE: Add -mno-arch-attr to prevent assembler overrides
-            "-Wa,-march=rv32i_zicsr -Wa,-mno-arch-attr "
-            "-static -mcmodel=medany -fvisibility=hidden "
-            "-nostdlib -nostartfiles -fno-plt -fno-pic -g "
-            f"-T {self.pluginpath}/env/link.ld "
-            f"-I {self.pluginpath}/env/ "
-            f"-I {archtest_env} {{1}} -o {{2}} {{3}}"
-        )
         # self.compile_cmd = (
-        #
-        #     "riscv32-none-elf-gcc -march=rv32i_zicsr -mabi=ilp32 "
+        #     "riscv32-none-elf-gcc "
+        #     "-march=rv32i_zicsr -mabi=ilp32 "
+        #     "-DXLEN=32 "
+        #     "-mstrict-align "
+        #     "-mno-save-restore "
+        #     "-nodefaultlibs "
+        #     "-Wl,--no-relax "
+        #     # CHANGE HERE: Add -mno-arch-attr to prevent assembler overrides
+        #     "-Wa,-march=rv32i_zicsr -Wa,-mno-arch-attr "
         #     "-static -mcmodel=medany -fvisibility=hidden "
         #     "-nostdlib -nostartfiles -fno-plt -fno-pic -g "
         #     f"-T {self.pluginpath}/env/link.ld "
         #     f"-I {self.pluginpath}/env/ "
         #     f"-I {archtest_env} {{1}} -o {{2}} {{3}}"
         # )
+        self.compile_cmd = (
+
+            "riscv32-none-elf-gcc -march=rv32i_zicsr -mabi=ilp32 "
+            "-static -mcmodel=medany -fvisibility=hidden "
+            "-nostdlib -nostartfiles -fno-plt -fno-pic -g "
+            f"-T {self.pluginpath}/env/link.ld "
+            f"-I {self.pluginpath}/env/ "
+            f"-I {archtest_env} {{1}} -o {{2}} {{3}}"
+        )
         logger.info(f"Using Linker Script at: {self.pluginpath}/env/link.ld")
 
     def build(self, isa_yaml, platform_yaml):

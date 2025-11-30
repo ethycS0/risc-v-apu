@@ -147,7 +147,6 @@ BEGIN
         VARIABLE v_sig_end_idx : INTEGER;
         VARIABLE v_dump_val : STD_LOGIC_VECTOR(31 DOWNTO 0);
 
--- Inside the IF block:
     BEGIN
         IF rising_edge(s_clk) THEN
             IF s_data_write_en = '1' THEN
