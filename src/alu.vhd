@@ -40,7 +40,7 @@ BEGIN
 	adder_result <= extended_adder_result(31 DOWNTO 0);
 
         internal_flags.carry    <= extended_adder_result(32);
-        internal_flags.overflow <= extended_adder_result(32) XOR extended_adder_result(31); 
+        internal_flags.overflow <= '1' WHEN (i_alu_x(31) = adder_b_operand(31)) AND (adder_result(31) /= i_alu_x(31)) ELSE '0';
         internal_flags.negative <= adder_result(31);
         internal_flags.zero     <= '1' WHEN adder_result = (31 DOWNTO 0 => '0') ELSE '0';
 
