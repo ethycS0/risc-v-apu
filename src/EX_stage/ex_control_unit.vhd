@@ -3,9 +3,9 @@ USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
 USE work.rv32i_pkg.ALL;
 
-ENTITY ex_decode_unit IS
+ENTITY ex_control_unit IS
 	PORT (
-		i_ex_op_type : IN t_ExecControl;
+		i_opr_type : IN t_OprType;
 		i_funct3     : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
 		i_funct12     : IN STD_LOGIC_VECTOR(11 DOWNTO 0);
 		i_src_a_data : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -16,14 +16,14 @@ ENTITY ex_decode_unit IS
 		o_csr_command : OUT t_CsrOpcodes
 
 	);
-END ENTITY ex_decode_unit;
+END ENTITY ex_control_unit;
 
-ARCHITECTURE behavioral OF ex_decode_unit IS
+ARCHITECTURE behavioral OF ex_control_unit IS
         SIGNAL funct7 : STD_LOGIC_VECTOR(6 DOWNTO 0);
 BEGIN
         funct7 <= i_funct12(11 DOWNTO 5);
 
-	PROCESS (i_ex_op_type, i_funct3, funct7, i_funct12, i_src_a_data)
+	PROCESS (i_opr_type, i_funct3, funct7, i_funct12, i_src_a_data)
 		VARIABLE v_src_is_zero : BOOLEAN;
 	BEGIN
 		o_alu_command <= ALU_ADD;
@@ -37,7 +37,7 @@ BEGIN
 			v_src_is_zero := FALSE;
 		END IF;
 
-		CASE i_ex_op_type IS
+		CASE i_opr_type IS
 			WHEN OP_LUI =>
 				o_alu_command <= ALU_COPY_B;
 
@@ -50,7 +50,7 @@ BEGIN
 			WHEN OP_R_TYPE | OP_I_TYPE =>
 				CASE i_funct3 IS
 					WHEN "000" =>
-						IF i_ex_op_type = OP_R_TYPE AND funct7(5) = '1' THEN
+						IF i_opr_type = OP_R_TYPE AND funct7(5) = '1' THEN
 							o_alu_command <= ALU_SUB;
 						ELSE
 							o_alu_command <= ALU_ADD;

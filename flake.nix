@@ -36,9 +36,7 @@
             spike
             dtc
 
-            # RISC-V 32-bit bare-metal toolchain
             pkgsCross.riscv32-embedded.stdenv.cc
-
             asm-lsp
             clang
           ];

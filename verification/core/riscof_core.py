@@ -42,23 +42,32 @@ class core(pluginTemplate):
 
         # B. Compile Source Files (Order matches your Makefile)
         src_files = [
-            "src/alu.vhd",
-            "src/ex_decode_unit.vhd",
-            "src/branch_adder.vhd",
-            "src/branch_control.vhd",
+            # Common (Compile first)
+            "src/common/common.vhd",
+            # Top Level & Global Logic
             "src/core.vhd",
-            "src/csr_unit.vhd",
-            "src/decode_control_unit.vhd",
-            "src/execution_unit.vhd",
-            "src/forwarding_unit.vhd",
             "src/hazard_detection_unit.vhd",
-            "src/immediate_constructor.vhd",
-            "src/instruction_decode.vhd",
-            "src/instruction_fetch.vhd",
-            "src/memory_unit.vhd",
-            "src/register_file.vhd",
-            "src/writeback_unit.vhd",
-            "tb/tb_core.vhd",  # The Testbench
+            # IF Stage
+            "src/IF_stage/instruction_fetch_stage.vhd",
+            # ID Stage
+            "src/ID_stage/id_control_unit.vhd",
+            "src/ID_stage/immediate_reconstruct_unit.vhd",
+            "src/ID_stage/instruction_decode_stage.vhd",
+            "src/ID_stage/register_file.vhd",
+            # EX Stage
+            "src/EX_stage/alu.vhd",
+            "src/EX_stage/branch_adder.vhd",
+            "src/EX_stage/branch_control_unit.vhd",
+            "src/EX_stage/csr_unit.vhd",
+            "src/EX_stage/ex_control_unit.vhd",
+            "src/EX_stage/execution_stage.vhd",
+            "src/EX_stage/forwarding_unit.vhd",
+            # MEM Stage
+            "src/MEM_stage/memory_stage.vhd",
+            # WB Stage
+            "src/WB_stage/writeback_stage.vhd",
+            # Testbench
+            "tb/tb_core_riscof.vhd",
         ]
 
         for src in src_files:
@@ -68,31 +77,15 @@ class core(pluginTemplate):
             utils.shellCommand(analyze_cmd).run(cwd=work_dir)
 
         # C. Elaborate
-        elaborate_cmd = f"ghdl -e --std=08 -frelaxed --workdir={work_dir} tb_core"
+        elaborate_cmd = (
+            f"ghdl -e --std=08 -frelaxed --workdir={work_dir} tb_core_riscof"
+        )
         utils.shellCommand(elaborate_cmd).run(cwd=work_dir)
 
         logger.info("VHDL compilation complete.")
 
         # 3. COMPILER SETUP
-        # Adjusted for riscv32-none-elf and ILP32 ABI
-        # self.compile_cmd = (
-        #     "riscv32-none-elf-gcc "
-        #     "-march=rv32i_zicsr -mabi=ilp32 "
-        #     "-DXLEN=32 "
-        #     "-mstrict-align "
-        #     "-mno-save-restore "
-        #     "-nodefaultlibs "
-        #     "-Wl,--no-relax "
-        #     # CHANGE HERE: Add -mno-arch-attr to prevent assembler overrides
-        #     "-Wa,-march=rv32i_zicsr -Wa,-mno-arch-attr "
-        #     "-static -mcmodel=medany -fvisibility=hidden "
-        #     "-nostdlib -nostartfiles -fno-plt -fno-pic -g "
-        #     f"-T {self.pluginpath}/env/link.ld "
-        #     f"-I {self.pluginpath}/env/ "
-        #     f"-I {archtest_env} {{1}} -o {{2}} {{3}}"
-        # )
         self.compile_cmd = (
-
             "riscv32-none-elf-gcc -march=rv32i_zicsr -mabi=ilp32 "
             "-static -mcmodel=medany -fvisibility=hidden "
             "-nostdlib -nostartfiles -fno-plt -fno-pic -g "
@@ -105,7 +98,6 @@ class core(pluginTemplate):
     def build(self, isa_yaml, platform_yaml):
         ispec = utils.load_yaml(isa_yaml)["hart0"]
         self.xlen = "64" if 64 in ispec["supported_xlen"] else "32"
-        # We handle specific ISA string building in runTests to match test requirements
 
     def runTests(self, testList):
         def to_signed32(n):
@@ -118,15 +110,12 @@ class core(pluginTemplate):
             test_dir = testentry["work_dir"]
 
             elf = "mycpu.elf"
-            hex_file = "code.hex"  # Matches G_IMEM_FILENAME in TB
+            hex_file = "code.hex"
             sig_file = "signature.output"
             wave_file = "sim.ghw"
 
             # Setup ISA String
             march_string = "rv32i_zicsr"
-            # march_string = testentry["isa"].lower()
-            # if "zicsr" not in march_string:
-            #     march_string += "_zicsr"
 
             # STEP 1: Compile Test to ELF
             compile_macros = " -D" + " -D".join(testentry["macros"])
@@ -142,29 +131,21 @@ class core(pluginTemplate):
                 continue
 
             # STEP 2: Create Hex File
-            # Note: --verilog-data-width=4 creates 32-bit words
-
             bin_file = os.path.join(test_dir, "mem.bin")
             objcopy_cmd = f"riscv32-none-elf-objcopy -O binary " f"{elf} {bin_file}"
             utils.shellCommand(objcopy_cmd).run(cwd=test_dir)
 
-            # Now, read that binary and write a clean hex text file
-            # This handles Little Endian to Big Endian conversion for VHDL textio
             if os.path.exists(bin_file):
                 with open(bin_file, "rb") as f_bin, open(
                     os.path.join(test_dir, hex_file), "w"
                 ) as f_hex:
                     byte_content = f_bin.read()
-                    # Process 4 bytes at a time (32-bit word)
                     for i in range(0, len(byte_content), 4):
                         chunk = byte_content[i : i + 4]
                         if len(chunk) == 4:
-                            # Convert Little Endian bytes to Integer
                             val = int.from_bytes(chunk, byteorder="little")
-                            # Write as 8-char Hex string (Big Endian for VHDL read)
                             f_hex.write(f"{val:08x}\n")
                         else:
-                            # Padding for last incomplete word (unlikely but safe)
                             val = int.from_bytes(
                                 chunk + b"\x00" * (4 - len(chunk)), byteorder="little"
                             )
@@ -215,20 +196,18 @@ class core(pluginTemplate):
             term_offset = (tohost - mem_base) if tohost >= mem_base else 0
 
             # STEP 4: Copy the GHDL library file
-            # This allows the test directory to "see" the compiled VHDL from step 1
             work_file = os.path.join(self.work_dir, "work-obj08.cf")
             if os.path.exists(work_file):
                 shutil.copy(work_file, test_dir)
 
             # STEP 5: Run Simulation
-            # Note: We pass Integers to Generics, NOT hex strings (X"...")
             ghdl_cmd_list = [
                 "ghdl",
                 "-r",
                 "--std=08",
                 "-frelaxed",
                 f"--workdir={test_dir}",
-                "tb_core",
+                "tb_core_riscof",
                 f"-gG_IMEM_FILENAME={hex_file}",
                 f"-gG_SIG_FILENAME={sig_file}",
                 f"-gG_SIG_START_OFFSET={sig_start_offset}",
@@ -246,11 +225,9 @@ class core(pluginTemplate):
                     ghdl_cmd_list, cwd=test_dir, capture_output=True, text=True
                 )
 
-                # 2. Check for missing signature (Indicates Timeout/Failure)
                 if not os.path.exists(os.path.join(test_dir, sig_file)):
                     logging.error(f"\n[FAIL] Test: {test}")
                     logging.error("--- GHDL STDOUT (VHDL Reports) ---")
-                    # 3. Only print stdout if proc ran successfully
                     if proc:
                         logging.error(proc.stdout)
                         logging.error("--- GHDL STDERR (System Errors) ---")
@@ -259,11 +236,10 @@ class core(pluginTemplate):
 
             except Exception as e:
                 logging.error(f"Execution Error for {test}: {e}")
-                # If proc exists (it crashed mid-run), print what we have
                 if proc:
                     logging.error(proc.stdout)
                     logging.error(proc.stderr)
-                continue  # STEP 6: Finalize Signature
+                continue
 
             src_sig = os.path.join(test_dir, sig_file)
             target_sig = os.path.join(test_dir, f"DUT-{self.__model__}.signature")
@@ -272,12 +248,9 @@ class core(pluginTemplate):
                 with open(src_sig, "r") as f_in:
                     lines = f_in.readlines()
 
-                # 2. HACK: Remove trailing '00000000' caused by assembler padding
-                # This fixes the mismatch where DUT has one extra zero line at the end.
                 if lines and lines[-1].strip() == "00000000":
                     lines.pop()
 
-                # 3. Write clean signature to the target file
                 with open(target_sig, "w") as f_out:
                     for line in lines:
                         f_out.write(line.lower())
@@ -285,12 +258,9 @@ class core(pluginTemplate):
                 testentry["dut_signature"] = target_sig
             else:
                 logging.error(f"No signature generated for {test}")
-                # This will cause signature mismatch but won't crash RISCOF
                 with open(target_sig, "w") as f:
-                    # Calculate expected signature size
                     sig_size = (sig_end - sig_begin) // 4 if sig_end > sig_begin else 1
 
-                    # Write dummy data (all FFs to indicate failure)
                     for _ in range(max(1, sig_size)):
                         f.write("ffffffff\n")
 

@@ -2,15 +2,15 @@ LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
 
-ENTITY immediate_constructor_unit IS
+ENTITY immediate_reconstruct_unit IS
 	PORT (
 		i_instruction : IN std_logic_vector(31 DOWNTO 0);
 		o_immediate : OUT std_logic_vector(31 DOWNTO 0)
 	);
-END ENTITY immediate_constructor_unit;
+END ENTITY immediate_reconstruct_unit;
 
 
-ARCHITECTURE behavioral OF immediate_constructor_unit IS
+ARCHITECTURE behavioral OF immediate_reconstruct_unit IS
 BEGIN
 	imm_reconstruct : PROCESS (i_instruction)
 	BEGIN
