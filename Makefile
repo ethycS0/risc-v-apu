@@ -1,5 +1,9 @@
 GHDL = ghdl
 GTKWAVE = gtkwave
+YOSYS = yosys
+NEXTPNR = nextpnr-himbaechel
+GOWIN_PACK = gowin_pack
+OPENFPGALOADER = openFPGALoader
 
 ROOT_DIR := $(shell pwd)
 
@@ -22,14 +26,23 @@ SRC_FILES = \
 	$(ROOT_DIR)/src/EX_stage/forwarding_unit.vhd \
 	$(ROOT_DIR)/src/MEM_stage/memory_stage.vhd \
 	$(ROOT_DIR)/src/WB_stage/writeback_stage.vhd \
-	$(ROOT_DIR)/src/UART/uart.vhd
+	$(ROOT_DIR)/src/UART/uart.vhd \
+	$(ROOT_DIR)/src/soc.vhd
 
-# TB ?= tb_core_hex
-TB ?= tb_uart
+TB ?= tb_core_hex
 VHDL_TESTBENCH = $(ROOT_DIR)/tb/$(TB).vhd
 TOP_LEVEL = $(TB)
 WAVEFORM_FILE = sim/$(TOP_LEVEL).ghw
 GHDL_FLAGS = --std=08 -frelaxed
+
+SOC_TOP = soc
+DEVICE = GW2A-LV18PG256C8/I7
+FAMILY = GW2A-18C
+BOARD = tangprimer20k
+CONSTRAINT_FILE = $(ROOT_DIR)/constraints/tang_primer_20k.cst
+BUILD_DIR = build
+
+.PHONY: all run compile elaborate view clean synth pnr bitstream program program-flash fpga
 
 all: run
 
@@ -50,4 +63,55 @@ clean:
 	$(GHDL) --clean
 	rm -rf sim work-obj08.cf imem.hex
 	$(MAKE) -C software/asm clean
-	
+
+synth:
+	mkdir -p $(BUILD_DIR)
+	$(YOSYS) -m ghdl -p " \
+		ghdl $(GHDL_FLAGS) $(PKG_FILES) $(SRC_FILES) -e $(SOC_TOP); \
+		synth_gowin -top $(SOC_TOP) -json $(BUILD_DIR)/$(SOC_TOP).json"
+
+pnr: synth
+	$(NEXTPNR) --json $(BUILD_DIR)/$(SOC_TOP).json \
+		--write $(BUILD_DIR)/$(SOC_TOP)_pnr.json \
+		--device $(DEVICE) \
+		--vopt family=$(FAMILY) \
+		--vopt cst=$(CONSTRAINT_FILE)	
+bitstream: pnr
+	$(GOWIN_PACK) -d $(FAMILY) -o $(BUILD_DIR)/$(SOC_TOP).fs $(BUILD_DIR)/$(SOC_TOP)_pnr.json
+	@echo "Bitstream generated: $(BUILD_DIR)/$(SOC_TOP).fs"
+
+program: bitstream
+	$(OPENFPGALOADER) -c ft2232 -b $(BOARD) $(BUILD_DIR)/$(SOC_TOP).fs
+	@echo "Programmed to SRAM (volatile)"
+
+fpga: bitstream
+	@echo "FPGA build complete!"
+	@echo "Run 'make program' to load to SRAM (temporary)"
+	@echo "Run 'make program-flash' to load to Flash (persistent)"
+
+uart:
+	@echo "Opening UART terminal (115200 baud)..."
+	@echo "Press Ctrl-A then K to exit"
+	screen /dev/ttyUSB1 115200
+
+clean:
+	$(GHDL) --clean
+	rm -rf sim work-obj08.cf imem.hex $(BUILD_DIR)
+	$(MAKE) -C software/asm clean
+
+help:
+	@echo "Simulation targets:"
+	@echo "  make run              - Run testbench simulation"
+	@echo "  make view             - View waveform with GTKWave"
+	@echo "  make TB=<name> run    - Run specific testbench"
+	@echo ""
+	@echo "FPGA targets:"
+	@echo "  make synth            - Synthesize with Yosys"
+	@echo "  make pnr              - Place and route with nextpnr"
+	@echo "  make bitstream        - Generate bitstream"
+	@echo "  make program          - Program to FPGA SRAM (temporary)"
+	@echo "  make program-flash    - Program to FPGA Flash (persistent)"
+	@echo "  make fpga             - Complete FPGA build"
+	@echo "  make uart             - Open UART terminal"
+	@echo ""
+	@echo "  make clean            - Clean all build files"

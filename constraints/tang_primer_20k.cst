@@ -1,0 +1,11 @@
+// Clock (27 MHz on SoM)
+IO_LOC "clk" H11;
+IO_PORT "clk" PULL_MODE=UP;
+
+// UART RX (Input T13)
+IO_LOC "uart_rx" T13;
+IO_PORT "uart_rx" IO_TYPE=LVCMOS33 PULL_MODE=UP;
+
+// UART TX (Output M11)
+IO_LOC "uart_tx" M11;
+IO_PORT "uart_tx" IO_TYPE=LVCMOS33 PULL_MODE=UP DRIVE=8;

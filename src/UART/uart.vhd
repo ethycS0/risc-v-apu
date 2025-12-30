@@ -43,7 +43,7 @@ BEGIN
 
 	o_data <= s_rx_data;
 
-	U_BAUD : PROCESS (i_clk, i_rst)
+	P_BAUD : PROCESS (i_clk, i_rst)
 		VARIABLE baud_count : INTEGER := 0;
 	BEGIN
 		IF rising_edge(i_clk) THEN
@@ -60,9 +60,9 @@ BEGIN
 				END IF;
 			END IF;
 		END IF;
-	END PROCESS U_BAUD;
+	END PROCESS P_BAUD;
 
-	U_TX : PROCESS (i_clk, i_rst)
+	P_TX : PROCESS (i_clk, i_rst)
 		VARIABLE tx_bit_idx : INTEGER := 0;
 	BEGIN
 		IF rising_edge(i_clk) THEN
@@ -110,9 +110,9 @@ BEGIN
 				END IF;
 			END IF;
 		END IF;
-	END PROCESS U_TX;
+	END PROCESS P_TX;
 
-	U_RX : PROCESS (i_clk, i_rst)
+	P_RX : PROCESS (i_clk, i_rst)
 		VARIABLE rx_bit_idx : INTEGER := 0;
 		VARIABLE rx_baud_counter : INTEGER := 0;
 	BEGIN
@@ -174,15 +174,15 @@ BEGIN
 				END CASE;
 			END IF;
 		END IF;
-	END PROCESS U_RX;
+	END PROCESS P_RX;
 
-	U_SYNC : PROCESS (i_clk)
+	P_SYNC : PROCESS (i_clk)
 	BEGIN
 		IF rising_edge(i_clk) THEN
 			r_rx_sync1 <= i_rx;
 			r_rx_sync2 <= r_rx_sync1;
 		END IF;
-	END PROCESS;
+	END PROCESS P_SYNC;
 
 END ARCHITECTURE behavioral;
 
