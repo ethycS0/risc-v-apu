@@ -1,7 +1,11 @@
 [libraries]
-lib.files = [
-    'src/common.vhd',
-    'src/*.vhd',
-    'tb/*.vhd'
-]
+common.files = ["src/*.vhd"]
 
+work.files = [
+  "src/core.vhd",
+  "src/IF_stage/*.vhd",
+  "src/ID_stage/*.vhd",
+  "src/EX_stage/*.vhd",
+  "src/MEM_stage/*.vhd",
+  "src/WB_stage/*.vhd"
+]

@@ -43,7 +43,7 @@ class core(pluginTemplate):
         # B. Compile Source Files (Order matches your Makefile)
         src_files = [
             # Common (Compile first)
-            "src/common/common.vhd",
+            "src/common.vhd",
             # Top Level & Global Logic
             "src/core.vhd",
             "src/hazard_detection_unit.vhd",

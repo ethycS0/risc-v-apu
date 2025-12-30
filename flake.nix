@@ -19,26 +19,40 @@
       {
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
+            # Language Runtimes
+            python312
+
+            # Language Servers
             vhdl-ls
+            asm-lsp
+
+            # Compilation & Simulation
             ghdl
             gtkwave
+
+            # Synthesis & Implementation
             yosys
             yosys-ghdl
-            gnumake
-            python312
+            nextpnr
+            python312Packages.apycula
+            openfpgaloader
+
+            # Verification & Compliance
             python312Packages.riscof
             python312Packages.distutils
-            pandoc
-            graphviz
-            netlistsvg
-            texlive.combined.scheme-full
             sail-riscv
-            spike
-            dtc
 
+            # Documentation
+            texlive.combined.scheme-full
+
+            # Build Toolchains
             pkgsCross.riscv32-embedded.stdenv.cc
-            asm-lsp
             clang
+            gnumake
+
+            # Serial Interface
+            screen
+
           ];
 
           shellHook = ''

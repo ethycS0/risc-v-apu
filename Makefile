@@ -3,7 +3,7 @@ GTKWAVE = gtkwave
 
 ROOT_DIR := $(shell pwd)
 
-PKG_FILES = $(ROOT_DIR)/src/common/common.vhd
+PKG_FILES = $(ROOT_DIR)/src/common.vhd
 
 SRC_FILES = \
 	$(ROOT_DIR)/src/core.vhd \
@@ -21,9 +21,11 @@ SRC_FILES = \
 	$(ROOT_DIR)/src/EX_stage/execution_stage.vhd \
 	$(ROOT_DIR)/src/EX_stage/forwarding_unit.vhd \
 	$(ROOT_DIR)/src/MEM_stage/memory_stage.vhd \
-	$(ROOT_DIR)/src/WB_stage/writeback_stage.vhd
+	$(ROOT_DIR)/src/WB_stage/writeback_stage.vhd \
+	$(ROOT_DIR)/src/UART/uart.vhd
 
-TB ?= tb_core_hex
+# TB ?= tb_core_hex
+TB ?= tb_uart
 VHDL_TESTBENCH = $(ROOT_DIR)/tb/$(TB).vhd
 TOP_LEVEL = $(TB)
 WAVEFORM_FILE = sim/$(TOP_LEVEL).ghw
