@@ -50,6 +50,7 @@ ARCHITECTURE structural OF core IS
 			i_id_ex_bus             : IN  t_id_ex_data;
 			i_rd_mem_bus            : IN  t_rd_reg_data;
 			i_rd_wb_bus             : IN  t_rd_reg_data;
+                        i_rd_wb_fwd             : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			o_ex_if_bus             : OUT t_ex_if_data;
 			o_ex_mem_bus            : OUT t_ex_mem_data
 
@@ -59,7 +60,6 @@ ARCHITECTURE structural OF core IS
 	COMPONENT memory_stage IS
 		PORT (
 			o_mem_addr       : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-			i_mem_read_data  : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
 			o_mem_write_data : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			o_mem_write_en   : OUT STD_LOGIC;
 			o_mem_byte_en    : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
@@ -74,6 +74,7 @@ ARCHITECTURE structural OF core IS
 			i_instruction_valid    : IN  STD_LOGIC;
 			o_instructions_retired : OUT STD_LOGIC;
 			i_mem_wb_bus           : IN  t_mem_wb_data;
+                        o_wb_ex_fwd : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			o_wb_id_data           : OUT t_rd_reg_data
 
 		);
@@ -97,6 +98,7 @@ ARCHITECTURE structural OF core IS
 	SIGNAL s_id_ex_bus : t_id_ex_data;
 	SIGNAL s_ex_mem_bus : t_ex_mem_data;
 	SIGNAL s_mem_wb_bus : t_mem_wb_data;
+        SIGNAL s_wb_ex_fwd : STD_LOGIC_VECTOR(31 DOWNTO 0);
 
 	SIGNAL r_if_id_reg : t_if_id_data;
 	SIGNAL r_id_ex_reg : t_id_ex_data;
@@ -138,6 +140,7 @@ BEGIN
 		i_id_ex_bus             => r_id_ex_reg,
 		i_rd_mem_bus            => r_ex_mem_reg.rd_bus,
 		i_rd_wb_bus             => r_mem_wb_reg.rd_bus,
+                i_rd_wb_fwd             => s_wb_ex_fwd,
 		o_ex_if_bus             => s_ex_if_bus,
 		o_ex_mem_bus            => s_ex_mem_bus
 	);
@@ -145,7 +148,6 @@ BEGIN
 	U_MEM_STAGE : memory_stage
 	PORT MAP(
 		o_mem_addr       => o_data_addr,
-		i_mem_read_data  => i_data_read,
 		o_mem_write_data => o_data_write,
 		o_mem_write_en   => o_data_write_en,
 		o_mem_byte_en    => o_data_byte_en,
@@ -158,6 +160,7 @@ BEGIN
 		i_instruction_valid    => instruction_valid,
 		o_instructions_retired => minstret_increment,
 		i_mem_wb_bus           => r_mem_wb_reg,
+                o_wb_ex_fwd            => s_wb_ex_fwd,
 		o_wb_id_data           => s_wb_id_bus
 	);
 
@@ -215,6 +218,7 @@ BEGIN
 			r_mem_wb_reg <= C_MEM_WB_RESET;
 		ELSIF rising_edge(i_clk) THEN
                         r_mem_wb_reg <= s_mem_wb_bus;
+                        r_mem_wb_reg.raw_mem_data <= i_data_read;
 		END IF;
 	END PROCESS;
 

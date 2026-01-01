@@ -16,7 +16,6 @@ ENTITY hazard_detection_unit IS
 END ENTITY hazard_detection_unit;
 
 ARCHITECTURE behavioral OF hazard_detection_unit IS
-
 	SIGNAL s_stall_condition : STD_LOGIC;
 BEGIN
 

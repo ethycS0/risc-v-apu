@@ -5,7 +5,7 @@ USE ieee.numeric_std.ALL;
 ENTITY uart IS
 	GENERIC (
 		G_CLK : INTEGER := 27_000_000;
-		G_BAUDRATE : INTEGER := 115200
+		G_BAUDRATE : INTEGER := 9600
 	);
 	PORT (
 		i_clk : IN STD_LOGIC;
@@ -72,11 +72,11 @@ BEGIN
 				o_tx_ready <= '1';
 				tx_bit_idx := 0;
 			ELSE
-                                    IF s_tx_state = IDLE THEN
-                                        o_tx_ready <= '1';
-                                    ELSE
-                                        o_tx_ready <= '0';
-                                    END IF;
+				IF s_tx_state = IDLE THEN
+					o_tx_ready <= '1';
+				ELSE
+					o_tx_ready <= '0';
+				END IF;
 
 				IF s_baud_tick = '1' THEN
 					CASE s_tx_state IS
@@ -163,7 +163,7 @@ BEGIN
 						END IF;
 
 					WHEN STOP_BIT =>
-						IF rx_baud_counter = c_clk_per_bit - 1 THEN
+						IF rx_baud_counter = (c_clk_per_bit / 2) - 1 THEN
 							IF r_rx_sync2 = '1' THEN
 								o_rx_new <= '1';
 							END IF;

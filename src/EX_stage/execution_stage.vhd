@@ -13,6 +13,7 @@ ENTITY execution_stage IS
 		i_id_ex_bus  : IN t_id_ex_data;
 		i_rd_mem_bus : IN t_rd_reg_data;
 		i_rd_wb_bus  : IN t_rd_reg_data;
+		i_rd_wb_fwd  : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 
 		o_ex_if_bus  : OUT t_ex_if_data;
 		o_ex_mem_bus : OUT t_ex_mem_data
@@ -131,7 +132,7 @@ BEGIN
 		IF i_id_ex_bus.src_a = SRC_A_RS1 THEN
 			CASE s_fwd_a_select IS
 				WHEN FWD_FROM_EX_MEM => s_input_a <= i_rd_mem_bus.rd_data;
-				WHEN FWD_FROM_MEM_WB => s_input_a <= i_rd_wb_bus.rd_data;
+				WHEN FWD_FROM_MEM_WB => s_input_a <= i_rd_wb_fwd;
 				WHEN OTHERS => s_input_a <= i_id_ex_bus.rs1_data;
 			END CASE;
 		ELSIF i_id_ex_bus.src_a = SRC_A_PC THEN
@@ -142,7 +143,7 @@ BEGIN
 
 		CASE s_fwd_b_select IS
 			WHEN FWD_FROM_EX_MEM => s_rs2_data_fwd <= i_rd_mem_bus.rd_data;
-			WHEN FWD_FROM_MEM_WB => s_rs2_data_fwd <= i_rd_wb_bus.rd_data;
+			WHEN FWD_FROM_MEM_WB => s_rs2_data_fwd <= i_rd_wb_fwd;
 			WHEN OTHERS => s_rs2_data_fwd <= i_id_ex_bus.rs2_data;
 		END CASE;
 
@@ -153,10 +154,18 @@ BEGIN
 		END IF;
 	END PROCESS;
 
-	WITH i_id_ex_bus.opr_unit SELECT
-	o_ex_mem_bus.rd_bus.rd_data <= s_csr_output WHEN UNIT_CSR,
-	s_alu_result WHEN UNIT_ALU,
-	(OTHERS => '0') WHEN OTHERS;
+        P_RD_SEL : PROCESS (i_id_ex_bus, s_alu_result, s_csr_output)
+        BEGIN
+            IF i_id_ex_bus.wb_src = WB_SRC_PC4 THEN
+                o_ex_mem_bus.rd_bus.rd_data <= i_id_ex_bus.pc4;
+
+            ELSIF i_id_ex_bus.opr_unit = UNIT_CSR THEN
+                o_ex_mem_bus.rd_bus.rd_data <= s_csr_output;
+
+            ELSE
+                o_ex_mem_bus.rd_bus.rd_data <= s_alu_result;
+            END IF;
+        END PROCESS;
 
 	s_is_mret <= '1' WHEN s_trap_type = TRAP_MRET ELSE '0';
 	s_trap_trigger <= '1' WHEN (s_trap_type = TRAP_CALL OR s_trap_type = TRAP_BREAK) ELSE '0';

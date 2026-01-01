@@ -3,7 +3,7 @@ USE ieee.std_logic_1164.ALL;
 
 PACKAGE rv32i_pkg IS
 
-    CONSTANT RESET_ADDRESS : STD_LOGIC_VECTOR(31 DOWNTO 0) := x"80000000";
+    CONSTANT RESET_ADDRESS : STD_LOGIC_VECTOR(31 DOWNTO 0) := x"00000000";
 
     TYPE t_OprType IS (
         OP_R_TYPE,
@@ -173,13 +173,17 @@ PACKAGE rv32i_pkg IS
 
     TYPE t_mem_wb_data IS RECORD
         rd_bus : t_rd_reg_data;
+        raw_mem_data : STD_LOGIC_VECTOR(31 DOWNTO 0);
         pc4    : STD_LOGIC_VECTOR(31 DOWNTO 0);
+        funct3    : STD_LOGIC_VECTOR(2 DOWNTO 0);
         wb_src : t_WritebackSrc;
     END RECORD t_mem_wb_data;
 
     CONSTANT C_MEM_WB_RESET : t_mem_wb_data := (
         rd_bus => C_RD_BUS_RESET,
+        raw_mem_data => (OTHERS => '0'),
         pc4    => (OTHERS => '0'),
+        funct3    => (OTHERS => '0'),
         wb_src => WB_SRC_EX_RESULT
     );
 

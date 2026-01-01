@@ -1,11 +1,11 @@
-// Clock (27 MHz on SoM)
-IO_LOC "clk" H11;
-IO_PORT "clk" PULL_MODE=UP;
+// 27MHz Crystal Oscillator (Input)
+IO_LOC  "clk" H11;
+IO_PORT "clk" IO_TYPE=LVCMOS33; 
 
-// UART RX (Input T13)
-IO_LOC "uart_rx" T13;
+// UART RX (Input to FPGA) - Pull Up is okay here
+IO_LOC  "uart_rx" T13;
 IO_PORT "uart_rx" IO_TYPE=LVCMOS33 PULL_MODE=UP;
 
-// UART TX (Output M11)
-IO_LOC "uart_tx" M11;
-IO_PORT "uart_tx" IO_TYPE=LVCMOS33 PULL_MODE=UP DRIVE=8;
+// UART TX (Output from FPGA) - Remove Pull Up, reduce Drive to 4mA (safer for short traces)
+IO_LOC  "uart_tx" M11;
+IO_PORT "uart_tx" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=4;

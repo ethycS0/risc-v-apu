@@ -1,196 +1,189 @@
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
-USE work.rv32i_pkg.ALL;
 
 ENTITY soc IS
-    PORT (
-        clk     : IN  STD_LOGIC;
-        uart_rx : IN  STD_LOGIC;
-        uart_tx : OUT STD_LOGIC
-    );
+	GENERIC (
+		G_CLK_FREQ : INTEGER := 27_000_000;
+		G_BAUDRATE : INTEGER := 9600;
+		G_RAM_SIZE : INTEGER := 2048
+	);
+	PORT (
+		clk : IN STD_LOGIC;
+		rst : IN STD_LOGIC;
+
+		uart_rx : IN  STD_LOGIC;
+		uart_tx : OUT STD_LOGIC
+	);
 END ENTITY soc;
 
 ARCHITECTURE structural OF soc IS
 
-    -- SIGNALS
-    SIGNAL rst_counter : unsigned(7 downto 0) := (others => '0');
-    SIGNAL sys_rst     : std_logic := '1';
+	COMPONENT core IS
+		PORT (
+			i_clk           : IN  STD_LOGIC;
+			i_rst           : IN  STD_LOGIC;
+			o_instr_addr    : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			i_instr_data    : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+			o_data_addr     : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			i_data_read     : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+			o_data_write    : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			o_data_write_en : OUT STD_LOGIC;
+			o_data_byte_en  : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
+		);
+	END COMPONENT core;
 
-    SIGNAL cpu_instr_addr  : STD_LOGIC_VECTOR(31 DOWNTO 0);
-    SIGNAL cpu_instr_data  : STD_LOGIC_VECTOR(31 DOWNTO 0);
-    SIGNAL cpu_data_addr   : STD_LOGIC_VECTOR(31 DOWNTO 0);
-    SIGNAL cpu_data_read   : STD_LOGIC_VECTOR(31 DOWNTO 0);
-    SIGNAL cpu_data_write  : STD_LOGIC_VECTOR(31 DOWNTO 0);
-    SIGNAL cpu_write_en    : STD_LOGIC;
-    SIGNAL cpu_byte_en     : STD_LOGIC_VECTOR(3 DOWNTO 0);
+	COMPONENT unified_memory_unit IS
+		GENERIC (
+			G_MEM_SIZE : INTEGER := 2048
+		);
+		PORT (
+			i_clk           : IN  STD_LOGIC;
+			i_imem_addr     : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+			o_imem_data     : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			i_dmem_addr     : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+			i_dmem_wdata    : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+			o_dmem_rdata    : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			i_dmem_write_en : IN  STD_LOGIC;
+			i_dmem_byte_en  : IN  STD_LOGIC_VECTOR(3 DOWNTO 0)
+		);
+	END COMPONENT unified_memory_unit;
 
-    SIGNAL uart_tx_data    : STD_LOGIC_VECTOR(7 DOWNTO 0);
-    SIGNAL uart_tx_valid   : STD_LOGIC := '0';
-    SIGNAL uart_tx_ready   : STD_LOGIC;
-    SIGNAL uart_rx_data    : STD_LOGIC_VECTOR(7 DOWNTO 0); 
-    SIGNAL uart_rx_new     : STD_LOGIC;                   
+	COMPONENT uart IS
+		GENERIC (
+			G_CLK : INTEGER := 27_000_000;
+			G_BAUDRATE : INTEGER := 9600
+		);
+		PORT (
+			i_clk      : IN  STD_LOGIC;
+			i_rst      : IN  STD_LOGIC;
+			i_data     : IN  STD_LOGIC_VECTOR(7 DOWNTO 0);
+			i_tx_new   : IN  STD_LOGIC;
+			o_tx_ready : OUT STD_LOGIC;
+			o_rx_new   : OUT STD_LOGIC;
+			o_data     : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
+			i_rx       : IN  STD_LOGIC;
+			o_tx       : OUT STD_LOGIC
+		);
+	END COMPONENT uart;
 
-    -- Small Data Memory (Using registers/LUTs to be safe)
-    TYPE dmem_type IS ARRAY(0 TO 63) OF STD_LOGIC_VECTOR(31 DOWNTO 0);
-    SIGNAL dmem : dmem_type := (OTHERS => x"00000000");
+	SIGNAL s_instr_addr : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL s_instr_data : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL s_data_addr : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL s_data_rdata : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL s_data_wdata : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL s_data_write_en : STD_LOGIC;
+	SIGNAL s_data_byte_en : STD_LOGIC_VECTOR(3 DOWNTO 0);
 
-    COMPONENT core IS
-        PORT (
-            i_clk           : IN  STD_LOGIC;
-            i_rst           : IN  STD_LOGIC;
-            o_instr_addr    : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-            i_instr_data    : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
-            o_data_addr     : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-            i_data_read     : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
-            o_data_write    : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-            o_data_write_en : OUT STD_LOGIC;
-            o_data_byte_en  : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
-        );
-    END COMPONENT core;
+	SIGNAL s_mem_rdata : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL s_mem_write_en : STD_LOGIC;
 
-    COMPONENT uart IS
-        GENERIC (
-            G_CLK      : INTEGER := 27_000_000;
-            G_BAUDRATE : INTEGER := 115200
-        );
-        PORT (
-            i_clk      : IN  STD_LOGIC;
-            i_rst      : IN  STD_LOGIC;
-            i_data     : IN  STD_LOGIC_VECTOR(7 DOWNTO 0);
-            i_tx_new   : IN  STD_LOGIC;
-            o_tx_ready : OUT STD_LOGIC;
-            o_rx_new   : OUT STD_LOGIC;
-            o_data     : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
-            i_rx       : IN  STD_LOGIC;
-            o_tx       : OUT STD_LOGIC
-        );
-    END COMPONENT uart;
+	SIGNAL s_uart_tx_ready : STD_LOGIC;
+	SIGNAL s_uart_tx_start : STD_LOGIC;
+
+	SIGNAL s_uart_rx_data : STD_LOGIC_VECTOR(7 DOWNTO 0);
+	SIGNAL s_uart_rx_new : STD_LOGIC;
+	SIGNAL r_rx_data_valid : STD_LOGIC := '0';
+	SIGNAL r_rx_byte_buf : STD_LOGIC_VECTOR(7 DOWNTO 0);
+	SIGNAL s_clear_rx_flag : STD_LOGIC;
 
 BEGIN
 
-    -- 1. POR
-    PROCESS (clk)
-    BEGIN
-        IF rising_edge(clk) THEN
-            IF rst_counter < x"FF" THEN
-                rst_counter <= rst_counter + 1;
-                sys_rst <= '1';
-            ELSE
-                sys_rst <= '0';
-            END IF;
-        END IF;
-    END PROCESS;
+	U_CORE : core
+	PORT MAP(
+		i_clk => clk,
+		i_rst => rst,
 
-    -- 2. CORE
-    U_CORE : core
-    PORT MAP(
-        i_clk           => clk,
-        i_rst           => sys_rst,
-        o_instr_addr    => cpu_instr_addr,
-        i_instr_data    => cpu_instr_data,
-        o_data_addr     => cpu_data_addr,
-        i_data_read     => cpu_data_read,
-        o_data_write    => cpu_data_write,
-        o_data_write_en => cpu_write_en,
-        o_data_byte_en  => cpu_byte_en
-    );
+		o_instr_addr => s_instr_addr,
+		i_instr_data => s_instr_data,
 
-    -- 3. UART
-    U_UART : uart
-    GENERIC MAP (
-        G_CLK      => 27_000_000,
-        G_BAUDRATE => 115200
-    )
-    PORT MAP (
-        i_clk      => clk,
-        i_rst      => sys_rst,
-        i_data     => uart_tx_data,
-        i_tx_new   => uart_tx_valid,
-        o_tx_ready => uart_tx_ready,
-        o_rx_new   => uart_rx_new,
-        o_data     => uart_rx_data,
-        i_rx       => uart_rx,
-        o_tx       => uart_tx
-    );
+		o_data_addr     => s_data_addr,
+		i_data_read     => s_data_rdata,
+		o_data_write    => s_data_wdata,
+		o_data_write_en => s_data_write_en,
+		o_data_byte_en  => s_data_byte_en
+	);
 
-    -- 4. HARDCODED ROM (Combinational Instruction Fetch)
-    -- This guarantees Logic (LUT) implementation, avoiding BRAM timing issues.
-    PROCESS(cpu_instr_addr)
-    BEGIN
-        -- Look at the lower 8 bits of the address (Byte Address)
-        CASE cpu_instr_addr(7 DOWNTO 0) IS
-            
-            -- 0x00: lui x15, 0x20000 (Result: x15 = 0x20000000)
-            WHEN x"00" => cpu_instr_data <= x"200007B7";
-            
-            -- BUBBLES for Hazard avoidance
-            WHEN x"04" => cpu_instr_data <= x"00000013"; -- nop
-            WHEN x"08" => cpu_instr_data <= x"00000013"; -- nop
-            WHEN x"0C" => cpu_instr_data <= x"00000013"; -- nop
-            
-            -- 0x10: li x10, 0x41 ('A')
-            WHEN x"10" => cpu_instr_data <= x"04100513";
-            
-            -- BUBBLES
-            WHEN x"14" => cpu_instr_data <= x"00000013"; -- nop
-            WHEN x"18" => cpu_instr_data <= x"00000013"; -- nop
-            WHEN x"1C" => cpu_instr_data <= x"00000013"; -- nop
-            
-            -- 0x20: sw x10, 0(x15) (Write 'A' to UART)
-            WHEN x"20" => cpu_instr_data <= x"00A7A023";
+	U_MEMORY : unified_memory_unit
+	GENERIC MAP(
+		G_MEM_SIZE => G_RAM_SIZE
+	)
+	PORT MAP(
+		i_clk => clk,
 
-            -- 0x24: jal x0, -4 (Infinite Loop: Stuck at 0x24)
-            -- To prevent flooding, we just stop here.
-            -- If you see ONE 'A', it worked.
-            WHEN x"24" => cpu_instr_data <= x"FFDFF06F"; 
+		i_imem_addr => s_instr_addr,
+		o_imem_data => s_instr_data,
 
-            -- Default: NOP
-            WHEN OTHERS => cpu_instr_data <= x"00000013";
-        END CASE;
-    END PROCESS;
+		i_dmem_addr     => s_data_addr,
+		i_dmem_wdata    => s_data_wdata,
+		o_dmem_rdata    => s_mem_rdata,
+		i_dmem_write_en => s_mem_write_en,
+		i_dmem_byte_en  => s_data_byte_en
+	);
 
+	U_UART : uart
+	GENERIC MAP(
+		G_CLK => G_CLK_FREQ,
+		G_BAUDRATE => G_BAUDRATE
+	)
+	PORT MAP(
+		i_clk => clk,
+		i_rst => rst,
 
-    -- 5. DATA READ MUX (Combinational)
-    PROCESS(cpu_data_addr, dmem, uart_rx_data, uart_tx_ready)
-        VARIABLE addr_int : INTEGER;
-    BEGIN
-        addr_int := to_integer(unsigned(cpu_data_addr(7 DOWNTO 2))); -- Reduced size
-        cpu_data_read <= (OTHERS => '0'); 
+		i_rx => uart_rx,
+		o_tx => uart_tx,
 
-        IF cpu_data_addr(31 DOWNTO 12) = x"20000" THEN
-            CASE cpu_data_addr(11 DOWNTO 0) IS
-                WHEN x"000" => cpu_data_read <= x"000000" & uart_rx_data;
-                WHEN x"004" => cpu_data_read <= x"0000000" & "000" & uart_tx_ready;
-                WHEN OTHERS => cpu_data_read <= (OTHERS => '0');
-            END CASE;
-        ELSIF addr_int < 64 THEN
-            cpu_data_read <= dmem(addr_int);
-        END IF;
-    END PROCESS;
+		i_data   => s_data_wdata(7 DOWNTO 0),
+		i_tx_new   => s_uart_tx_start,
+		o_tx_ready => s_uart_tx_ready,
 
-    -- 6. WRITE LOGIC
-    P_MEM_WRITE : PROCESS (clk)
-        VARIABLE dmem_addr_int : INTEGER;
-    BEGIN
-        IF rising_edge(clk) THEN
-            uart_tx_valid <= '0'; 
+		o_data     => s_uart_rx_data,
+		o_rx_new => s_uart_rx_new
+	);
 
-            IF cpu_write_en = '1' THEN
-                IF cpu_data_addr(31 DOWNTO 12) = x"20000" THEN
-                    -- UART WRITE
-                    uart_tx_data  <= cpu_data_write(7 DOWNTO 0);
-                    uart_tx_valid <= '1';
-                ELSE
-                    -- RAM WRITE (Small)
-                    dmem_addr_int := to_integer(unsigned(cpu_data_addr(7 DOWNTO 2)));
-                    IF dmem_addr_int < 64 THEN
-                         -- Simplified write for test (ignore byte enables for now)
-                         dmem(dmem_addr_int) <= cpu_data_write;
-                    END IF;
-                END IF;
-            END IF;
-        END IF;
-    END PROCESS;
+	P_RX_INTERFACE : PROCESS (clk)
+	BEGIN
+		IF rising_edge(clk) THEN
+			IF rst = '1' THEN
+				r_rx_data_valid <= '0';
+				r_rx_byte_buf <= (OTHERS => '0');
+			ELSE
+				IF s_uart_rx_new = '1' THEN
+					r_rx_byte_buf <= s_uart_rx_data;
+					r_rx_data_valid <= '1';
+				ELSIF s_clear_rx_flag = '1' THEN
+					r_rx_data_valid <= '0';
+				END IF;
+			END IF;
+		END IF;
+	END PROCESS;
+
+	P_BUS_INTRCON : PROCESS (s_data_addr, s_data_write_en, s_data_wdata,
+		s_mem_rdata, r_rx_byte_buf, r_rx_data_valid, s_uart_tx_ready)
+	BEGIN
+		s_mem_write_en <= '0';
+		s_uart_tx_start <= '0';
+		s_clear_rx_flag <= '0';
+		s_data_rdata <= (OTHERS => '0');
+
+		IF unsigned(s_data_addr) < x"0000_2000" THEN
+			s_mem_write_en <= s_data_write_en;
+			s_data_rdata <= s_mem_rdata;
+
+		ELSIF s_data_addr = x"8000_0000" THEN
+			IF s_data_write_en = '1' THEN
+				s_uart_tx_start <= '1';
+			ELSE
+				s_data_rdata(7 DOWNTO 0) <= r_rx_byte_buf;
+				s_clear_rx_flag <= '1';
+			END IF;
+
+		ELSIF s_data_addr = x"8000_0004" THEN
+			s_data_rdata(0) <= s_uart_tx_ready;
+			s_data_rdata(1) <= r_rx_data_valid;
+
+		END IF;
+	END PROCESS;
 
 END ARCHITECTURE structural;
+

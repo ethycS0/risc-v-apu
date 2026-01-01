@@ -27,9 +27,10 @@ SRC_FILES = \
 	$(ROOT_DIR)/src/MEM_stage/memory_stage.vhd \
 	$(ROOT_DIR)/src/WB_stage/writeback_stage.vhd \
 	$(ROOT_DIR)/src/UART/uart.vhd \
+	$(ROOT_DIR)/src/unified_memory_unit.vhd \
 	$(ROOT_DIR)/src/soc.vhd
 
-TB ?= tb_core_hex
+TB ?= tb_soc
 VHDL_TESTBENCH = $(ROOT_DIR)/tb/$(TB).vhd
 TOP_LEVEL = $(TB)
 WAVEFORM_FILE = sim/$(TOP_LEVEL).ghw

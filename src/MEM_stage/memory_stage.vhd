@@ -6,7 +6,6 @@ USE work.rv32i_pkg.ALL;
 ENTITY memory_stage IS
 	PORT (
 		o_mem_addr       : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-		i_mem_read_data  : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
 		o_mem_write_data : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		o_mem_write_en   : OUT STD_LOGIC;
 		o_mem_byte_en    : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
@@ -18,54 +17,7 @@ ENTITY memory_stage IS
 END ENTITY memory_stage;
 
 ARCHITECTURE structural OF memory_stage IS
-        SIGNAL s_read_data : STD_LOGIC_VECTOR(31 DOWNTO 0);
 BEGIN
-
-	load_logic : PROCESS (i_ex_mem_bus.mem_read, i_ex_mem_bus.funct3, i_mem_read_data, i_ex_mem_bus.rd_bus.rd_data)
-		VARIABLE byte_val : STD_LOGIC_VECTOR(7 DOWNTO 0);
-		VARIABLE half_val : STD_LOGIC_VECTOR(15 DOWNTO 0);
-
-	BEGIN
-		s_read_data <= (OTHERS => 'X');
-		IF i_ex_mem_bus.mem_read = '1' THEN
-
-			CASE i_ex_mem_bus.rd_bus.rd_data(1 DOWNTO 0) IS
-				WHEN "00" => byte_val := i_mem_read_data(7 DOWNTO 0);
-				WHEN "01" => byte_val := i_mem_read_data(15 DOWNTO 8);
-				WHEN "10" => byte_val := i_mem_read_data(23 DOWNTO 16);
-				WHEN "11" => byte_val := i_mem_read_data(31 DOWNTO 24);
-				WHEN OTHERS => byte_val := (OTHERS => 'X');
-			END CASE;
-
-			IF i_ex_mem_bus.rd_bus.rd_data(1) = '0' THEN
-				half_val := i_mem_read_data(15 DOWNTO 0);
-			ELSE
-				half_val := i_mem_read_data(31 DOWNTO 16);
-			END IF;
-
-			CASE i_ex_mem_bus.funct3 IS
-				WHEN "010" =>
-					s_read_data <= i_mem_read_data;
-
-				WHEN "001" =>
-					s_read_data <= STD_LOGIC_VECTOR(resize(signed(half_val), 32));
-
-				WHEN "000" =>
-					s_read_data <= STD_LOGIC_VECTOR(resize(signed(byte_val), 32));
-
-				WHEN "101" =>
-					s_read_data <= STD_LOGIC_VECTOR(resize(unsigned(half_val), 32));
-
-				WHEN "100" =>
-					s_read_data <= STD_LOGIC_VECTOR(resize(unsigned(byte_val), 32));
-
-				WHEN OTHERS =>
-					NULL;
-
-			END CASE;
-		END IF;
-
-	END PROCESS load_logic;
 
 	o_mem_addr <= i_ex_mem_bus.rd_bus.rd_data;
 	o_mem_write_en <= i_ex_mem_bus.mem_write;
@@ -108,14 +60,11 @@ BEGIN
 		END IF;
 	END PROCESS store_logic;
 
-        o_mem_wb_bus.rd_bus.rd_data <= i_ex_mem_bus.rd_bus.rd_data WHEN i_ex_mem_bus.mem_read = '0' 
-                                       ELSE s_read_data;
-
-
-	o_mem_wb_bus.pc4 <= i_ex_mem_bus.pc4;
-	o_mem_wb_bus.rd_bus.reg_write_en <= i_ex_mem_bus.rd_bus.reg_write_en;
-	o_mem_wb_bus.wb_src <= i_ex_mem_bus.wb_src;
-	o_mem_wb_bus.rd_bus.rd_addr <= i_ex_mem_bus.rd_bus.rd_addr;
+        o_mem_wb_bus.pc4 <= i_ex_mem_bus.pc4;
+        o_mem_wb_bus.raw_mem_data <= (OTHERS => '0');
+        o_mem_wb_bus.rd_bus <= i_ex_mem_bus.rd_bus;  
+        o_mem_wb_bus.wb_src <= i_ex_mem_bus.wb_src;
+        o_mem_wb_bus.funct3 <= i_ex_mem_bus.funct3;
 
 END ARCHITECTURE structural;
 
