@@ -5,7 +5,7 @@ USE ieee.numeric_std.ALL;
 ENTITY uart IS
 	GENERIC (
 		G_CLK : INTEGER := 27_000_000;
-		G_BAUDRATE : INTEGER := 9600
+		G_BAUDRATE : INTEGER := 115200
 	);
 	PORT (
 		i_clk : IN STD_LOGIC;
@@ -129,7 +129,7 @@ BEGIN
 				o_rx_new <= '0';
 				s_rx_cnt <= 0;
 				s_rx_bit_idx <= 0;
-				ELSE
+                        ELSE
 				o_rx_new <= '0';
 
 				CASE s_rx_state IS

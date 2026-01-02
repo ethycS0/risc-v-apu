@@ -88,7 +88,7 @@ ARCHITECTURE structural OF soc IS
 
 	SIGNAL rst : STD_LOGIC := '1';
 	SIGNAL por_counter : UNSIGNED(21 DOWNTO 0) := (OTHERS => '0');
-	CONSTANT POR_CYCLES : UNSIGNED(21 DOWNTO 0) := TO_UNSIGNED(2_700_000, 22);
+	CONSTANT POR_CYCLES : UNSIGNED(21 DOWNTO 0) := TO_UNSIGNED(10, 22);
 
 BEGIN
 
@@ -163,12 +163,14 @@ BEGIN
 				r_rx_data_valid <= '0';
 				r_rx_byte_buf <= (OTHERS => '0');
 			ELSE
+				IF s_clear_rx_flag = '1' THEN
+					r_rx_data_valid <= '0';
+				END IF;
+
 				IF s_uart_rx_new = '1' THEN
 					r_rx_byte_buf <= s_uart_rx_data;
 					r_rx_data_valid <= '1';
-				ELSIF s_clear_rx_flag = '1' THEN
-					r_rx_data_valid <= '0';
-				END IF;
+                                END IF;
 			END IF;
 		END IF;
 	END PROCESS;
@@ -187,16 +189,20 @@ BEGIN
 
 		ELSIF s_data_addr = x"8000_0000" THEN
 			IF s_data_write_en = '1' THEN
-				s_uart_tx_start <= '1';
+                                IF s_uart_tx_ready = '1' THEN 
+                                        s_uart_tx_start <= '1';
+                                END IF;
 			ELSE
 				s_data_rdata(7 DOWNTO 0) <= r_rx_byte_buf;
-				s_clear_rx_flag <= '1';
 			END IF;
 
 		ELSIF s_data_addr = x"8000_0004" THEN
-			s_data_rdata(0) <= s_uart_tx_ready;
-			s_data_rdata(1) <= r_rx_data_valid;
-
+                        IF s_data_write_en = '1' THEN 
+                                s_clear_rx_flag <= '1';
+                        ELSE
+                                s_data_rdata(0) <= s_uart_tx_ready;
+                                s_data_rdata(1) <= r_rx_data_valid;
+                        END IF;
 		END IF;
 	END PROCESS;
 

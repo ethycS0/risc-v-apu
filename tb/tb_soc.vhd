@@ -76,7 +76,7 @@ BEGIN
         VARIABLE v_expected : STD_LOGIC_VECTOR(7 DOWNTO 0);
     BEGIN
         -- 1. Reset System
-        WAIT FOR 250 ms;
+        WAIT FOR 10000 ns;
 
         -- 2. Send 'A' (0x41) to SoC
         REPORT "Test: Sending 0x41 ('A')...";
