@@ -10,18 +10,21 @@ LDFLAGS = -T link.ld
 
 # Directories
 ROOT_DIR = ../..
-TEST    ?= add
-TEST_DIR = $(TEST)
+TEST    ?= core/add
+
+# Extract directory and base name from TEST path
+TEST_DIR  = $(dir $(TEST))
+TEST_NAME = $(notdir $(TEST))
 
 # Files
-SRC     = $(TEST_DIR)/$(TEST).s
-OBJ     = $(TEST_DIR)/$(TEST).o
-ELF     = $(TEST_DIR)/$(TEST).elf
-BIN     = $(TEST_DIR)/$(TEST).bin
+SRC     = $(TEST_DIR)$(TEST_NAME)/$(TEST_NAME).s
+OBJ     = $(TEST_DIR)$(TEST_NAME)/$(TEST_NAME).o
+ELF     = $(TEST_DIR)$(TEST_NAME)/$(TEST_NAME).elf
+BIN     = $(TEST_DIR)$(TEST_NAME)/$(TEST_NAME).bin
 TARGET  = $(ROOT_DIR)/imem.hex
 
 # All available tests
-ALL_TESTS = add csr stest soc_test
+ALL_TESTS = core/add core/csr soc/feedback soc/transmit
 
 .PHONY: all clean help build-all
 
@@ -59,10 +62,7 @@ build-all:
 # Cleanup
 clean:
 	@echo "Cleaning build artifacts..."
-	rm -f add/*.o add/*.elf add/*.bin
-	rm -f csr/*.o csr/*.elf csr/*.bin
-	rm -f stest/*.o stest/*.elf stest/*.bin
-	rm -f soc_test/*.o soc_test/*.elf soc_test/*.bin
+	find core soc -type f \( -name "*.o" -o -name "*.elf" -o -name "*.bin" \) -delete
 	rm -f $(ROOT_DIR)/imem.hex
 	@echo "Clean complete"
 
@@ -71,10 +71,12 @@ help:
 	@echo "RISC-V Assembly Build System"
 	@echo ""
 	@echo "Usage:"
-	@echo "  make              - Build default test ($(TEST))"
-	@echo "  make TEST=<name>  - Build specific test"
-	@echo "  make build-all    - Build all tests"
-	@echo "  make clean        - Remove all build artifacts"
+	@echo "  make                 - Build default test ($(TEST))"
+	@echo "  make TEST=core/add   - Build specific test"
+	@echo "  make TEST=soc/transmit - Build transmit test"
+	@echo "  make build-all       - Build all tests"
+	@echo "  make clean           - Remove all build artifacts"
 	@echo ""
-	@echo "Available tests: $(ALL_TESTS)"
+	@echo "Available tests:"
+	@for test in $(ALL_TESTS); do echo "  $$test"; done
 

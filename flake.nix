@@ -52,6 +52,7 @@
 
             # Serial Interface
             screen
+            xxd
 
           ];
 

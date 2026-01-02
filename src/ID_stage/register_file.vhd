@@ -26,7 +26,7 @@ BEGIN
 	BEGIN
 		IF i_rst = '1' THEN
 			s_registers <= (OTHERS => (OTHERS => '0'));
-		ELSIF rising_edge(i_clk) THEN
+			ELSIF rising_edge(i_clk) THEN
 			IF i_wr_en = '1' AND to_integer(unsigned(i_wr_addr)) /= 0 THEN
 				s_registers(to_integer(unsigned(i_wr_addr))) <= i_wr_data;
 			END IF;
@@ -37,13 +37,13 @@ BEGIN
 	BEGIN
 		IF (i_wr_en = '1') AND (i_wr_addr = i_rd1_addr) AND (to_integer(unsigned(i_wr_addr)) /= 0) THEN
 			o_rd1_data <= i_wr_data;
-		ELSE
+			ELSE
 			o_rd1_data <= s_registers(to_integer(unsigned(i_rd1_addr)));
 		END IF;
 
 		IF (i_wr_en = '1') AND (i_wr_addr = i_rd2_addr) AND (to_integer(unsigned(i_wr_addr)) /= 0) THEN
 			o_rd2_data <= i_wr_data;
-		ELSE
+			ELSE
 			o_rd2_data <= s_registers(to_integer(unsigned(i_rd2_addr)));
 		END IF;
 	END PROCESS read_proc;

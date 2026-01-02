@@ -5,12 +5,11 @@ USE ieee.numeric_std.ALL;
 ENTITY soc IS
 	GENERIC (
 		G_CLK_FREQ : INTEGER := 27_000_000;
-		G_BAUDRATE : INTEGER := 9600;
+		G_BAUDRATE : INTEGER := 115200;
 		G_RAM_SIZE : INTEGER := 2048
 	);
 	PORT (
 		clk : IN STD_LOGIC;
-		rst : IN STD_LOGIC;
 
 		uart_rx : IN  STD_LOGIC;
 		uart_tx : OUT STD_LOGIC
@@ -52,7 +51,7 @@ ARCHITECTURE structural OF soc IS
 	COMPONENT uart IS
 		GENERIC (
 			G_CLK : INTEGER := 27_000_000;
-			G_BAUDRATE : INTEGER := 9600
+			G_BAUDRATE : INTEGER := 115200
 		);
 		PORT (
 			i_clk      : IN  STD_LOGIC;
@@ -87,7 +86,23 @@ ARCHITECTURE structural OF soc IS
 	SIGNAL r_rx_byte_buf : STD_LOGIC_VECTOR(7 DOWNTO 0);
 	SIGNAL s_clear_rx_flag : STD_LOGIC;
 
+	SIGNAL rst : STD_LOGIC := '1';
+	SIGNAL por_counter : UNSIGNED(21 DOWNTO 0) := (OTHERS => '0');
+	CONSTANT POR_CYCLES : UNSIGNED(21 DOWNTO 0) := TO_UNSIGNED(2_700_000, 22);
+
 BEGIN
+
+	P_POR : PROCESS (clk)
+	BEGIN
+		IF rising_edge(clk) THEN
+			IF por_counter < POR_CYCLES THEN
+				por_counter <= por_counter + 1;
+				rst <= '1';
+			ELSE
+				rst <= '0';
+			END IF;
+		END IF;
+	END PROCESS P_POR;
 
 	U_CORE : core
 	PORT MAP(
@@ -133,11 +148,11 @@ BEGIN
 		i_rx => uart_rx,
 		o_tx => uart_tx,
 
-		i_data   => s_data_wdata(7 DOWNTO 0),
+		i_data     => s_data_wdata(7 DOWNTO 0),
 		i_tx_new   => s_uart_tx_start,
 		o_tx_ready => s_uart_tx_ready,
 
-		o_data     => s_uart_rx_data,
+		o_data   => s_uart_rx_data,
 		o_rx_new => s_uart_rx_new
 	);
 

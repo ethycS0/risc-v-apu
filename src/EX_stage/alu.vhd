@@ -52,13 +52,13 @@ BEGIN
 	END PROCESS;
 
 	shifter_result <= STD_LOGIC_VECTOR(shift_left(unsigned(i_alu_x), to_integer(unsigned(i_alu_y(4 DOWNTO 0))))) WHEN i_alu_opcode = ALU_SLL ELSE
-		STD_LOGIC_VECTOR(shift_right(unsigned(i_alu_x), to_integer(unsigned(i_alu_y(4 DOWNTO 0))))) WHEN i_alu_opcode = ALU_SRL ELSE
-		STD_LOGIC_VECTOR(shift_right(signed(i_alu_x), to_integer(unsigned(i_alu_y(4 DOWNTO 0))))) WHEN i_alu_opcode = ALU_SRA ELSE
-		(OTHERS => '0');
+	STD_LOGIC_VECTOR(shift_right(unsigned(i_alu_x), to_integer(unsigned(i_alu_y(4 DOWNTO 0))))) WHEN i_alu_opcode = ALU_SRL ELSE
+	STD_LOGIC_VECTOR(shift_right(signed(i_alu_x), to_integer(unsigned(i_alu_y(4 DOWNTO 0))))) WHEN i_alu_opcode = ALU_SRA ELSE
+	(OTHERS => '0');
 
 	slt_result <= (31 DOWNTO 1 => '0') & (internal_flags.negative XOR internal_flags.overflow) WHEN i_alu_opcode = ALU_SLT ELSE
-		(31 DOWNTO 1 => '0') & (NOT internal_flags.carry) WHEN i_alu_opcode = ALU_SLTU ELSE
-		(OTHERS => '0');
+	(31 DOWNTO 1 => '0') & (NOT internal_flags.carry) WHEN i_alu_opcode = ALU_SLTU ELSE
+	(OTHERS => '0');
 
 	final_mux : PROCESS (i_alu_opcode, adder_result, logic_result, shifter_result, slt_result, i_alu_y)
 	BEGIN

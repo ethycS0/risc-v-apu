@@ -15,7 +15,7 @@ ARCHITECTURE behavioral OF tb_soc IS
         );
         PORT (
             clk     : IN  STD_LOGIC;
-            rst     : IN  STD_LOGIC;
+            -- rst     : IN  STD_LOGIC;
             uart_rx : IN  STD_LOGIC;
             uart_tx : OUT STD_LOGIC
         );
@@ -63,7 +63,7 @@ BEGIN
     )
     PORT MAP (
         clk     => r_clk,
-        rst     => r_rst,
+        -- rst     => r_rst,
         uart_rx => r_uart_rx,
         uart_tx => w_uart_tx
     );
@@ -76,10 +76,7 @@ BEGIN
         VARIABLE v_expected : STD_LOGIC_VECTOR(7 DOWNTO 0);
     BEGIN
         -- 1. Reset System
-        r_rst <= '1';
-        WAIT FOR 100 ns;
-        r_rst <= '0';
-        WAIT FOR 100 ns;
+        WAIT FOR 250 ms;
 
         -- 2. Send 'A' (0x41) to SoC
         REPORT "Test: Sending 0x41 ('A')...";

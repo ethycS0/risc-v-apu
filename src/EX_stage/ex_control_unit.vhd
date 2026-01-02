@@ -5,23 +5,23 @@ USE work.rv32i_pkg.ALL;
 
 ENTITY ex_control_unit IS
 	PORT (
-		i_opr_type : IN t_OprType;
+		i_opr_type   : IN t_OprType;
 		i_funct3     : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
-		i_funct12     : IN STD_LOGIC_VECTOR(11 DOWNTO 0);
+		i_funct12    : IN STD_LOGIC_VECTOR(11 DOWNTO 0);
 		i_src_a_data : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 
 		o_csr_write_en : OUT STD_LOGIC;
-                o_trap_type : OUT t_TrapType;
-		o_alu_command : OUT t_AluOpcodes;
-		o_csr_command : OUT t_CsrOpcodes
+		o_trap_type    : OUT t_TrapType;
+		o_alu_command  : OUT t_AluOpcodes;
+		o_csr_command  : OUT t_CsrOpcodes
 
 	);
 END ENTITY ex_control_unit;
 
 ARCHITECTURE behavioral OF ex_control_unit IS
-        SIGNAL funct7 : STD_LOGIC_VECTOR(6 DOWNTO 0);
+	SIGNAL funct7 : STD_LOGIC_VECTOR(6 DOWNTO 0);
 BEGIN
-        funct7 <= i_funct12(11 DOWNTO 5);
+	funct7 <= i_funct12(11 DOWNTO 5);
 
 	PROCESS (i_opr_type, i_funct3, funct7, i_funct12, i_src_a_data)
 		VARIABLE v_src_is_zero : BOOLEAN;
@@ -33,7 +33,7 @@ BEGIN
 
 		IF unsigned(i_src_a_data) = 0 THEN
 			v_src_is_zero := TRUE;
-		ELSE
+			ELSE
 			v_src_is_zero := FALSE;
 		END IF;
 
@@ -45,7 +45,7 @@ BEGIN
 				o_alu_command <= ALU_ADD;
 
 			WHEN OP_BRANCH =>
-				o_alu_command <= ALU_SUB; -- Used for comparison
+				o_alu_command <= ALU_SUB;
 
 			WHEN OP_R_TYPE | OP_I_TYPE =>
 				CASE i_funct3 IS
@@ -71,38 +71,36 @@ BEGIN
 				END CASE;
 			WHEN OP_SYSTEM =>
 				CASE i_funct3 IS
-                                        -- SYSTEM Instructions
 					WHEN "000" =>
-                                                CASE i_funct12 IS
-                                                        WHEN x"000" => o_trap_type <= TRAP_CALL;
-                                                        WHEN x"001" => o_trap_type <= TRAP_BREAK;
-                                                        WHEN x"302" => o_trap_type <= TRAP_MRET;
-                                                        WHEN OTHERS => o_trap_type <= TRAP_NONE;
-                                                END CASE;
+						CASE i_funct12 IS
+							WHEN x"000" => o_trap_type <= TRAP_CALL;
+							WHEN x"001" => o_trap_type <= TRAP_BREAK;
+							WHEN x"302" => o_trap_type <= TRAP_MRET;
+							WHEN OTHERS => o_trap_type <= TRAP_NONE;
+						END CASE;
 
-                                        -- CSR Instructions
-					WHEN "001" | "101" => -- CSRRW
+					WHEN "001" | "101" =>
 						o_csr_command <= CSR_RW;
 						o_csr_write_en <= '1';
 
-					WHEN "010" | "110" => -- CSRRS
+					WHEN "010" | "110" =>
 						o_csr_command <= CSR_RS;
 						IF NOT v_src_is_zero THEN
 							o_csr_write_en <= '1';
 						END IF;
 
-					WHEN "011" | "111" => -- CSRRC
+					WHEN "011" | "111" =>
 						o_csr_command <= CSR_RC;
 						IF NOT v_src_is_zero THEN
 							o_csr_write_en <= '1';
 						END IF;
 
 					WHEN OTHERS =>
-						NULL; -- Illegal
+						NULL;
 				END CASE;
 
 			WHEN OTHERS =>
-				o_alu_command <= ALU_ADD; -- Safe default
+				o_alu_command <= ALU_ADD;
 				o_csr_command <= CSR_ILLEGAL;
 		END CASE;
 	END PROCESS;

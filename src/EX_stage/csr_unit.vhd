@@ -102,7 +102,7 @@ BEGIN
 			r_mcycle <= (OTHERS => '0');
 			r_minstret <= (OTHERS => '0');
 			r_mscratch <= (OTHERS => '0');
-		ELSIF rising_edge(i_clk) THEN
+                ELSIF rising_edge(i_clk) THEN
 
 			IF i_trap_triggered = '1' THEN
 				r_mepc <= i_pc_at_trap;
@@ -111,11 +111,11 @@ BEGIN
 				r_mpie_bit <= r_mie_bit;
 				r_mie_bit <= '0';
 
-			ELSIF i_is_mret = '1' THEN
+				ELSIF i_is_mret = '1' THEN
 				r_mie_bit <= r_mpie_bit;
 				r_mpie_bit <= '1';
 
-			ELSIF i_write_en = '1' THEN
+				ELSIF i_write_en = '1' THEN
 				CASE i_csr_addr IS
 					WHEN x"300" =>
 						r_mie_bit <= s_new_csr_value(3);
@@ -134,13 +134,13 @@ BEGIN
 
 			IF (i_write_en = '1' AND i_csr_addr = x"B00") THEN
 				NULL;
-			ELSE
+				ELSE
 				r_mcycle <= STD_LOGIC_VECTOR(unsigned(r_mcycle) + 1);
 			END IF;
 
 			IF (i_write_en = '1' AND i_csr_addr = x"B02") THEN
 				NULL;
-			ELSIF i_minstret_increment = '1' THEN
+				ELSIF i_minstret_increment = '1' THEN
 				r_minstret <= STD_LOGIC_VECTOR(unsigned(r_minstret) + 1);
 			END IF;
 

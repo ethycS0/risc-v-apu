@@ -135,9 +135,9 @@ BEGIN
 				WHEN FWD_FROM_MEM_WB => s_input_a <= i_rd_wb_fwd;
 				WHEN OTHERS => s_input_a <= i_id_ex_bus.rs1_data;
 			END CASE;
-		ELSIF i_id_ex_bus.src_a = SRC_A_PC THEN
+			ELSIF i_id_ex_bus.src_a = SRC_A_PC THEN
 			s_input_a <= i_id_ex_bus.pc;
-		ELSIF i_id_ex_bus.src_a = SRC_A_UIMM THEN
+			ELSIF i_id_ex_bus.src_a = SRC_A_UIMM THEN
 			s_input_a <= ((31 DOWNTO 5 => '0') & i_id_ex_bus.uimm);
 		END IF;
 
@@ -149,37 +149,37 @@ BEGIN
 
 		IF i_id_ex_bus.src_b = SRC_B_RS2 THEN
 			s_input_b <= s_rs2_data_fwd;
-		ELSIF i_id_ex_bus.src_b = SRC_B_IMM THEN
+			ELSIF i_id_ex_bus.src_b = SRC_B_IMM THEN
 			s_input_b <= i_id_ex_bus.immediate;
 		END IF;
 	END PROCESS;
 
-        P_RD_SEL : PROCESS (i_id_ex_bus, s_alu_result, s_csr_output)
-        BEGIN
-            IF i_id_ex_bus.wb_src = WB_SRC_PC4 THEN
-                o_ex_mem_bus.rd_bus.rd_data <= i_id_ex_bus.pc4;
+	P_RD_SEL : PROCESS (i_id_ex_bus, s_alu_result, s_csr_output)
+	BEGIN
+		IF i_id_ex_bus.wb_src = WB_SRC_PC4 THEN
+			o_ex_mem_bus.rd_bus.rd_data <= i_id_ex_bus.pc4;
 
-            ELSIF i_id_ex_bus.opr_unit = UNIT_CSR THEN
-                o_ex_mem_bus.rd_bus.rd_data <= s_csr_output;
+			ELSIF i_id_ex_bus.opr_unit = UNIT_CSR THEN
+			o_ex_mem_bus.rd_bus.rd_data <= s_csr_output;
 
-            ELSE
-                o_ex_mem_bus.rd_bus.rd_data <= s_alu_result;
-            END IF;
-        END PROCESS;
+			ELSE
+			o_ex_mem_bus.rd_bus.rd_data <= s_alu_result;
+		END IF;
+	END PROCESS;
 
 	s_is_mret <= '1' WHEN s_trap_type = TRAP_MRET ELSE '0';
 	s_trap_trigger <= '1' WHEN (s_trap_type = TRAP_CALL OR s_trap_type = TRAP_BREAK) ELSE '0';
 	s_csr_addr_mux <= x"341" WHEN s_trap_type = TRAP_MRET ELSE i_id_ex_bus.funct12;
 
 	WITH s_trap_type SELECT
-		s_cause_code <= x"0000000B" WHEN TRAP_CALL,
-		x"00000003" WHEN TRAP_BREAK,
-		x"00000000" WHEN OTHERS;
+	s_cause_code <= x"0000000B" WHEN TRAP_CALL,
+	x"00000003" WHEN TRAP_BREAK,
+	x"00000000" WHEN OTHERS;
 
 	WITH s_trap_type SELECT
-		s_trap_mtval <= x"00000000" WHEN TRAP_CALL,
-		i_id_ex_bus.pc WHEN TRAP_BREAK,
-		x"00000000" WHEN OTHERS;
+	s_trap_mtval <= x"00000000" WHEN TRAP_CALL,
+	i_id_ex_bus.pc WHEN TRAP_BREAK,
+	x"00000000" WHEN OTHERS;
 
 	U_EX_DECODE_UNIT : ex_control_unit
 	PORT MAP(
@@ -258,19 +258,19 @@ BEGIN
 			o_ex_if_bus.pc_redirect <= '1';
 			o_ex_if_bus.redirect_address <= s_mtvec_val;
 
-		ELSIF s_is_mret = '1' THEN
+			ELSIF s_is_mret = '1' THEN
 			o_ex_if_bus.pc_redirect <= '1';
 			o_ex_if_bus.redirect_address <= s_mepc_val;
 
-		ELSIF i_id_ex_bus.opr_type = OP_JUMP THEN
+			ELSIF i_id_ex_bus.opr_type = OP_JUMP THEN
 			o_ex_if_bus.pc_redirect <= '1';
 			IF i_id_ex_bus.src_a = SRC_A_RS1 THEN
 				o_ex_if_bus.redirect_address <= s_alu_result(31 DOWNTO 1) & '0';
-			ELSE
+				ELSE
 				o_ex_if_bus.redirect_address <= s_pc_plus_imm;
 			END IF;
 
-		ELSIF i_id_ex_bus.opr_type = OP_BRANCH THEN
+			ELSIF i_id_ex_bus.opr_type = OP_BRANCH THEN
 			IF s_branch_taken = '1' THEN
 				o_ex_if_bus.pc_redirect <= '1';
 				o_ex_if_bus.redirect_address <= s_pc_plus_imm;
