@@ -9,6 +9,7 @@ ENTITY writeback_stage IS
 		o_instructions_retired : OUT STD_LOGIC;
 
 		i_mem_wb_bus : IN  t_mem_wb_data;
+                i_dmem_data  : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
 		o_wb_id_data : OUT t_rd_reg_data;
 		o_wb_ex_fwd  : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
 
@@ -19,29 +20,29 @@ ARCHITECTURE behavioral OF writeback_stage IS
 	SIGNAL s_read_data : STD_LOGIC_VECTOR(31 DOWNTO 0);
 BEGIN
 
-	P_LOAD_LOGIC : PROCESS (i_mem_wb_bus.funct3, i_mem_wb_bus.raw_mem_data, i_mem_wb_bus.rd_bus.rd_data)
+	P_LOAD_LOGIC : PROCESS (i_mem_wb_bus.funct3, i_dmem_data, i_mem_wb_bus.rd_bus.rd_data)
 		VARIABLE byte_val : STD_LOGIC_VECTOR(7 DOWNTO 0);
 		VARIABLE half_val : STD_LOGIC_VECTOR(15 DOWNTO 0);
 
 	BEGIN
 		s_read_data <= (OTHERS => 'X');
 		CASE i_mem_wb_bus.rd_bus.rd_data(1 DOWNTO 0) IS
-			WHEN "00" => byte_val := i_mem_wb_bus.raw_mem_data(7 DOWNTO 0);
-			WHEN "01" => byte_val := i_mem_wb_bus.raw_mem_data(15 DOWNTO 8);
-			WHEN "10" => byte_val := i_mem_wb_bus.raw_mem_data(23 DOWNTO 16);
-			WHEN "11" => byte_val := i_mem_wb_bus.raw_mem_data(31 DOWNTO 24);
+			WHEN "00" => byte_val := i_dmem_data(7 DOWNTO 0);
+			WHEN "01" => byte_val := i_dmem_data(15 DOWNTO 8);
+			WHEN "10" => byte_val := i_dmem_data(23 DOWNTO 16);
+			WHEN "11" => byte_val := i_dmem_data(31 DOWNTO 24);
 			WHEN OTHERS => byte_val := (OTHERS => 'X');
 		END CASE;
 
 		IF i_mem_wb_bus.rd_bus.rd_data(1) = '0' THEN
-			half_val := i_mem_wb_bus.raw_mem_data(15 DOWNTO 0);
+			half_val := i_dmem_data(15 DOWNTO 0);
 			ELSE
-			half_val := i_mem_wb_bus.raw_mem_data(31 DOWNTO 16);
+			half_val := i_dmem_data(31 DOWNTO 16);
 		END IF;
 
 		CASE i_mem_wb_bus.funct3 IS
 			WHEN "010" =>
-				s_read_data <= i_mem_wb_bus.raw_mem_data;
+				s_read_data <= i_dmem_data;
 
 			WHEN "001" =>
 				s_read_data <= STD_LOGIC_VECTOR(resize(signed(half_val), 32));
@@ -61,7 +62,7 @@ BEGIN
 		END CASE;
 	END PROCESS P_LOAD_LOGIC;
 
-	P_WB_MUX : PROCESS (i_mem_wb_bus.wb_src, i_mem_wb_bus.rd_bus.rd_data, i_mem_wb_bus.pc4, i_mem_wb_bus.raw_mem_data, s_read_data)
+	P_WB_MUX : PROCESS (i_mem_wb_bus.wb_src, i_mem_wb_bus.rd_bus.rd_data, i_mem_wb_bus.pc4, i_dmem_data, s_read_data)
 	BEGIN
 		CASE i_mem_wb_bus.wb_src IS
 			WHEN WB_SRC_EX_RESULT =>

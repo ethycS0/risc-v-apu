@@ -79,12 +79,15 @@ ARCHITECTURE structural OF soc IS
 
 	SIGNAL s_uart_tx_ready : STD_LOGIC;
 	SIGNAL s_uart_tx_start : STD_LOGIC;
-
 	SIGNAL s_uart_rx_data : STD_LOGIC_VECTOR(7 DOWNTO 0);
 	SIGNAL s_uart_rx_new : STD_LOGIC;
 	SIGNAL r_rx_data_valid : STD_LOGIC := '0';
 	SIGNAL r_rx_byte_buf : STD_LOGIC_VECTOR(7 DOWNTO 0);
 	SIGNAL s_clear_rx_flag : STD_LOGIC;
+
+	SIGNAL s_io_read_combinational : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL r_io_read_delayed : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL r_access_was_io : STD_LOGIC := '0';
 
 	SIGNAL rst : STD_LOGIC := '1';
 	SIGNAL por_counter : UNSIGNED(21 DOWNTO 0) := (OTHERS => '0');
@@ -106,12 +109,10 @@ BEGIN
 
 	U_CORE : core
 	PORT MAP(
-		i_clk => clk,
-		i_rst => rst,
-
-		o_instr_addr => s_instr_addr,
-		i_instr_data => s_instr_data,
-
+		i_clk           => clk,
+		i_rst           => rst,
+		o_instr_addr    => s_instr_addr,
+		i_instr_data    => s_instr_data,
 		o_data_addr     => s_data_addr,
 		i_data_read     => s_data_rdata,
 		o_data_write    => s_data_wdata,
@@ -124,11 +125,9 @@ BEGIN
 		G_MEM_SIZE => G_RAM_SIZE
 	)
 	PORT MAP(
-		i_clk => clk,
-
-		i_imem_addr => s_instr_addr,
-		o_imem_data => s_instr_data,
-
+		i_clk           => clk,
+		i_imem_addr     => s_instr_addr,
+		o_imem_data     => s_instr_data,
 		i_dmem_addr     => s_data_addr,
 		i_dmem_wdata    => s_data_wdata,
 		o_dmem_rdata    => s_mem_rdata,
@@ -142,18 +141,15 @@ BEGIN
 		G_BAUDRATE => G_BAUDRATE
 	)
 	PORT MAP(
-		i_clk => clk,
-		i_rst => rst,
-
-		i_rx => uart_rx,
-		o_tx => uart_tx,
-
+		i_clk      => clk,
+		i_rst      => rst,
+		i_rx       => uart_rx,
+		o_tx       => uart_tx,
 		i_data     => s_data_wdata(7 DOWNTO 0),
 		i_tx_new   => s_uart_tx_start,
 		o_tx_ready => s_uart_tx_ready,
-
-		o_data   => s_uart_rx_data,
-		o_rx_new => s_uart_rx_new
+		o_data     => s_uart_rx_data,
+		o_rx_new   => s_uart_rx_new
 	);
 
 	P_RX_INTERFACE : PROCESS (clk)
@@ -170,41 +166,58 @@ BEGIN
 				IF s_uart_rx_new = '1' THEN
 					r_rx_byte_buf <= s_uart_rx_data;
 					r_rx_data_valid <= '1';
-                                END IF;
+				END IF;
 			END IF;
 		END IF;
 	END PROCESS;
 
-	P_BUS_INTRCON : PROCESS (s_data_addr, s_data_write_en, s_data_wdata,
-		s_mem_rdata, r_rx_byte_buf, r_rx_data_valid, s_uart_tx_ready)
+	P_WRITE_LOGIC : PROCESS (s_data_addr, s_data_write_en, s_uart_tx_ready)
 	BEGIN
 		s_mem_write_en <= '0';
 		s_uart_tx_start <= '0';
 		s_clear_rx_flag <= '0';
-		s_data_rdata <= (OTHERS => '0');
 
 		IF unsigned(s_data_addr) < x"0000_2000" THEN
 			s_mem_write_en <= s_data_write_en;
-			s_data_rdata <= s_mem_rdata;
 
 		ELSIF s_data_addr = x"8000_0000" THEN
-			IF s_data_write_en = '1' THEN
-                                IF s_uart_tx_ready = '1' THEN 
-                                        s_uart_tx_start <= '1';
-                                END IF;
-			ELSE
-				s_data_rdata(7 DOWNTO 0) <= r_rx_byte_buf;
+			IF s_data_write_en = '1' AND s_uart_tx_ready = '1' THEN
+				s_uart_tx_start <= '1';
 			END IF;
 
 		ELSIF s_data_addr = x"8000_0004" THEN
-                        IF s_data_write_en = '1' THEN 
-                                s_clear_rx_flag <= '1';
-                        ELSE
-                                s_data_rdata(0) <= s_uart_tx_ready;
-                                s_data_rdata(1) <= r_rx_data_valid;
-                        END IF;
+			IF s_data_write_en = '1' THEN
+				s_clear_rx_flag <= '1';
+			END IF;
 		END IF;
 	END PROCESS;
+
+	P_IO_READ_COMB : PROCESS (s_data_addr, r_rx_byte_buf, s_uart_tx_ready, r_rx_data_valid)
+	BEGIN
+		s_io_read_combinational <= (OTHERS => '0');
+
+		IF s_data_addr = x"8000_0000" THEN
+			s_io_read_combinational(7 DOWNTO 0) <= r_rx_byte_buf;
+
+		ELSIF s_data_addr = x"8000_0004" THEN
+			s_io_read_combinational(0) <= s_uart_tx_ready;
+			s_io_read_combinational(1) <= r_rx_data_valid;
+		END IF;
+	END PROCESS;
+
+	P_IO_READ_SYNC : PROCESS (clk)
+	BEGIN
+		IF rising_edge(clk) THEN
+			r_io_read_delayed <= s_io_read_combinational;
+			IF unsigned(s_data_addr) >= x"0000_2000" THEN
+				r_access_was_io <= '1';
+			ELSE
+				r_access_was_io <= '0';
+			END IF;
+		END IF;
+	END PROCESS;
+
+	s_data_rdata <= r_io_read_delayed WHEN r_access_was_io = '1' ELSE s_mem_rdata;
 
 END ARCHITECTURE structural;
 

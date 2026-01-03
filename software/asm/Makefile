@@ -24,7 +24,7 @@ BIN     = $(TEST_DIR)$(TEST_NAME)/$(TEST_NAME).bin
 TARGET  = $(ROOT_DIR)/imem.hex
 
 # All available tests
-ALL_TESTS = core/add core/csr soc/feedback soc/transmit
+ALL_TESTS = core/add core/csr soc/feedback soc/transmit soc/hello_world
 
 .PHONY: all clean help build-all
 

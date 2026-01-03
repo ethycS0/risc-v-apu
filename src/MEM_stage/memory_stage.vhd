@@ -11,7 +11,7 @@ ENTITY memory_stage IS
 		o_mem_byte_en    : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
 
 		i_ex_mem_bus : IN  t_ex_mem_data;
-		o_mem_wb_bus : OUT t_mem_wb_data
+		o_mem_wb_bus  : OUT t_mem_wb_data
 
 	);
 END ENTITY memory_stage;
@@ -60,11 +60,10 @@ BEGIN
 		END IF;
 	END PROCESS store_logic;
 
-	o_mem_wb_bus.pc4 <= i_ex_mem_bus.pc4;
-	o_mem_wb_bus.raw_mem_data <= (OTHERS => '0');
-	o_mem_wb_bus.rd_bus <= i_ex_mem_bus.rd_bus;
-	o_mem_wb_bus.wb_src <= i_ex_mem_bus.wb_src;
-	o_mem_wb_bus.funct3 <= i_ex_mem_bus.funct3;
+        o_mem_wb_bus.pc4 <= i_ex_mem_bus.pc4;
+        o_mem_wb_bus.rd_bus <= i_ex_mem_bus.rd_bus;  
+        o_mem_wb_bus.wb_src <= i_ex_mem_bus.wb_src;
+        o_mem_wb_bus.funct3 <= i_ex_mem_bus.funct3;
 
 END ARCHITECTURE structural;
 

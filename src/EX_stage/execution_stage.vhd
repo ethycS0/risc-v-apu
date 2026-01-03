@@ -258,11 +258,11 @@ BEGIN
 			o_ex_if_bus.pc_redirect <= '1';
 			o_ex_if_bus.redirect_address <= s_mtvec_val;
 
-			ELSIF s_is_mret = '1' THEN
+                ELSIF s_is_mret = '1' THEN
 			o_ex_if_bus.pc_redirect <= '1';
 			o_ex_if_bus.redirect_address <= s_mepc_val;
 
-			ELSIF i_id_ex_bus.opr_type = OP_JUMP THEN
+                ELSIF i_id_ex_bus.opr_type = OP_JUMP THEN
 			o_ex_if_bus.pc_redirect <= '1';
 			IF i_id_ex_bus.src_a = SRC_A_RS1 THEN
 				o_ex_if_bus.redirect_address <= s_alu_result(31 DOWNTO 1) & '0';
@@ -270,7 +270,7 @@ BEGIN
 				o_ex_if_bus.redirect_address <= s_pc_plus_imm;
 			END IF;
 
-			ELSIF i_id_ex_bus.opr_type = OP_BRANCH THEN
+                ELSIF i_id_ex_bus.opr_type = OP_BRANCH THEN
 			IF s_branch_taken = '1' THEN
 				o_ex_if_bus.pc_redirect <= '1';
 				o_ex_if_bus.redirect_address <= s_pc_plus_imm;
