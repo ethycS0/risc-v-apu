@@ -1,17 +1,36 @@
 # eSC-V: RV32I SoC in VHDL
 
+## Micro-Architecture
+
+<p align="center">
+  <img src="docs/micro-architecture.png" width="800" title="Micro-Architecture Diagram">
+</p>
+
 **Contribution & Project Diary Notice**
 
 Following this workflow is essential. All commits are logged and will be used to create a detailed contribution map for the final project diary. This ensures a clear and accurate progress report of the entire project.
 
+## Project Structure
+
+```
+eSC-V/
+├── src/           # VHDL module implementations
+├── tb/            # Testbench files
+├── Makefile       # Build and simulation commands
+├── flake.nix      # Nix development environment configuration
+└── README.md      # Project documentation
+```
+
+## Contribution
+
 - **Contribution Record:** All work must be submitted via pull requests. This creates a permanent record of who contributed what and when.
 - **Automated Project Diary:** The Git log serves as our official project diary. Your commit messages will directly inform the final progress report.
 
-## 1. Setting Up Your Development Environment
+### 1. Setting Up Your Development Environment
 
 This project uses Nix to provide a consistent development environment with all the necessary tools.
 
-### Install Nix
+#### Install Nix
 
 First, install Nix on your system (Linux, macOS, or WSL on Windows) using the Determinate Systems installer, which is the recommended method:
 
@@ -19,15 +38,15 @@ First, install Nix on your system (Linux, macOS, or WSL on Windows) using the De
 curl -fsSL https://install.determinate.systems/nix | sh -s -- install --determinate
 ```
 
-## 2. Getting the Code
+### 2. Getting the Code
 
 This project uses the fork-and-pull-request workflow.
 
-### Fork the Repository
+#### Fork the Repository
 
 1. Click the "Fork" button at the top right of the main repository page: [https://github.com/ethycS0/eSC-V](https://github.com/ethycS0/eSC-V)
 
-### Clone Your Fork
+#### Clone Your Fork
 
 Clone your forked repository to your local machine. Replace `your_github_username` with your actual username.
 
@@ -36,11 +55,11 @@ git clone git@github.com:your_github_username/eSC-V.git
 cd eSC-V  # This is your Project Root
 ```
 
-## 3. The Development Workflow
+### 3. The Development Workflow
 
 All development work should be done within the Nix development shell.
 
-### Activate the Environment
+#### Activate the Environment
 
 From the project's root directory, run the following command. You must do this every time you open a new terminal to work on the project.
 
@@ -50,12 +69,12 @@ nix develop
 
 This command will make all required tools (`GHDL`, `GTKWave`, etc.) available in your shell.
 
-### Implement Your Code
+#### Implement Your Code
 
 - Place new module implementations (e.g., `module.vhd`) in the `src/` directory.
 - Place corresponding testbenches (e.g., `tb_module.vhd`) in the `tb/` directory.
 
-### Build and Test
+#### Build and Test
 
 Use the provided `Makefile` to simulate your design.
 
@@ -75,11 +94,11 @@ After running a simulation, you can view the resulting waveforms with GTKWave:
 make view TB=tb_module
 ```
 
-## 4. Submitting Your Contribution
+### 4. Submitting Your Contribution
 
 Once your implementation is working correctly and fully tested, please follow these steps to submit a pull request.
 
-### Clean the Project
+#### Clean the Project
 
 **Always** run the clean command before committing to remove generated simulation files.
 
@@ -87,7 +106,7 @@ Once your implementation is working correctly and fully tested, please follow th
 make clean
 ```
 
-### Commit and Push Your Changes
+#### Commit and Push Your Changes
 
 Stage, commit, and push your changes to your forked repository. It is a best practice to create a new branch for your feature.
 
@@ -97,23 +116,12 @@ git commit -m "feat: Implement the ALU and its testbench"  # Change Message to I
 git push origin main
 ```
 
-### Create a Pull Request
+#### Create a Pull Request
 
 1. Go to your forked repository on GitHub (`https://github.com/your_github_username/eSC-V`).
 2. You should see a prompt to "Contribute" and "Open a pull request." Click it.
 3. Provide a clear title and a detailed description of your changes in the pull request.
 4. The maintainer will review the pull request and may request changes. If so, simply make the required changes, commit, and push them to your branch again. The pull request will update automatically.
-
-## Project Structure
-
-```
-eSC-V/
-├── src/           # VHDL module implementations
-├── tb/            # Testbench files
-├── Makefile       # Build and simulation commands
-├── flake.nix      # Nix development environment configuration
-└── README.md      # Project documentation
-```
 
 ## Best Practices
 
@@ -157,15 +165,6 @@ git commit -m "fix: correct sign extension in immediate decoder"
 - **Nix**: Reproducible development environment
 - **Make**: Build automation
 - **Git**: Version control
-
-## Getting Help
-
-If you encounter issues:
-
-1. Check existing issues on the repository
-2. Review the RISC-V specification for reference
-3. Ensure your Nix environment is properly configured
-4. Verify all dependencies are available in the dev shell
 
 ## Resources
 
