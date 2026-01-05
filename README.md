@@ -1,4 +1,4 @@
-# Contributing to the RISC-V APU Project
+# eSC-V: RV32I SoC in VHDL
 
 **Contribution & Project Diary Notice**
 
@@ -25,15 +25,15 @@ This project uses the fork-and-pull-request workflow.
 
 ### Fork the Repository
 
-1. Click the "Fork" button at the top right of the main repository page: [https://github.com/ethycS0/risc-v-apu](https://github.com/ethycS0/risc-v-apu)
+1. Click the "Fork" button at the top right of the main repository page: [https://github.com/ethycS0/eSC-V](https://github.com/ethycS0/eSC-V)
 
 ### Clone Your Fork
 
 Clone your forked repository to your local machine. Replace `your_github_username` with your actual username.
 
 ```bash
-git clone git@github.com:your_github_username/risc-v-apu.git
-cd risc-v-apu  # This is your Project Root
+git clone git@github.com:your_github_username/eSC-V.git
+cd eSC-V  # This is your Project Root
 ```
 
 ## 3. The Development Workflow
@@ -99,7 +99,7 @@ git push origin main
 
 ### Create a Pull Request
 
-1. Go to your forked repository on GitHub (`https://github.com/your_github_username/risc-v-apu`).
+1. Go to your forked repository on GitHub (`https://github.com/your_github_username/eSC-V`).
 2. You should see a prompt to "Contribute" and "Open a pull request." Click it.
 3. Provide a clear title and a detailed description of your changes in the pull request.
 4. The maintainer will review the pull request and may request changes. If so, simply make the required changes, commit, and push them to your branch again. The pull request will update automatically.
@@ -107,7 +107,7 @@ git push origin main
 ## Project Structure
 
 ```
-risc-v-apu/
+eSC-V/
 ├── src/           # VHDL module implementations
 ├── tb/            # Testbench files
 ├── Makefile       # Build and simulation commands
@@ -176,8 +176,6 @@ If you encounter issues:
 
 ---
 
-**Repository:** [https://github.com/ethycS0/risc-v-apu](https://github.com/ethycS0/risc-v-apu)
-
-**License:** Check repository for license details
+**Repository:** [https://github.com/ethycS0/eSC-V](https://github.com/ethycS0/eSC-V)
 
 **Maintainer:** ethycS0

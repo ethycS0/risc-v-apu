@@ -44,6 +44,7 @@
 
             # Documentation
             texlive.combined.scheme-full
+            doxygen
 
             # Build Toolchains
             pkgsCross.riscv32-embedded.stdenv.cc

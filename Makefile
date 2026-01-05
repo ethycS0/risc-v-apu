@@ -63,7 +63,7 @@ view:
 clean:
 	$(GHDL) --clean
 	rm -rf sim work-obj08.cf imem.hex
-	$(MAKE) -C software/asm clean
+	$(MAKE) -C software/tests clean
 
 synth:
 	mkdir -p $(BUILD_DIR)
@@ -98,7 +98,7 @@ uart:
 clean:
 	$(GHDL) --clean
 	rm -rf sim work-obj08.cf imem.hex $(BUILD_DIR)
-	$(MAKE) -C software/asm clean
+	$(MAKE) -C software/tests clean
 
 help:
 	@echo "Simulation targets:"

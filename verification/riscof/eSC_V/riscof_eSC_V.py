@@ -9,15 +9,15 @@ from riscof.pluginTemplate import pluginTemplate
 logger = logging.getLogger()
 
 
-class core(pluginTemplate):
-    __model__ = "core"
+class eSC_V(pluginTemplate):
+    __model__ = "eSC_V"
     __version__ = "1.0"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         config = kwargs.get("config")
 
-        self.dut_exe = os.path.join(config["PATH"] if "PATH" in config else "", "core")
+        self.dut_exe = os.path.join(config["PATH"] if "PATH" in config else "", "eSC_V")
         self.num_jobs = str(config["jobs"] if "jobs" in config else 1)
         self.pluginpath = os.path.abspath(config["pluginpath"])
         self.isa_spec = os.path.abspath(config["ispec"])
@@ -29,7 +29,7 @@ class core(pluginTemplate):
         self.suite_dir = suite
 
         # 1. PATH SETUP: Get the absolute path to your VHDL project root
-        self.vhdl_root = os.path.abspath(os.path.join(self.pluginpath, "../.."))
+        self.vhdl_root = os.path.abspath(os.path.join(self.pluginpath, "../../.."))
 
         # 2. VHDL COMPILATION
         # We compile here to ensure 'work-obj08.cf' is created with ABSOLUTE PATHS
@@ -44,7 +44,7 @@ class core(pluginTemplate):
         src_files = [
             # Common (Compile first)
             "src/common.vhd",
-            # Top Level & Global Logic
+            # Core
             "src/core.vhd",
             "src/hazard_detection_unit.vhd",
             # IF Stage
@@ -66,8 +66,14 @@ class core(pluginTemplate):
             "src/MEM_stage/memory_stage.vhd",
             # WB Stage
             "src/WB_stage/writeback_stage.vhd",
+            # Memory
+            "src/unified_memory_unit.vhd",
+            # UART
+            "src/UART/uart.vhd",
+            # SoC
+            "src/soc.vhd",
             # Testbench
-            "tb/tb_core_riscof.vhd",
+            "tb/tb_soc_riscof.vhd",
         ]
 
         for src in src_files:
@@ -77,9 +83,7 @@ class core(pluginTemplate):
             utils.shellCommand(analyze_cmd).run(cwd=work_dir)
 
         # C. Elaborate
-        elaborate_cmd = (
-            f"ghdl -e --std=08 -frelaxed --workdir={work_dir} tb_core_riscof"
-        )
+        elaborate_cmd = f"ghdl -e --std=08 -frelaxed --workdir={work_dir} tb_soc_riscof"
         utils.shellCommand(elaborate_cmd).run(cwd=work_dir)
 
         logger.info("VHDL compilation complete.")
@@ -166,7 +170,7 @@ class core(pluginTemplate):
 
             sig_begin = None
             sig_end = None
-            mem_base = 0x80000000
+            mem_base = 0x00000000
             tohost = 0
 
             # Parse nm output once for all symbols
@@ -207,14 +211,14 @@ class core(pluginTemplate):
                 "--std=08",
                 "-frelaxed",
                 f"--workdir={test_dir}",
-                "tb_core_riscof",
+                "tb_soc_riscof",
                 f"-gG_IMEM_FILENAME={hex_file}",
                 f"-gG_SIG_FILENAME={sig_file}",
                 f"-gG_SIG_START_OFFSET={sig_start_offset}",
                 f"-gG_SIG_END_OFFSET={sig_end_offset}",
                 f"-gG_TERMINATION_OFFSET={term_offset}",
                 f"--wave={wave_file}",
-                "--stop-time=2ms",
+                # "--stop-time=2ms",
             ]
 
             logger.debug(f"Running: {' '.join(ghdl_cmd_list)}")

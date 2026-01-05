@@ -34,13 +34,11 @@
 #define RVMODEL_CLEAR_MTIMER_INT
 #define RVMODEL_CLEAR_MEXT_INT
 
-// Don't add CANARY - the test framework handles it
 #define RVMODEL_DATA_BEGIN                                              \
   .section .test.output;                                                \
   .align 4;                                                             \
   .global begin_signature; begin_signature:
 
-// Don't add CANARY - the test framework handles it  
 #define RVMODEL_DATA_END                                                \
   .align 4;                                                             \
   .global end_signature; end_signature:                                 \

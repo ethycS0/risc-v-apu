@@ -7,4 +7,5 @@ sim/*.ghw
 *.elf
 *.cf
 riscof_work
+dev_docs
 
