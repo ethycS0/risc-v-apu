@@ -1,14 +1,10 @@
 # eSC-V: RV32I SoC in VHDL
 
-## Micro-Architecture
+## Architecture
 
 <p align="center">
   <img src="docs/micro-architecture.png" width="800" title="Micro-Architecture Diagram">
 </p>
-
-**Contribution & Project Diary Notice**
-
-Following this workflow is essential. All commits are logged and will be used to create a detailed contribution map for the final project diary. This ensures a clear and accurate progress report of the entire project.
 
 ## Project Structure
 
@@ -22,6 +18,10 @@ eSC-V/
 ```
 
 ## Contribution
+
+**Contribution & Project Diary Notice**
+
+Following this workflow is essential. All commits are logged and will be used to create a detailed contribution map for the final project diary. This ensures a clear and accurate progress report of the entire project.
 
 - **Contribution Record:** All work must be submitted via pull requests. This creates a permanent record of who contributed what and when.
 - **Automated Project Diary:** The Git log serves as our official project diary. Your commit messages will directly inform the final progress report.
