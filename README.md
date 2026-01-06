@@ -4,7 +4,7 @@
 
 eSC-V is a 5-stage pipelined RV32I Zicsr RISC-V SoC implemented entirely in VHDL. The SoC has a dual-port unified memory controller that synthesizes to BRAM, a UART for communication, and has been verified using the RISC-V Compatibility Framework (RISCOF).
 
-The complete tooling is open source, and the FPGA used is the Tang Primer 20K, which has an open engineered bitstream. Nix is used to keep the development environment and toolchain consistent.
+The complete tooling is open source, and the FPGA used is the Tang Primer 20K, which has an open source (reverse engineered) bitstream. Nix is used to keep the development environment and toolchain consistent.
 
 ## Architecture
 
