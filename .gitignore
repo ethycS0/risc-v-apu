@@ -8,5 +8,5 @@ sim/*.ghw
 *.cf
 riscof_work
 dev_docs
-build
+build/
 
