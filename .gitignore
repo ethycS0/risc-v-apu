@@ -9,4 +9,5 @@ sim/*.ghw
 riscof_work
 dev_docs
 build/
+imem.hx
 
