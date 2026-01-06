@@ -40,7 +40,7 @@ SOC_TOP = soc
 DEVICE = GW2A-LV18PG256C8/I7
 FAMILY = GW2A-18C
 BOARD = tangprimer20k
-CONSTRAINT_FILE = $(ROOT_DIR)/constraints/tang_primer_20k.cst
+CONSTRAINT_FILE = $(ROOT_DIR)/constraints/fpga.cst
 BUILD_DIR = build
 
 .PHONY: all run compile elaborate view clean synth pnr bitstream program program-flash fpga

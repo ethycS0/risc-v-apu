@@ -1,170 +1,132 @@
 # eSC-V: RV32I SoC in VHDL
 
+## Introduction
+
+eSC-V is a 5-stage pipelined RV32I Zicsr RISC-V SoC implemented entirely in VHDL. The SoC has a dual-port unified memory controller that synthesizes to BRAM, a UART for communication, and has been verified using the RISC-V Compatibility Framework (RISCOF).
+
+The complete tooling is open source, and the FPGA used is the Tang Primer 20K, which has an open engineered bitstream. Nix is used to keep the development environment and toolchain consistent.
+
 ## Architecture
 
 <p align="center">
   <img src="docs/micro-architecture.png" width="800" title="Micro-Architecture Diagram">
 </p>
 
+## Usage
+
+From the project root, enter the Nix development shell, build the test program, and run simulations or synthesize for the FPGA using the provided Makefile:
+
+```bash
+nix develop
+
+cd software/tests
+make TEST=hello_world
+cd ../..
+
+# Simulation
+make run TB=tb_soc
+make view
+
+# Synthesis + programming
+make program
+```
+
+For programming an FPGA, change `constraints/fpga.cst` to your FPGA constraints.
+
 ## Project Structure
 
-```
+```text
 eSC-V/
-├── src/           # VHDL module implementations
-├── tb/            # Testbench files
-├── Makefile       # Build and simulation commands
-├── flake.nix      # Nix development environment configuration
-└── README.md      # Project documentation
+├── constraints/           # FPGA constraint files
+│   └── fpga.cst
+├── docs/                  # Documentation and diagrams
+│   ├── dev_docs/
+│   ├── micro-architecture.png
+│   └── riscv_docs/
+├── software/              # Software and firmware
+│   ├── drivers/
+│   └── tests/
+├── src/                   # VHDL module implementations
+│   ├── core.vhd
+│   ├── soc.vhd
+│   ├── IF_stage/
+│   ├── ID_stage/
+│   ├── EX_stage/
+│   ├── MEM_stage/
+│   ├── WB_stage/
+│   ├── UART/
+│   └── unified_memory_unit.vhd
+├── tb/                    # Testbench files
+│   ├── tb_soc.vhd
+│   └── tb_soc_riscof.vhd
+├── verification/          # Verification frameworks
+│   └── riscof/
+├── Makefile               # Build and simulation commands
+├── flake.nix              # Nix development environment
+└── README.md              # Project documentation
 ```
 
-## Contribution
+## Todo
 
-**Contribution & Project Diary Notice**
+- [x] Core
+- [x] Memory Controller
+- [x] UART
+- [x] SoC
+- [x] Architectural Verification with RISCOF
+- [ ] Bootloader
+- [ ] Running C
+- [ ] Branch Prediction Unit
+- [ ] C Extension
+- [ ] M Extension
+- [ ] A Extension
+- [ ] Wishbone Interconnect
+- [ ] Running Doom
+- [ ] Running an OS
 
-Following this workflow is essential. All commits are logged and will be used to create a detailed contribution map for the final project diary. This ensures a clear and accurate progress report of the entire project.
+## Contributing
 
-- **Contribution Record:** All work must be submitted via pull requests. This creates a permanent record of who contributed what and when.
-- **Automated Project Diary:** The Git log serves as our official project diary. Your commit messages will directly inform the final progress report.
+### Setup
 
-### 1. Setting Up Your Development Environment
-
-This project uses Nix to provide a consistent development environment with all the necessary tools.
-
-#### Install Nix
-
-First, install Nix on your system (Linux, macOS, or WSL on Windows) using the Determinate Systems installer, which is the recommended method:
+Install Nix using the Determinate Systems installer:
 
 ```bash
 curl -fsSL https://install.determinate.systems/nix | sh -s -- install --determinate
 ```
 
-### 2. Getting the Code
-
-This project uses the fork-and-pull-request workflow.
-
-#### Fork the Repository
-
-1. Click the "Fork" button at the top right of the main repository page: [https://github.com/ethycS0/eSC-V](https://github.com/ethycS0/eSC-V)
-
-#### Clone Your Fork
-
-Clone your forked repository to your local machine. Replace `your_github_username` with your actual username.
+Fork the repository at [github.com/ethycS0/eSC-V](https://github.com/ethycS0/eSC-V), then clone your fork:
 
 ```bash
 git clone git@github.com:your_github_username/eSC-V.git
-cd eSC-V  # This is your Project Root
+cd eSC-V
 ```
 
-### 3. The Development Workflow
+### Development
 
-All development work should be done within the Nix development shell.
-
-#### Activate the Environment
-
-From the project's root directory, run the following command. You must do this every time you open a new terminal to work on the project.
+Enter the development environment (required for each terminal session):
 
 ```bash
 nix develop
 ```
 
-This command will make all required tools (`GHDL`, `GTKWave`, etc.) available in your shell.
-
-#### Implement Your Code
-
-- Place new module implementations (e.g., `module.vhd`) in the `src/` directory.
-- Place corresponding testbenches (e.g., `tb_module.vhd`) in the `tb/` directory.
-
-#### Build and Test
-
-Use the provided `Makefile` to simulate your design.
-
-#### Run a simulation
+Place implementations in `src/` and testbenches in `tb/` . Use the Makefile to build and test:
 
 ```bash
-make run TB=tb_module
+make run TB=tb_module    # Run simulation
+make view                # View waveforms
 ```
 
-Replace `tb_module` with the name of your testbench file, without the `.vhd` extension.
+### Submitting Changes
 
-#### View waveforms
-
-After running a simulation, you can view the resulting waveforms with GTKWave:
-
-```bash
-make view TB=tb_module
-```
-
-### 4. Submitting Your Contribution
-
-Once your implementation is working correctly and fully tested, please follow these steps to submit a pull request.
-
-#### Clean the Project
-
-**Always** run the clean command before committing to remove generated simulation files.
+Clean generated files before committing. I personally use this awesome [formatter](https://g2384.github.io/VHDLFormatter/) to format code and comments before committing.
 
 ```bash
 make clean
-```
-
-#### Commit and Push Your Changes
-
-Stage, commit, and push your changes to your forked repository. It is a best practice to create a new branch for your feature.
-
-```bash
 git add .
-git commit -m "feat: Implement the ALU and its testbench"  # Change Message to Implementation Details
+git commit -m "feat: implement module"
 git push origin main
 ```
 
-#### Create a Pull Request
-
-1. Go to your forked repository on GitHub (`https://github.com/your_github_username/eSC-V`).
-2. You should see a prompt to "Contribute" and "Open a pull request." Click it.
-3. Provide a clear title and a detailed description of your changes in the pull request.
-4. The maintainer will review the pull request and may request changes. If so, simply make the required changes, commit, and push them to your branch again. The pull request will update automatically.
-
-## Best Practices
-
-### Commit Messages
-
-Follow conventional commit format for clear version history:
-
-- `feat:` for new features
-- `fix:` for bug fixes
-- `docs:` for documentation changes
-- `test:` for adding or modifying tests
-- `refactor:` for code refactoring
-
-Example:
-
-```bash
-git commit -m "feat: implement instruction decoder module"
-git commit -m "test: add comprehensive ALU testbench"
-git commit -m "fix: correct sign extension in immediate decoder"
-```
-
-### Code Quality
-
-- Write clean, well-commented VHDL code
-- Follow consistent naming conventions
-- Create comprehensive testbenches for all modules
-- Verify simulation results before submitting PRs
-- Always run `make clean` before committing
-
-### Testing
-
-- Test edge cases and boundary conditions
-- Verify timing constraints
-- Check for proper signal initialization
-- Validate against RISC-V ISA specifications
-
-## Tools Used
-
-- **GHDL**: Open-source VHDL simulator
-- **GTKWave**: Waveform viewer
-- **Nix**: Reproducible development environment
-- **Make**: Build automation
-- **Git**: Version control
+Open a pull request from your fork on GitHub with a clear description of your changes.
 
 ## Resources
 
@@ -172,9 +134,3 @@ git commit -m "fix: correct sign extension in immediate decoder"
 - [GHDL Documentation](https://ghdl.github.io/ghdl/)
 - [GTKWave Documentation](http://gtkwave.sourceforge.net/)
 - [Nix Manual](https://nixos.org/manual/nix/stable/)
-
----
-
-**Repository:** [https://github.com/ethycS0/eSC-V](https://github.com/ethycS0/eSC-V)
-
-**Maintainer:** ethycS0
