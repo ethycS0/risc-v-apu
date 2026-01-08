@@ -38,10 +38,10 @@ USE ieee.numeric_std.ALL;
 
 ENTITY soc IS
 	GENERIC (
-		G_CLK_FREQ  : INTEGER := 27_000_000;    --! System clock frequency in Hz (default 27 MHz)
-		G_BAUDRATE  : INTEGER := 115200;        --! UART baud rate in bps (default 115200)
-		G_RAM_SIZE  : INTEGER := 8192;          --! RAM size in 32-bit words (default 32KB)
-		G_CODE_FILE : STRING  := "imem.hex";    --! Path to initialization HEX file
+		G_CLK_FREQ  : INTEGER := 27_000_000;    --! System clock frequency in Hz 
+		G_BAUDRATE  : INTEGER := 921600;        --! UART baud rate in bps 
+		G_RAM_SIZE  : INTEGER := 8192;          --! RAM size in 32-bit words 
+		G_CODE_FILE : STRING  := "code.hex";    --! Path to initialization HEX file
 		G_SIM       : BOOLEAN := FALSE          --! Simulation mode flag (TRUE for simulation)
 	);
 	PORT (

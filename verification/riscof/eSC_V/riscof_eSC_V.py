@@ -69,7 +69,7 @@ class eSC_V(pluginTemplate):
             # Memory
             "src/unified_memory_unit.vhd",
             # UART
-            "src/UART/uart.vhd",
+            "src/uart.vhd",
             # SoC
             "src/soc.vhd",
             # Testbench

@@ -50,10 +50,10 @@ END ENTITY uart;
 
 ARCHITECTURE behavioral OF uart IS
 
-	CONSTANT c_clk_per_bit : INTEGER := (G_CLK / G_BAUDRATE); --! Clock cycles per UART bit period
+	CONSTANT c_clk_per_bit : INTEGER := ((G_CLK + G_BAUDRATE/2) / G_BAUDRATE); --! Clock cycles per UART bit period
 
-	TYPE t_state IS (IDLE, TX_START, TX_DATA, TX_STOP, CLEANUP); --! TX state machine states
-	TYPE r_state IS (IDLE, RX_START, RX_DATA, RX_STOP);          --! RX state machine states
+	TYPE t_state IS (IDLE, TX_START, TX_DATA, TX_STOP);     --! TX state machine states
+	TYPE r_state IS (IDLE, RX_START, RX_DATA, RX_STOP);     --! RX state machine states
 
 	SIGNAL s_tx_state : t_state := IDLE; --! Current TX state
 	SIGNAL s_rx_state : r_state := IDLE; --! Current RX state
@@ -80,11 +80,10 @@ BEGIN
 	--! - TX_START: Transmit start bit (logic 0) for one bit period
 	--! - TX_DATA: Transmit 8 data bits LSB-first, one per bit period
 	--! - TX_STOP: Transmit stop bit (logic 1) for one bit period
-	--! - CLEANUP: Wait for i_tx_new to deassert before returning to IDLE (prevents double-trigger)
 	--!
 	--! Timing is controlled by s_tx_cnt, which counts system clocks per bit period
 	--! (c_clk_per_bit). The o_tx_ready flag indicates when the transmitter can accept
-	--! new data (high in IDLE and CLEANUP states).
+	--! new data.
 	P_TX : PROCESS (i_clk, i_rst)
 	BEGIN
 		IF rising_edge(i_clk) THEN
@@ -143,12 +142,6 @@ BEGIN
 							s_tx_cnt <= s_tx_cnt + 1;
 						ELSE
 							s_tx_cnt <= 0;
-							s_tx_state <= CLEANUP;
-						END IF;
-
-					WHEN CLEANUP =>  -- Wait for i_tx_new to deassert
-						o_tx_ready <= '1';
-						IF i_tx_new = '0' THEN
 							s_tx_state <= IDLE;
 						END IF;
 				END CASE;

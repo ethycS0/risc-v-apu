@@ -73,15 +73,14 @@ eSC-V/
 - [x] UART
 - [x] SoC
 - [x] Architectural Verification with RISCOF
-- [ ] Bootloader
-- [ ] Running C
+- [x] Bootstrap C
+- [ ] Tetris
+- [ ] ASCII Doom
 - [ ] Branch Prediction Unit
 - [ ] C Extension
 - [ ] M Extension
 - [ ] A Extension
 - [ ] Wishbone Interconnect
-- [ ] Running Doom
-- [ ] Running an OS
 
 ## Contributing
 

@@ -1,0 +1,4 @@
+IndentWidth: 8
+ColumnLimit: 120
+
+UseTab: Never

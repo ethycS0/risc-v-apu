@@ -26,7 +26,7 @@ SRC_FILES = \
 	$(ROOT_DIR)/src/EX_stage/forwarding_unit.vhd \
 	$(ROOT_DIR)/src/MEM_stage/memory_stage.vhd \
 	$(ROOT_DIR)/src/WB_stage/writeback_stage.vhd \
-	$(ROOT_DIR)/src/UART/uart.vhd \
+	$(ROOT_DIR)/src/uart.vhd \
 	$(ROOT_DIR)/src/unified_memory_unit.vhd \
 	$(ROOT_DIR)/src/soc.vhd
 
@@ -43,7 +43,7 @@ BOARD = tangprimer20k
 CONSTRAINT_FILE = $(ROOT_DIR)/constraints/fpga.cst
 BUILD_DIR = build
 
-.PHONY: all run compile elaborate view clean synth pnr bitstream program program-flash fpga
+.PHONY: all run compile elaborate view clean code synth pnr bitstream program fpga
 
 all: run
 
@@ -65,7 +65,10 @@ clean:
 	rm -rf sim work-obj08.cf imem.hex
 	$(MAKE) -C software/tests clean
 
-synth:
+code: 
+	$(MAKE) -C software/drivers 
+
+synth: code
 	mkdir -p $(BUILD_DIR)
 	$(YOSYS) -m ghdl -p " \
 		ghdl $(GHDL_FLAGS) $(PKG_FILES) $(SRC_FILES) -e $(SOC_TOP); \
@@ -75,6 +78,7 @@ pnr: synth
 	$(NEXTPNR) --json $(BUILD_DIR)/$(SOC_TOP).json \
 		--write $(BUILD_DIR)/$(SOC_TOP)_pnr.json \
 		--device $(DEVICE) \
+		--freq 27 \
 		--vopt family=$(FAMILY) \
 		--vopt cst=$(CONSTRAINT_FILE)	
 bitstream: pnr
@@ -90,15 +94,11 @@ fpga: bitstream
 	@echo "Run 'make program' to load to SRAM (temporary)"
 	@echo "Run 'make program-flash' to load to Flash (persistent)"
 
-uart:
-	@echo "Opening UART terminal (115200 baud)..."
-	@echo "Press Ctrl-A then K to exit"
-	screen /dev/ttyUSB1 115200
-
 clean:
 	$(GHDL) --clean
 	rm -rf sim work-obj08.cf imem.hex $(BUILD_DIR)
 	$(MAKE) -C software/tests clean
+	$(MAKE) -C software/drivers clean
 
 help:
 	@echo "Simulation targets:"
@@ -111,8 +111,7 @@ help:
 	@echo "  make pnr              - Place and route with nextpnr"
 	@echo "  make bitstream        - Generate bitstream"
 	@echo "  make program          - Program to FPGA SRAM (temporary)"
-	@echo "  make program-flash    - Program to FPGA Flash (persistent)"
 	@echo "  make fpga             - Complete FPGA build"
-	@echo "  make uart             - Open UART terminal"
+	@echo "  make code             - Make software/drivers
 	@echo ""
 	@echo "  make clean            - Clean all build files"
