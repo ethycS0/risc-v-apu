@@ -13,3 +13,4 @@ build/
 imem.hex
 code.hex
 toolchain/
+.cache/
