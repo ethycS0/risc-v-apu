@@ -1,10 +1,25 @@
 #include "tetris.h"
-#include <fcntl.h>
-#include <signal.h>
+#include "uart.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <termios.h>
-#include <time.h>
+
+#define CPU_FREQ_HZ 27000000
+
+unsigned long get_cycles(void) {
+        unsigned long cycles;
+        // "csrr" = Control Status Register Read
+        __asm__ volatile("csrr %0, mcycle" : "=r"(cycles));
+        return cycles;
+}
+
+void delay(unsigned int ms) {
+        unsigned long start_time = get_cycles();
+        unsigned long cycles_to_wait = ms * (CPU_FREQ_HZ / 1000);
+
+        while ((get_cycles() - start_time) < cycles_to_wait) {
+                __asm__("NOP");
+        }
+}
 
 struct tetris_level {
         int score;
@@ -36,34 +51,30 @@ struct tetris_level levels[] = {{0, 1200000},    {1500, 900000},  {8000, 700000}
 #define TETRIS_PIECES (sizeof(blocks) / sizeof(struct tetris_block))
 #define TETRIS_LEVELS (sizeof(levels) / sizeof(struct tetris_level))
 
-struct termios save;
-
-void tetris_cleanup_io() { tcsetattr(fileno(stdin), TCSANOW, &save); }
-
-void tetris_signal_quit(int s) { tetris_cleanup_io(); }
-
-void tetris_set_ioconfig() {
-        struct termios custom;
-        int fd = fileno(stdin);
-        tcgetattr(fd, &save);
-        custom = save;
-        custom.c_lflag &= ~(ICANON | ECHO);
-        tcsetattr(fd, TCSANOW, &custom);
-        fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_NONBLOCK);
-}
-
 void tetris_init(struct tetris *t, int w, int h) {
-        int x, y;
         t->level = 1;
         t->score = 0;
         t->gameover = 0;
         t->w = w;
         t->h = h;
-        t->game = malloc(sizeof(char *) * w);
-        for (x = 0; x < w; x++) {
-                t->game[x] = malloc(sizeof(char) * h);
-                for (y = 0; y < h; y++)
+
+        t->game = (char **)malloc(sizeof(char *) * w);
+        if (t->game == NULL) {
+                printf("[FATAL] Malloc failed for game columns! Heap exhausted?\n");
+                t->gameover = 1;
+                return;
+        }
+
+        for (int x = 0; x < w; x++) {
+                t->game[x] = (char *)malloc(sizeof(char) * h);
+                if (t->game[x] == NULL) {
+                        printf("[FATAL] Malloc failed at column %d! Heap exhausted?\n", x);
+                        t->gameover = 1;
+                        return;
+                }
+                for (int y = 0; y < h; y++) {
                         t->game[x][y] = ' ';
+                }
         }
 }
 
@@ -77,8 +88,12 @@ void tetris_clean(struct tetris *t) {
 
 void tetris_print(struct tetris *t) {
         int x, y;
-        for (x = 0; x < 30; x++)
-                printf("\n");
+        // ANSI ESCAPE CODES:
+        // \033[2J   = Clear Screen
+        // \033[H    = Move Cursor to Top-Left
+        // \033[?25l = Hide Cursor
+        printf("\033[2J\033[H\033[?25l");
+
         printf("[LEVEL: %d | SCORE: %d]\n", t->level, t->score);
         for (x = 0; x < 2 * t->w + 2; x++)
                 printf("~");
@@ -209,20 +224,15 @@ int tetris_level(struct tetris *t) {
 }
 
 void tetris_run(int w, int h) {
-        struct timespec tm;
         struct tetris t;
-        char cmd;
+        unsigned char cmd;
         int count = 0;
-        tetris_set_ioconfig();
         tetris_init(&t, w, h);
-        srand(time(NULL));
-
-        tm.tv_sec = 0;
-        tm.tv_nsec = 1000000;
+        srand(get_cycles());
+        int game_speed = 2;
 
         tetris_new_block(&t);
         while (!t.gameover) {
-                nanosleep(&tm, NULL);
                 count++;
                 if (count % 50 == 0) {
                         tetris_print(&t);
@@ -231,9 +241,9 @@ void tetris_run(int w, int h) {
                         tetris_gravity(&t);
                         tetris_check_lines(&t);
                 }
-                while ((cmd = getchar()) > 0) {
+                while ((uart_getc(&cmd)) > 0) {
                         switch (cmd) {
-                        case 'q':
+                        case 'a':
                                 t.x--;
                                 if (tetris_hittest(&t))
                                         t.x++;
@@ -251,12 +261,13 @@ void tetris_run(int w, int h) {
                                 break;
                         }
                 }
-                tm.tv_nsec = tetris_level(&t);
+                delay(game_speed);
         }
 
         tetris_print(&t);
         printf("*** GAME OVER ***\n");
+        // Show the cursor again (\033[?25h)
+        printf("\033[?25h");
 
         tetris_clean(&t);
-        tetris_cleanup_io();
 }

@@ -173,7 +173,7 @@ BEGIN
 	G_SYNTH : IF NOT G_SIMULATION_MODE GENERATE
 		SIGNAL ram : mem_array_t := init_memory_from_hex(G_CODE); --! Memory array signal (synthesis mode)
 		ATTRIBUTE ram_style : STRING;
-		ATTRIBUTE ram_style OF ram : SIGNAL IS "block"; --! Synthesis attribute for BRAM inference
+		ATTRIBUTE ram_style OF ram : SIGNAL IS "block_ram"; --! Synthesis attribute for BRAM inference
 	BEGIN
 
 		--! @brief Instruction Memory Read Process (Synthesis Mode)
