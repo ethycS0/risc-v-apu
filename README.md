@@ -74,6 +74,7 @@ eSC-V/
 - [x] SoC
 - [x] Architectural Verification with RISCOF
 - [x] Bootstrap C
+- [x] Bootstrap libC
 - [ ] Tetris
 - [ ] ASCII Doom
 - [ ] Branch Prediction Unit
@@ -81,6 +82,7 @@ eSC-V/
 - [ ] M Extension
 - [ ] A Extension
 - [ ] Wishbone Interconnect
+- [ ] Actual Doom
 
 ## Contributing
 

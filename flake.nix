@@ -15,8 +15,35 @@
       system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
+
+        riscv32i-toolchain = pkgs.stdenvNoCC.mkDerivation {
+          name = "riscv32-rv32i-zicsr-toolchain";
+
+          src = pkgs.fetchurl {
+            url = "https://github.com/ethycS0/eSC-V/releases/download/Toolchain/riscv32-rv32i-zicsr-toolchain.tar.gz";
+            sha256 = "sha256:3e7634ae400d834ae510a2057e525400fe14356aeba5dde2bb1457f70d3779cd";
+          };
+
+          sourceRoot = ".";
+
+          dontBuild = true;
+          dontConfigure = true;
+
+          installPhase = ''
+            mkdir -p $out
+            cp -r ./* $out/ || cp -r * $out/
+            chmod +x $out/bin/* 2>/dev/null || true
+          '';
+
+          dontPatchELF = true;
+          dontStrip = true;
+          dontFixup = true;
+        };
+
       in
       {
+        packages.riscv32i-toolchain = riscv32i-toolchain;
+
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
             # Language Runtimes
@@ -47,19 +74,20 @@
             doxygen
 
             # Build Toolchains
-            pkgsCross.riscv32-embedded.stdenv.cc
+            riscv32i-toolchain
             clang
             gnumake
+            bear
 
             # Serial Interface
             screen
             xxd
-
           ];
 
           shellHook = ''
+            export PATH="${riscv32i-toolchain}/bin:$PATH"
             if command -v zsh &> /dev/null; then
-              exec zsh
+                    exec zsh
             fi
           '';
         };

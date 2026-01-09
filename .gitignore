@@ -6,9 +6,10 @@ sim/*.ghw
 *.bin
 *.elf
 *.cf
+compile_commands.json
 riscof_work
 dev_docs
 build/
 imem.hex
 code.hex
-
+toolchain/

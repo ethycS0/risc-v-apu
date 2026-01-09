@@ -1,0 +1,8 @@
+Diagnostics:
+  Suppress:
+    - pp_file_not_found
+    - unused-includes
+
+ClangTidy:
+  DisableChecks:
+    - readability-const-parameter

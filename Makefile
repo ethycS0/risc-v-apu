@@ -43,6 +43,8 @@ BOARD = tangprimer20k
 CONSTRAINT_FILE = $(ROOT_DIR)/constraints/fpga.cst
 BUILD_DIR = build
 
+CODE = ascii-tetris
+
 .PHONY: all run compile elaborate view clean code synth pnr bitstream program fpga
 
 all: run
@@ -66,7 +68,7 @@ clean:
 	$(MAKE) -C software/tests clean
 
 code: 
-	$(MAKE) -C software/drivers 
+	$(MAKE) -C software $(CODE)
 
 synth: code
 	mkdir -p $(BUILD_DIR)
@@ -96,9 +98,8 @@ fpga: bitstream
 
 clean:
 	$(GHDL) --clean
-	rm -rf sim work-obj08.cf imem.hex $(BUILD_DIR)
-	$(MAKE) -C software/tests clean
-	$(MAKE) -C software/drivers clean
+	rm -rf sim work-obj08.cf code.hex imem.hex $(BUILD_DIR)
+	$(MAKE) -C software clean
 
 help:
 	@echo "Simulation targets:"

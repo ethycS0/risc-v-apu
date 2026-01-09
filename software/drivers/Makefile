@@ -1,19 +1,26 @@
-default: code.hex
+# drivers
+CC := riscv32-unknown-elf-gcc
+AR := riscv32-unknown-elf-ar 
 
-hello.o : hello.c 
-	riscv32-none-elf-gcc -c -g -O0 -ffreestanding -march=rv32i_zicsr -mabi=ilp32 -o hello.o hello.c
+CFLAGS := -c -g -O0 -ffreestanding -march=rv32i_zicsr -mabi=ilp32
+CFLAGS += -Iuart
 
-startup.o : startup.s
-	riscv32-none-elf-as -march=rv32i_zicsr -mabi=ilp32 -o startup.o startup.s
+DIRS := $(wildcard */*)
+SRCS := $(wildcard */*.c)
+OBJS := $(SRCS:.c=.o)
 
-hello.elf: hello.o startup.o link.ld 
-	riscv32-none-elf-ld -T link.ld -o hello.elf hello.o startup.o
+LIB := libdrivers.a
 
-hello.bin: hello.elf 
-	riscv32-none-elf-objcopy -O binary hello.elf hello.bin 
+all: $(LIB)
 
-code.hex: hello.bin 
-	hexdump -v -e '1/4 "%08x" "\n"' hello.bin > ../../code.hex
+$(LIB): $(OBJS)
+	$(AR) rcs $@ $^
+	@echo "Built $@"
 
-clean: 
-	rm -rf hello.o startup.o hello.bin hello.elf ../../code.hex
+%.o: %.c 
+	$(CC) $(CFLAGS) $< -o $@
+
+clean:
+	rm -f $(OBJS) $(LIB)
+
+.PHONY: all clean
