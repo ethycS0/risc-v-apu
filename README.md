@@ -66,8 +66,11 @@ eSC-V/
 │   ├── micro-architecture.png
 │   └── riscv_docs/
 ├── software/              # Software and firmware
-│   ├── drivers/
-│   └── tests/
+│   ├── apps
+│   ├── common
+│   ├── drivers
+│   ├── Makefile
+│   └── tests
 ├── src/                   # VHDL module implementations
 │   ├── core.vhd
 │   ├── soc.vhd
