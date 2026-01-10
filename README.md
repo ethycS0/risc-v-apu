@@ -14,24 +14,46 @@ The complete tooling is open source, and the FPGA used is the Tang Primer 20K, w
 
 ## Usage
 
-From the project root, enter the Nix development shell, build the test program, and run simulations or synthesize for the FPGA using the provided Makefile:
+From the project root, enter the Nix development shell. The Makefile handles building software, simulation, and synthesis directly without needing to change directories.
 
 ```bash
 nix develop
 
-cd software/tests
-make TEST=hello_world
-cd ../..
-
-# Simulation
-make run TB=tb_soc
-make view
-
-# Synthesis + programming
-make program
 ```
 
-For programming an FPGA, change `constraints/fpga.cst` to your FPGA constraints.
+### Simulation
+
+Run the SoC simulation. The build system will automatically compile the selected software variant before running the simulation.
+
+```bash
+# Run with ASCII Tetris (default)
+make run
+
+# Run with specific software
+make run pong-c
+make run libc
+
+# View waveforms
+make view
+
+```
+
+### FPGA Synthesis & Programming
+
+Synthesize the SoC with the selected software initialized in BRAM and program the FPGA (SRAM).
+
+```bash
+# Program with Tetris (default)
+make program
+
+# Program with specific software
+make program pong-c
+
+```
+
+**Available Variants:** `ascii-tetris`, `pong-c`, `libc`
+
+> **Note:** For custom hardware constraints, modify `constraints/fpga.cst`.
 
 ## Project Structure
 
@@ -68,6 +90,7 @@ eSC-V/
 
 ## Todo
 
+- [x] 5 Stage Pipeline
 - [x] Core
 - [x] Memory Controller
 - [x] UART
@@ -75,14 +98,16 @@ eSC-V/
 - [x] Architectural Verification with RISCOF
 - [x] Bootstrap C
 - [x] Bootstrap libC
-- [ ] Tetris
+- [x] Tetris
+- [x] Pong
+- [ ] Wishbone Interconnect
+- [ ] DDR3 controller
+- [ ] Cache
 - [ ] ASCII Doom
 - [ ] Branch Prediction Unit
 - [ ] C Extension
 - [ ] M Extension
 - [ ] A Extension
-- [ ] Wishbone Interconnect
-- [ ] Actual Doom
 
 ## Contributing
 

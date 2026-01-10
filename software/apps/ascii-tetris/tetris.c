@@ -92,7 +92,8 @@ void tetris_print(struct tetris *t) {
         // \033[2J   = Clear Screen
         // \033[H    = Move Cursor to Top-Left
         // \033[?25l = Hide Cursor
-        printf("\033[2J\033[H\033[?25l");
+        // printf("\033[2J\033[H\033[?25l");
+        printf("\033[H\033[?25l");
 
         printf("[LEVEL: %d | SCORE: %d]\n", t->level, t->score);
         for (x = 0; x < 2 * t->w + 2; x++)
