@@ -28,7 +28,7 @@ void uart_putc(char c) {
 
 int uart_getc(unsigned char *c) {
         if (UART_RX_VALID == 0) { // Check valid data available
-                return -1;
+                return 0;
         }
 
         *c = UART_DR;    // Get data

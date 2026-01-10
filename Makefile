@@ -43,7 +43,7 @@ BOARD = tangprimer20k
 CONSTRAINT_FILE = $(ROOT_DIR)/constraints/fpga.cst
 BUILD_DIR = build
 
-CODE = ascii-tetris
+CODE = pong-c
 
 .PHONY: all run compile elaborate view clean code synth pnr bitstream program fpga
 

@@ -1,6 +1,0 @@
-[submodule "software/ASCII-Tetris"]
-	path = software/ASCII-Tetris
-	url = git@github.com:ethycS0/ASCII-Tetris.git
-[submodule "software/ascii-tetris"]
-	path = software/ascii-tetris
-	url = git@github.com:ethycS0/ascii-tetris.git

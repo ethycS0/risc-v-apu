@@ -1,5 +1,7 @@
 # eSC-V port for ASCII Tetris game
 
+Original: https://github.com/Gregwar/ASCII-Tetris
+
 To compile, use:
 
     make

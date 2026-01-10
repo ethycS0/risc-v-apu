@@ -45,7 +45,7 @@ int _read(int file, char *ptr, int len) {
 
                 do {
                         result = uart_getc(&recv);
-                } while (result == -1);
+                } while (result);
 
                 ptr[itr] = recv;
                 if (recv == '\n' || recv == '\r') {

@@ -2,7 +2,7 @@
 PREFIX = riscv32-unknown-elf-
 OBJCOPY = $(PREFIX)objcopy
 
-.PHONY: all drivers clean ascii-tetris libc
+.PHONY: all drivers clean ascii-tetris pong-c libc
 
 all: drivers
 
@@ -21,9 +21,16 @@ ascii-tetris: drivers
 	hexdump -v -e '1/4 "%08x" "\n"' apps/ascii-tetris/ascii-tetris.bin > ../code.hex
 	@echo "Generated code.hex for ascii-tetris"
 
+pong-c: drivers
+	$(MAKE) -C apps/pong-c
+	$(OBJCOPY) -O binary apps/pong-c/pong-c.elf apps/pong-c/pong-c.bin
+	hexdump -v -e '1/4 "%08x" "\n"' apps/pong-c/pong-c.bin > ../code.hex
+	@echo "Generated code.hex for pong-c"
+
 clean:
 	$(MAKE) -C drivers clean
 	$(MAKE) -C apps/ascii-tetris clean
+	$(MAKE) -C apps/pong-c clean
 	$(MAKE) -C tests/libc clean
 	rm -f ../code.hex apps/*/*.bin tests/*/*.bin
 
