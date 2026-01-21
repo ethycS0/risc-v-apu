@@ -82,6 +82,8 @@
             # Serial Interface
             screen
             xxd
+          
+            flex
           ];
 
           shellHook = ''
