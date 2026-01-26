@@ -39,6 +39,7 @@ SRC_FILES = \
     $(ROOT_DIR)/src/MEM_stage/memory_stage.vhd \
     $(ROOT_DIR)/src/WB_stage/writeback_stage.vhd \
     $(ROOT_DIR)/src/uart.vhd \
+    $(ROOT_DIR)/src/pll.vhd \
     $(ROOT_DIR)/src/unified_memory_unit.vhd \
     $(ROOT_DIR)/src/soc.vhd
 

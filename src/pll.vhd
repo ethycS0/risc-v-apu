@@ -1,10 +1,28 @@
+--! @file pll.vhd
+--! PLL Wrapper for Gowin FPGA
+--! @author ethycS
+--! @details This module wraps the Gowin rPLL IP to generate the system clock.
+--! It is configured to take a 27 MHz input clock and produce a 27 MHz output clock.
+--! The PLL is used to ensure the clock signal is properly buffered and distributed,
+--! and to allow for future frequency adjustments if needed.
+--!
+--! Configuration:
+--! - Input Clock: 27 MHz
+--! - Output Clock: 27 MHz
+--! - VCO Frequency: 864 MHz (within 500-1250 MHz range)
+--! - IDIV_SEL: 0 (Divide by 1)
+--! - FBDIV_SEL: 0 (Multiply by 1)
+--! - ODIV_SEL: 32 (Divide VCO by 32)
+
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 
+--! @brief PLL Wrapper Entity
+--! @details Wraps the hardware-specific rPLL component for the Tang Primer 20K.
 ENTITY pll IS
 	PORT (
-		clk_in : IN STD_LOGIC;
-		clk_out : OUT STD_LOGIC
+		clk_in : IN STD_LOGIC;   --! Input clock (27 MHz from onboard oscillator)
+		clk_out : OUT STD_LOGIC  --! Output system clock (27 MHz)
 	);
 END ENTITY pll;
 
@@ -32,6 +50,7 @@ ARCHITECTURE structural OF pll IS
 			CLKOUTD_SRC : STRING := "CLKOUT";
 			CLKOUTD3_SRC : STRING := "CLKOUT"
 		);
+
 		PORT (
 			CLKIN : IN STD_LOGIC;
 			CLKOUT : OUT STD_LOGIC;
@@ -51,23 +70,25 @@ ARCHITECTURE structural OF pll IS
 		);
 	END COMPONENT;
 BEGIN
-	-- Parameters for 27MHz -> 54MHz
-	-- Target VCO range: 400 MHz - 1200 MHz (Actually 500-1250 for this device)
+	-- Parameters for 27MHz -> 27MHz
+	-- Target VCO range: 500 MHz - 1250 MHz
 	-- FCLKIN = 27 MHz.
-	-- PFD = 27 MHz / (0+1) = 27 MHz (Valid > 3MHz).
-	-- VCO = 27 MHz * (1+1) * 16 / (0+1) = 864 MHz (Valid).
-	-- Output = 54 MHz.
-
+	-- PFD = 27 MHz / (0+1) = 27 MHz.
+	-- VCO = 27 MHz * (0+1) * 32 / (0+1) = 864 MHz.
+	-- Output = 864 / 32 = 27 MHz.
 	U_rPLL : rPLL
+
 	GENERIC MAP(
 		FCLKIN => "27.0",
-		IDIV_SEL => 1, -- Divide input by (1+1) = 2.
-		FBDIV_SEL => 3, -- Multiply feedback by (3+1) = 4. Output = 27 * 4/2 = 54 MHz.
-		ODIV_SEL => 16 -- Output Divider. VCO = 54 * 16 = 864 MHz.
+		IDIV_SEL => 0, -- Divide input by (0+1) = 1.
+		FBDIV_SEL => 0, -- Multiply feedback by (0+1) = 1.
+		ODIV_SEL => 32 -- Output Divider. VCO = 27 * 32 = 864 MHz.
 	)
+
 	PORT MAP(
 		CLKIN => clk_in,
 		CLKOUT => clk_out,
+
 		-- Unused ports
 		CLKOUTP => OPEN,
 		CLKOUTD => OPEN,
