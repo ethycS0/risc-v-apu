@@ -86,9 +86,6 @@
 
           shellHook = ''
             export PATH="${riscv32i-toolchain}/bin:$PATH"
-            if command -v zsh &> /dev/null; then
-                    exec zsh
-            fi
           '';
         };
       }

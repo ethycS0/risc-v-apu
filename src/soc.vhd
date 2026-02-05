@@ -113,6 +113,7 @@ ARCHITECTURE structural OF soc IS
 		);
 	END COMPONENT uart;
 
+	--! PLL component declaration
 	COMPONENT pll IS
 		PORT (
 			clk_in : IN STD_LOGIC;
@@ -143,22 +144,26 @@ ARCHITECTURE structural OF soc IS
 	SIGNAL s_io_read_combinational : STD_LOGIC_VECTOR(31 DOWNTO 0); --! Combinational I/O read data (address decoded)
 	SIGNAL r_io_read_delayed       : STD_LOGIC_VECTOR(31 DOWNTO 0); --! Registered I/O read data (matches memory latency)
 
-	SIGNAL rst         : STD_LOGIC := '1';                --! System reset signal (active high)
+	SIGNAL rst         : STD_LOGIC := '1';                         --! System reset signal (active high)
+        SIGNAL s_clk_sys   : STD_LOGIC;                                --| System clock (PLL for Synth | clk for Sim)
 	SIGNAL por_counter : UNSIGNED(21 DOWNTO 0) := (OTHERS => '0'); --! Power-on-reset counter
-	SIGNAL s_clk_sys   : STD_LOGIC;
 
 	CONSTANT POR_CYCLES       : UNSIGNED(21 DOWNTO 0) := TO_UNSIGNED(10, 22);               --! Number of POR clock cycles 
 	CONSTANT C_RAM_BYTE_LIMIT : unsigned(31 DOWNTO 0) := to_unsigned(G_RAM_SIZE * 4, 32);   --! RAM address upper limit 
 
 BEGIN
 
-        --! @brief PLL Component
-        --! @details This is the PLL generating clock signal. It uses FPGA PLL component initialized in pll.vhd.
-	U_PLL : pll
-	PORT MAP(
-		clk_in  => clk,
-		clk_out => s_clk_sys
-	);
+        PLL_CLK : IF NOT G_SIM GENERATE 
+                U_PLL : pll
+                PORT MAP (
+                        clk_in  => clk,
+                        clk_out => s_clk_sys
+                );
+        END GENERATE PLL_CLK;
+
+        SIM_CLK : IF G_SIM GENERATE 
+                s_clk_sys <= clk;
+        END GENERATE SIM_CLK;
 
 	--! @brief Power-On-Reset Generation Process
 	--! @details Synchronous process that generates a power-on-reset pulse for the system.

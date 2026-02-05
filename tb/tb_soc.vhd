@@ -40,7 +40,10 @@ ARCHITECTURE behavioral OF tb_soc IS
 	COMPONENT soc IS
 		GENERIC (
 			G_CLK_FREQ : INTEGER := 100_000_000;
-			G_BAUDRATE : INTEGER := 10_000_000
+			G_BAUDRATE : INTEGER := 10_000_000;
+                        G_RAM_SIZE  : INTEGER := 8192;       
+                        G_CODE_FILE : STRING  := "code.hex"; 
+                        G_SIM       : BOOLEAN := FALSE       
 		);
 		PORT (
 			clk     : IN  STD_LOGIC;
@@ -98,7 +101,10 @@ BEGIN
 	U_DUT : soc
 	GENERIC MAP(
 		G_CLK_FREQ => 100_000_000,
-		G_BAUDRATE => 10_000_000
+		G_BAUDRATE => 10_000_000,
+                G_RAM_SIZE  => 8192,       
+                G_CODE_FILE => "code.hex",
+                G_SIM       => TRUE
 	)
 	PORT MAP(
 		clk     => r_clk,

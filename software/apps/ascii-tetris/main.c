@@ -4,13 +4,14 @@
 #include <stdlib.h>
 
 int main(void) {
-        unsigned char c = 0x00;
-        while (c != 0x20) {
-                uart_getc(&c);
-        }
-
         printf("Welcome to Tetris\n");
+        while (1) {
+                unsigned char c = 0x00;
+                while (c != 0x20) {
+                        uart_getc(&c);
+                }
 
-        tetris_run(20, 20);
+                tetris_run(20, 20);
+        }
         return EXIT_SUCCESS;
 }
