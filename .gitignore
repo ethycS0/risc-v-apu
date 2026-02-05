@@ -14,4 +14,8 @@ imem.hex
 code.hex
 toolchain/
 .cache/
+<<<<<<< HEAD
 .direnv/
+=======
+*.a
+>>>>>>> 68aa735d8464cfe6dcae936758de5cbe25453e8f
