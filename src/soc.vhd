@@ -38,7 +38,7 @@ USE ieee.numeric_std.ALL;
 
 ENTITY soc IS
 	GENERIC (
-		G_CLK_FREQ  : INTEGER := 27_000_000;    --! System clock frequency in Hz (PLL output) 
+		G_CLK_FREQ  : INTEGER := 27_000_000;    --! System clock frequency in Hz 
 		G_BAUDRATE  : INTEGER := 921600;        --! UART baud rate in bps 
 		G_RAM_SIZE  : INTEGER := 8192;          --! RAM size in 32-bit words 
 		G_CODE_FILE : STRING  := "code.hex";    --! Path to initialization HEX file
@@ -145,25 +145,12 @@ ARCHITECTURE structural OF soc IS
 	SIGNAL r_io_read_delayed       : STD_LOGIC_VECTOR(31 DOWNTO 0); --! Registered I/O read data (matches memory latency)
 
 	SIGNAL rst         : STD_LOGIC := '1';                         --! System reset signal (active high)
-        SIGNAL s_clk_sys   : STD_LOGIC;                                --| System clock (PLL for Synth | clk for Sim)
 	SIGNAL por_counter : UNSIGNED(21 DOWNTO 0) := (OTHERS => '0'); --! Power-on-reset counter
 
 	CONSTANT POR_CYCLES       : UNSIGNED(21 DOWNTO 0) := TO_UNSIGNED(10, 22);               --! Number of POR clock cycles 
 	CONSTANT C_RAM_BYTE_LIMIT : unsigned(31 DOWNTO 0) := to_unsigned(G_RAM_SIZE * 4, 32);   --! RAM address upper limit 
 
 BEGIN
-
-        PLL_CLK : IF NOT G_SIM GENERATE 
-                U_PLL : pll
-                PORT MAP (
-                        clk_in  => clk,
-                        clk_out => s_clk_sys
-                );
-        END GENERATE PLL_CLK;
-
-        SIM_CLK : IF G_SIM GENERATE 
-                s_clk_sys <= clk;
-        END GENERATE SIM_CLK;
 
 	--! @brief Power-On-Reset Generation Process
 	--! @details Synchronous process that generates a power-on-reset pulse for the system.
@@ -172,9 +159,9 @@ BEGIN
 	--! After the counter reaches POR_CYCLES, the reset is deasserted and the system begins
 	--! normal operation. The 10-cycle minimum reset ensures reliable startup across process,
 	--! voltage, and temperature variations.
-	P_POR : PROCESS (s_clk_sys)
+	P_POR : PROCESS (clk)
 	BEGIN
-		IF rising_edge(s_clk_sys) THEN
+		IF rising_edge(clk) THEN
 			IF por_counter < POR_CYCLES THEN
 				por_counter <= por_counter + 1;
 				rst <= '1';  -- Assert reset during POR period
@@ -190,7 +177,7 @@ BEGIN
 	--! decode, execution, memory access, and writeback operations.
 	U_CORE : core
 	PORT MAP(
-		i_clk           => s_clk_sys,
+		i_clk           => clk,
 		i_rst           => rst,
 		o_instr_addr    => s_instr_addr,
 		i_instr_data    => s_instr_data,
@@ -213,7 +200,7 @@ BEGIN
 		G_SIMULATION_MODE => G_SIM
 	)
 	PORT MAP(
-		i_clk           => s_clk_sys,
+		i_clk           => clk,
 		i_imem_addr     => s_instr_addr,
 		o_imem_data     => s_instr_data,
 		i_dmem_addr     => s_data_addr,
@@ -233,7 +220,7 @@ BEGIN
 		G_BAUDRATE => G_BAUDRATE
 	)
 	PORT MAP(
-		i_clk      => s_clk_sys,
+		i_clk      => clk,
 		i_rst      => rst,
 		i_rx       => uart_rx,
 		o_tx       => uart_tx,
@@ -251,9 +238,9 @@ BEGIN
 	--! software acknowledges the read by writing to the status register (0x80000004),
 	--! which asserts s_clear_rx_flag. This prevents data loss if software is slow to
 	--! read received bytes, as the buffer holds the last byte until acknowledged.
-	P_RX_INTERFACE : PROCESS (s_clk_sys)
+	P_RX_INTERFACE : PROCESS (clk)
 	BEGIN
-		IF rising_edge(s_clk_sys) THEN
+		IF rising_edge(clk) THEN
 			IF rst = '1' THEN
 				r_rx_data_valid <= '0';
 				r_rx_byte_buf <= (OTHERS => '0');
@@ -337,9 +324,9 @@ BEGIN
 	--! the processor's perspective - all reads complete in one cycle after the address
 	--! is presented. Without this registration, I/O reads would appear instantaneous
 	--! while RAM reads take a cycle, creating timing hazards.
-	P_IO_READ_SYNC : PROCESS (s_clk_sys)
+	P_IO_READ_SYNC : PROCESS (clk)
 	BEGIN
-		IF rising_edge(s_clk_sys) THEN
+		IF rising_edge(clk) THEN
 			r_io_read_delayed <= s_io_read_combinational;  -- Register I/O read data
 			IF unsigned(s_data_addr) >= C_RAM_BYTE_LIMIT THEN
 				r_access_was_io <= '1';  -- Mark as I/O access
