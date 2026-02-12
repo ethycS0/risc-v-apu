@@ -6,13 +6,11 @@
 #include <string.h>
 #include <unistd.h>
 
-#define CPU_FREQ_HZ 36000000
+#define CPU_FREQ_HZ 27000000
 
-// global variables
 #define ROWS 32
 #define COLS 128
 
-// Use int for coordinates to prevent overflow if dimensions > 255
 unsigned char grid[ROWS][COLS];
 
 int PADDLE_X = 2;
@@ -25,7 +23,7 @@ int _UPDATE_FREQUENCY;
 unsigned long long updates = 0;
 bool pvp = false;
 bool eve = true;
-bool debug = true;
+bool debug = false;
 
 unsigned long get_cycles(void) {
         unsigned long cycles;
@@ -223,6 +221,7 @@ void end_game(int signum) {
 }
 
 int main() {
+        setvbuf(stdout, NULL, _IONBF, 0); // Disable all buffering for stdout
         unsigned char c = 0x00;
 
         while (uart_getc(&c))
@@ -292,3 +291,4 @@ int main() {
         }
         end_game(0);
 }
+

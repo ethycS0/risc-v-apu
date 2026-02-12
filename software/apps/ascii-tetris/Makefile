@@ -6,11 +6,11 @@ DRIVERS_DIR := ../../drivers
 COMMON_DIR := ../../common
 
 CFLAGS := -c -g -O0 -ffreestanding -march=rv32i_zicsr -mabi=ilp32
-CFLAGS += -I$(DRIVERS_DIR)/uart
+CFLAGS += -I$(DRIVERS_DIR)/debug -I$(DRIVERS_DIR)/uart
 
-ASFLAGS := -march=rv32i_zicsr -mabi=ilp32
+ASFLAGS := -march=rv32i_zicfilp_zicsr -mabi=ilp32
 
-LDFLAGS := -march=rv32i_zicsr -mabi=ilp32 -nostartfiles
+LDFLAGS := -march=rv32i_zicfilp_zicsr -mabi=ilp32 -nostartfiles
 LDFLAGS += --specs=nano.specs
 LDFLAGS += -T$(COMMON_DIR)/link.ld
 
@@ -24,6 +24,7 @@ all: $(TARGET)
 $(TARGET): crt0.o $(OBJS) $(DRIVERS_DIR)/libdrivers.a
 	$(CC) $(LDFLAGS) -o $@ crt0.o $(OBJS) \
 	    $(DRIVERS_DIR)/syscalls/syscalls.o \
+	    $(DRIVERS_DIR)/debug/debug.o \
 	    $(DRIVERS_DIR)/uart/uart.o
 
 %.o: %.c 

@@ -23,6 +23,7 @@ PACKAGE rv32i_pkg IS
                 OP_BRANCH,              
                 OP_JUMP,                
                 OP_SYSTEM,              
+                OP_LPAD,
                 OP_ILLEGAL              
         );
 
@@ -117,12 +118,14 @@ PACKAGE rv32i_pkg IS
                 instruction             : STD_LOGIC_VECTOR(31 DOWNTO 0); --! Raw 32-bit instruction
                 pc                      : STD_LOGIC_VECTOR(31 DOWNTO 0); --! PC of current instruction
                 pc4                     : STD_LOGIC_VECTOR(31 DOWNTO 0); --! PC + 4 (Next Seq PC)
+                elp                     : STD_LOGIC;                     --| ELP speculative status
         END RECORD t_if_id_data;
 
         CONSTANT C_IF_ID_RESET : t_if_id_data := (
                 instruction             => C_NOP,
                 pc                      => (OTHERS => '0'),
-                pc4                     => (OTHERS => '0')
+                pc4                     => (OTHERS => '0'),
+                elp                     => '0'
         );
 
         --! ID/EX Pipeline Register Record.
@@ -135,6 +138,7 @@ PACKAGE rv32i_pkg IS
                 src_b                   : t_SrcB;                        --! EX: ALU Operand B select
                 opr_type                : t_OprType;                     --! EX: Operation Category
                 opr_unit                : t_OprUnit;                     --! EX: Functional Unit Select
+                elp                     : STD_LOGIC;                     --| EX: Landing Pad
                 
                 immediate               : STD_LOGIC_VECTOR(31 DOWNTO 0); --! Sign-Extended Immediate
                 rs1_data                : STD_LOGIC_VECTOR(31 DOWNTO 0); --! Read Data 1 from RegFile
@@ -159,6 +163,7 @@ PACKAGE rv32i_pkg IS
                 src_b                   => SRC_B_RS2,
                 opr_type                => OP_R_TYPE,
                 opr_unit                => UNIT_ALU,
+                elp                     => '0',
                 immediate               => (OTHERS => '0'),
                 rs1_data                => (OTHERS => '0'),
                 rs2_data                => (OTHERS => '0'),
@@ -211,6 +216,7 @@ PACKAGE rv32i_pkg IS
         --! Feedback signals from Execution to Fetch (Branching).
         TYPE t_ex_if_data IS RECORD
                 pc_redirect             : STD_LOGIC;                     --! Branch taken
+                next_elp                : STD_LOGIC;                     --| ELP status
                 redirect_address        : STD_LOGIC_VECTOR(31 DOWNTO 0); --! Target Address
         END RECORD t_ex_if_data;
 

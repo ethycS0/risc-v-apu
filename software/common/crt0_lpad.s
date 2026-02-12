@@ -21,6 +21,9 @@ clear_bss:
     j clear_bss
 
 bss_done:
+    li t0, 1           
+    csrw 0x747, t0     
+
     call main
 
 loop:   j loop  

@@ -194,7 +194,7 @@ BEGIN
 		UART_SEND(C_INPUT_DATA, r_uart_rx);
 
 		REPORT "Test: Waiting for response...";
-		WAIT FOR 200 us;  -- Allow time for processing and response
+		WAIT FOR 1000 us;  -- Allow time for processing and response
 
 		REPORT "Test: Simulation Complete.";
 		WAIT;  -- Halt stimulus (RX monitor continues)

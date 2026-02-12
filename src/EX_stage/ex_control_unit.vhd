@@ -22,7 +22,7 @@ USE work.rv32i_pkg.ALL;
 
 ENTITY ex_control_unit IS
 	PORT (
-		i_opr_type   : IN t_OprType;                       --! Operation type from ID stage (R-type, I-type, Branch, etc.)
+		i_opr_type   : IN t_OprType;                      --! Operation type from ID stage (R-type, I-type, Branch, etc.)
 		i_funct3     : IN STD_LOGIC_VECTOR(2 DOWNTO 0);   --! Function field 3 bits (operation selector)
 		i_funct12    : IN STD_LOGIC_VECTOR(11 DOWNTO 0);  --! Function field 12 bits (for system instructions and funct7)
 		i_src_a_data : IN STD_LOGIC_VECTOR(31 DOWNTO 0);  --! Source A data (used for CSR write optimization)
@@ -81,6 +81,9 @@ BEGIN
 
 			WHEN OP_LOAD_STORE | OP_JUMP | OP_AUIPC =>  -- Address calculation
 				o_alu_command <= ALU_ADD;
+
+                        WHEN OP_LPAD => -- Check Landing Pad Label/Validity
+                                o_alu_command <=ALU_SUB;
 
 			WHEN OP_BRANCH =>  -- Branch comparison
 				o_alu_command <= ALU_SUB;

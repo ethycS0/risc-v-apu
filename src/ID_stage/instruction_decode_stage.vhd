@@ -36,6 +36,7 @@ ARCHITECTURE structural OF instruction_decode_stage IS
 	--! Control unit component declaration
 	COMPONENT id_control_unit IS
 		PORT (
+                        i_elp         : IN STD_LOGIC;
 			i_instruction : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
 			o_reg_write   : OUT STD_LOGIC;
 			o_mem_read    : OUT STD_LOGIC;
@@ -79,9 +80,8 @@ ARCHITECTURE structural OF instruction_decode_stage IS
 	SIGNAL s_funct12   : STD_LOGIC_VECTOR(11 DOWNTO 0); --! Function field 12 bits for system instructions (instruction[31:20])
 
 BEGIN
-
 	-- Extract instruction fields from the incoming instruction
-	s_rs1_addr <= i_if_id_bus.instruction(19 DOWNTO 15);  -- Source register 1
+        s_rs1_addr <= "00111" WHEN i_if_id_bus.elp = '1' ELSE i_if_id_bus.instruction(19 DOWNTO 15);  -- Source register 1
 	s_rs2_addr <= i_if_id_bus.instruction(24 DOWNTO 20);  -- Source register 2
 	s_rd_addr  <= i_if_id_bus.instruction(11 DOWNTO 7);   -- Destination register
 	s_funct3   <= i_if_id_bus.instruction(14 DOWNTO 12);  -- Funct3 for ALU/Memory/Branch operation selection
@@ -92,6 +92,7 @@ BEGIN
 	--! @details Decodes the instruction opcode and generates all pipeline control signals
 	U_DECODE_CONTROL : id_control_unit
 	PORT MAP(
+                i_elp         => i_if_id_bus.elp,
 		i_instruction => i_if_id_bus.instruction,
 		o_reg_write   => o_id_ex_bus.reg_write,
 		o_mem_read    => o_id_ex_bus.mem_read,
@@ -139,6 +140,7 @@ BEGIN
 	-- Forward function fields to EX stage for operation decoding
 	o_id_ex_bus.funct3  <= s_funct3;
 	o_id_ex_bus.funct12 <= s_funct12;
+        o_id_ex_bus.elp     <= i_if_id_bus.elp;
 
 END ARCHITECTURE structural;
 

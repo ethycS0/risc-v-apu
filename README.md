@@ -1,5 +1,17 @@
 # eSC-V: RV32I SoC in VHDL
 
+> [!CAUTION]
+> **Toolchain Compatibility & Usage**
+> We maintain separate toolchains for **RV32I Zicsr** and **RV32I Zicfilp Zicsr** due to binary incompatibilities in the precompiled `newlib`.
+>
+> - **Standard Toolchain (`default`):** Use for general application development. Full `newlib` support.
+> - **Zicfilp Toolchain (`zicfilp`):** Use for security compliance testing. `newlib` support is limited (requires unbuffered `printf`, `scanf` is unreliable).
+>
+> **How to Switch:**
+>
+> - **Manual:** Run `nix develop` (default) or `nix develop .#zicfilp`.
+> - **Automatic (with envrc):** Run `echo default > .toolchain` or `echo zicfilp > .toolchain`.
+
 ## Introduction
 
 eSC-V is a 5-stage pipelined RV32I Zicsr RISC-V SoC implemented entirely in VHDL. The SoC has a dual-port unified memory controller that synthesizes to BRAM, a UART for communication, and has been verified using the RISC-V Compatibility Framework (RISCOF).

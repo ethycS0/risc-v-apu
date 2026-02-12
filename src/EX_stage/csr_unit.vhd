@@ -47,6 +47,7 @@ ENTITY csr_unit IS
 		i_cause_code     : IN STD_LOGIC_VECTOR(31 DOWNTO 0); --! Trap cause code (exception/interrupt type)
 		i_trap_mtval     : IN STD_LOGIC_VECTOR(31 DOWNTO 0); --! Trap value (faulting address or instruction)
 
+                o_lpad_en   : OUT STD_LOGIC;                     --| Zicfilp enable status
 		o_mtvec     : OUT STD_LOGIC_VECTOR(31 DOWNTO 0); --! Machine trap vector (trap handler address)
 		o_mepc      : OUT STD_LOGIC_VECTOR(31 DOWNTO 0); --! Machine exception PC (return address)
 		o_read_data : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)  --! CSR read data output
@@ -73,7 +74,8 @@ ARCHITECTURE behavioral OF csr_unit IS
 
 	SIGNAL r_mcycle    : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0'); --! Machine Cycle counter (increments every clock)
 	SIGNAL r_minstret  : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0'); --! Machine Instructions Retired counter
-	SIGNAL r_mscratch : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0'); --! Machine Scratch register (software use)
+	SIGNAL r_mscratch  : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0'); --! Machine Scratch register (software use)
+        SIGNAL r_mseccfg   : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0'); --| Machine Security Configuration Register 
 
 BEGIN
 
@@ -106,6 +108,7 @@ BEGIN
 			WHEN x"344" => s_selected_reg_val <= r_mip_reg;   -- mip
 			WHEN x"B00" => s_selected_reg_val <= r_mcycle;    -- mcycle
 			WHEN x"B02" => s_selected_reg_val <= r_minstret;  -- minstret
+                        WHEN x"747" => s_selected_reg_val <= r_mseccfg;   -- mseccfg
 			WHEN OTHERS => s_selected_reg_val <= (OTHERS => '0');  -- Unimplemented CSR
 		END CASE;
 	END PROCESS;
@@ -177,6 +180,7 @@ BEGIN
 					WHEN x"304" => r_mie_reg <= s_new_csr_value;   -- mie
 					WHEN x"B00" => r_mcycle <= s_new_csr_value;    -- mcycle
 					WHEN x"B02" => r_minstret <= s_new_csr_value;  -- minstret
+                                        WHEN x"747" => r_mseccfg <= s_new_csr_value;   -- mseccfg
 					WHEN OTHERS => NULL;
 				END CASE;
 			END IF;
@@ -200,6 +204,7 @@ BEGIN
 
 	-- Output assignments
 	o_mtvec <= r_mtvec;
+        o_lpad_en <= r_mseccfg(0);
 	o_mepc <= r_mepc;
 	o_read_data <= s_selected_reg_val;
 

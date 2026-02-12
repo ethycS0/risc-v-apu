@@ -78,6 +78,7 @@ ARCHITECTURE structural OF core IS
 			i_clk                   : IN  STD_LOGIC;
 			i_rst                   : IN  STD_LOGIC;
 			i_minstret_increment_wb : IN  STD_LOGIC;
+                        o_kill_pipeline         : OUT STD_LOGIC; 
 			i_id_ex_bus             : IN  t_id_ex_data;
 			i_rd_mem_bus            : IN  t_rd_reg_data;
 			i_rd_wb_bus             : IN  t_rd_reg_data;
@@ -144,6 +145,7 @@ ARCHITECTURE structural OF core IS
 
 	SIGNAL pipeline_stall : STD_LOGIC;  --! Pipeline stall signal (freezes IF and ID stages)
 	SIGNAL pipeline_flush : STD_LOGIC;  --! Pipeline flush signal (inserts bubbles on control hazard)
+        SIGNAL pipeline_kill  : STD_LOGIC;  --| Pipeline kill signal (Exception Noticed in EX)
 
 	SIGNAL minstret_increment : STD_LOGIC;  --! Instruction retired signal (for CSR counter)
 	SIGNAL instruction_valid  : STD_LOGIC;  --! Valid instruction in WB stage (not stalled)
@@ -189,6 +191,7 @@ BEGIN
 		i_clk                   => i_clk,
 		i_rst                   => i_rst,
 		i_minstret_increment_wb => minstret_increment,
+                o_kill_pipeline         => pipeline_kill,
 		i_id_ex_bus             => r_id_ex_reg,
 		i_rd_mem_bus            => r_ex_mem_reg.rd_bus,
 		i_rd_wb_bus             => r_mem_wb_reg.rd_bus,
@@ -281,7 +284,11 @@ BEGIN
 		IF i_rst = '1' THEN
 			r_ex_mem_reg <= C_EX_MEM_RESET;
 		ELSIF rising_edge(i_clk) THEN
-			r_ex_mem_reg <= s_ex_mem_bus;  -- Always update (no hazard control needed)
+                        IF pipeline_kill = '1' THEN
+                                r_ex_mem_reg <= C_EX_MEM_RESET;
+                        ELSE 
+                                r_ex_mem_reg <= s_ex_mem_bus;  
+                        END IF;
 		END IF;
 	END PROCESS;
 

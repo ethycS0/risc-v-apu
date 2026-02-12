@@ -18,6 +18,8 @@ void uart_putc(char c) {
 
         UART_DR = c; // Write Character to Data Register
 
+        __asm__("nop");
+
         if (c == '\n') { // Recursive Call to handle newline (CR + LF)
                 while (UART_TX_READY != 1) {
                         // Wait for TX Ready

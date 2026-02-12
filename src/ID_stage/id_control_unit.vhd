@@ -20,6 +20,7 @@ USE work.rv32i_pkg.ALL;
 
 ENTITY id_control_unit IS
 	PORT (
+                i_elp : IN STD_LOGIC;                              --| ELP status for LPAD decoding
 		i_instruction : IN STD_LOGIC_VECTOR(31 DOWNTO 0);  --! 32-bit instruction from IF/ID pipeline register
 
 		o_reg_write : OUT STD_LOGIC;  --! Register file write enable signal
@@ -67,26 +68,32 @@ BEGIN
 
 		CASE i_instruction(6 DOWNTO 0) IS
 
-			WHEN "0110111" =>  -- LUI: Load Upper Immediate
+			WHEN "0110111" =>  -- LUI
 				o_reg_write <= '1';
 				o_src_a <= SRC_A_ZERO;
 				o_src_b <= SRC_B_IMM;
 				o_opr_type <= OP_LUI;
 
-			WHEN "0010111" =>  -- AUIPC: Add Upper Immediate to PC
-				o_reg_write <= '1';
-				o_src_a <= SRC_A_PC;
-				o_src_b <= SRC_B_IMM;
-				o_opr_type <= OP_AUIPC;
+			WHEN "0010111" =>  -- AUIPC | LPAD
+                                IF i_instruction(11 DOWNTO 7) = "00000" AND i_elp = '1' THEN
+                                        o_src_a <= SRC_A_RS1;
+                                        o_src_b <= SRC_B_IMM;
+                                        o_opr_type <= OP_LPAD;
+                                ELSE
+                                        o_reg_write <= '1';
+                                        o_src_a <= SRC_A_PC;
+                                        o_src_b <= SRC_B_IMM;
+                                        o_opr_type <= OP_AUIPC;
+                                END IF;
 
-			WHEN "1101111" =>  -- JAL: Jump and Link
+			WHEN "1101111" =>  -- JAL
 				o_reg_write <= '1';
 				o_src_a <= SRC_A_PC;
 				o_src_b <= SRC_B_IMM;
 				o_wb_src <= WB_SRC_PC4;
 				o_opr_type <= OP_JUMP;
 
-			WHEN "1100111" =>  -- JALR: Jump and Link Register
+			WHEN "1100111" =>  -- JALR
 				o_reg_write <= '1';
 				o_src_a <= SRC_A_RS1;
 				o_src_b <= SRC_B_IMM;

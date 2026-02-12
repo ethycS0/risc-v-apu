@@ -1,9 +1,9 @@
 # drivers
-CC := riscv32-unknown-elf-gcc
-AR := riscv32-unknown-elf-ar 
+CC ?= riscv32-unknown-elf-gcc
+AS ?= riscv32-unknown-elf-as
+AR ?= riscv32-unknown-elf-ar
 
-CFLAGS := -c -g -O0 -ffreestanding -march=rv32i_zicsr -mabi=ilp32
-CFLAGS += -Iuart
+CFLAGS += -Iuart -Idebug
 
 DIRS := $(wildcard */*)
 SRCS := $(wildcard */*.c)
@@ -18,7 +18,7 @@ $(LIB): $(OBJS)
 	@echo "Built $@"
 
 %.o: %.c 
-	$(CC) $(CFLAGS) $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
 	rm -f $(OBJS) $(LIB)

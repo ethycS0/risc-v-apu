@@ -1,3 +1,4 @@
+#include "uart.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -84,6 +85,11 @@ void test_input(void) {
  */
 int main(void) {
         int iteration = 1;
+
+        unsigned char c = 0x00;
+        while (c != 0x20) {
+                uart_getc(&c);
+        }
 
         printf("\n====================================\n");
         printf("  eSC-V Libc Integration Test       \n");
