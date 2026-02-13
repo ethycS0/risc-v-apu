@@ -91,6 +91,14 @@ PACKAGE rv32i_pkg IS
                 FWD_FROM_MEM_WB    
         );
 
+        TYPE t_mem_trap IS (
+                VALID,
+                L_MISALIGNED,
+                S_MISALIGNED,
+                L_ACCESS_FAULT,
+                S_ACCESS_FAULT
+        );
+
         --! ALU output status flags.
         TYPE t_AluFlags IS RECORD
                 zero                    : STD_LOGIC; --! Result is exactly 0
@@ -219,5 +227,6 @@ PACKAGE rv32i_pkg IS
                 next_elp                : STD_LOGIC;                     --| ELP status
                 redirect_address        : STD_LOGIC_VECTOR(31 DOWNTO 0); --! Target Address
         END RECORD t_ex_if_data;
+
 
 END PACKAGE rv32i_pkg;

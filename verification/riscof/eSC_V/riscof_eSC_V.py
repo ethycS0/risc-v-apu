@@ -90,7 +90,7 @@ class eSC_V(pluginTemplate):
 
         # 3. COMPILER SETUP
         self.compile_cmd = (
-            "riscv32-none-elf-gcc -march=rv32i_zicsr -mabi=ilp32 "
+            f"riscv32-unknown-elf-gcc -march={{0}} -mabi=ilp32 "
             "-static -mcmodel=medany -fvisibility=hidden "
             "-nostdlib -nostartfiles -fno-plt -fno-pic -g "
             f"-T {self.pluginpath}/env/link.ld "
@@ -136,7 +136,7 @@ class eSC_V(pluginTemplate):
 
             # STEP 2: Create Hex File
             bin_file = os.path.join(test_dir, "mem.bin")
-            objcopy_cmd = f"riscv32-none-elf-objcopy -O binary " f"{elf} {bin_file}"
+            objcopy_cmd = f"riscv32-unknown-elf-objcopy -O binary " f"{elf} {bin_file}"
             utils.shellCommand(objcopy_cmd).run(cwd=test_dir)
 
             if os.path.exists(bin_file):
@@ -159,7 +159,7 @@ class eSC_V(pluginTemplate):
                 continue
 
             # STEP 3: Extract Signature Addresses
-            nm_cmd = f"riscv32-none-elf-nm {elf}"
+            nm_cmd = f"riscv32-unknown-elf-nm {elf}"
             try:
                 output = subprocess.check_output(
                     shlex.split(nm_cmd), cwd=test_dir

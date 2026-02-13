@@ -42,3 +42,12 @@ Conditional branches encode an offset in the immediate field of the instruction 
 3. \_\_sfputc_r
 4. \_\_sfvwrite_r
 5. Still issues with buffering
+
+## Additional Hardware Improvements
+
+1. Misaligned Data access control
+2. Misaligned Jump/Branch Control
+3. Invalid | Unauthorised | Out of bounds Memory Instruction/Data Control
+4. 4 entries PMP unit
+5. Zicfiss
+6. RO Bootloader with firmware signature validation

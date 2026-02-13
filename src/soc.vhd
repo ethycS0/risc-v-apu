@@ -48,10 +48,10 @@ ENTITY soc IS
 		clk : IN STD_LOGIC;  --! System clock input
 
                 -- Comment for Synthesis
-		-- o_debug_data_addr     : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);  --! Debug: Data memory address (for RISCOF)
-		-- o_debug_data_wdata    : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);  --! Debug: Data memory write data (for RISCOF)
-		-- o_debug_data_write_en : OUT STD_LOGIC;                      --! Debug: Data memory write enable (for RISCOF)
-		-- o_debug_data_byte_en  : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);   --! Debug: Data memory byte enable (for RISCOF)
+		o_debug_data_addr     : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);  --! Debug: Data memory address (for RISCOF)
+		o_debug_data_wdata    : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);  --! Debug: Data memory write data (for RISCOF)
+		o_debug_data_write_en : OUT STD_LOGIC;                      --! Debug: Data memory write enable (for RISCOF)
+		o_debug_data_byte_en  : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);   --! Debug: Data memory byte enable (for RISCOF)
 
 		uart_rx : IN  STD_LOGIC;  --! UART receive input line
 		uart_tx : OUT STD_LOGIC   --! UART transmit output line
@@ -341,10 +341,10 @@ BEGIN
 
         -- Comment for Synthesis
 	-- Debug outputs for RISCOF verification (expose data memory signals)
-	-- o_debug_data_addr     <= s_data_addr;
-	-- o_debug_data_wdata    <= s_data_wdata;
-	-- o_debug_data_write_en <= s_data_write_en;
-	-- o_debug_data_byte_en  <= s_data_byte_en;
+	o_debug_data_addr     <= s_data_addr;
+	o_debug_data_wdata    <= s_data_wdata;
+	o_debug_data_write_en <= s_data_write_en;
+	o_debug_data_byte_en  <= s_data_byte_en;
 
 END ARCHITECTURE structural;
 

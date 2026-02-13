@@ -1,5 +1,6 @@
 hart_ids: [0]
 hart0:
+  hw_data_misaligned_support: false
   ISA: RV32IZicsr
   physical_addr_sz: 32
   User_Spec_Version: '2.3'

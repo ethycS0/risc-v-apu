@@ -78,11 +78,12 @@ ARCHITECTURE structural OF core IS
 			i_clk                   : IN  STD_LOGIC;
 			i_rst                   : IN  STD_LOGIC;
 			i_minstret_increment_wb : IN  STD_LOGIC;
-                        o_kill_pipeline         : OUT STD_LOGIC; 
 			i_id_ex_bus             : IN  t_id_ex_data;
+                        i_mem_ex_trap           : IN t_mem_trap;
 			i_rd_mem_bus            : IN  t_rd_reg_data;
 			i_rd_wb_bus             : IN  t_rd_reg_data;
 			i_rd_wb_fwd             : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+                        o_ex_trap               : OUT STD_LOGIC; 
 			o_ex_if_bus             : OUT t_ex_if_data;
 			o_ex_mem_bus            : OUT t_ex_mem_data
 
@@ -96,6 +97,7 @@ ARCHITECTURE structural OF core IS
 			o_mem_write_data : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			o_mem_write_en   : OUT STD_LOGIC;
 			o_mem_byte_en    : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
+                        o_mem_trap       : OUT t_mem_trap;
 			i_ex_mem_bus     : IN  t_ex_mem_data;
 			o_mem_wb_bus     : OUT t_mem_wb_data
 
@@ -145,14 +147,16 @@ ARCHITECTURE structural OF core IS
 
 	SIGNAL pipeline_stall : STD_LOGIC;  --! Pipeline stall signal (freezes IF and ID stages)
 	SIGNAL pipeline_flush : STD_LOGIC;  --! Pipeline flush signal (inserts bubbles on control hazard)
-        SIGNAL pipeline_kill  : STD_LOGIC;  --| Pipeline kill signal (Exception Noticed in EX)
+
+        SIGNAL ex_stage_trap  : STD_LOGIC;  --| Trap triggered when LPAD etc
+        SIGNAL mem_stage_trap : t_mem_trap; --| Trap triggered when Load and Store MIsalign/Access Fault
 
 	SIGNAL minstret_increment : STD_LOGIC;  --! Instruction retired signal (for CSR counter)
 	SIGNAL instruction_valid  : STD_LOGIC;  --! Valid instruction in WB stage (not stalled)
 
 BEGIN
 	-- Pipeline control signals
-	pipeline_flush <= '1' WHEN s_ex_if_bus.pc_redirect = '1' ELSE '0';
+	pipeline_flush <= '1' WHEN s_ex_if_bus.pc_redirect = '1' OR mem_stage_trap /= VALID OR ex_stage_trap = '1' ELSE '0';
 	instruction_valid <= '1' WHEN pipeline_stall = '0' ELSE '0';
 
 
@@ -191,11 +195,12 @@ BEGIN
 		i_clk                   => i_clk,
 		i_rst                   => i_rst,
 		i_minstret_increment_wb => minstret_increment,
-                o_kill_pipeline         => pipeline_kill,
+                i_mem_ex_trap           => mem_stage_trap,
 		i_id_ex_bus             => r_id_ex_reg,
 		i_rd_mem_bus            => r_ex_mem_reg.rd_bus,
 		i_rd_wb_bus             => r_mem_wb_reg.rd_bus,
 		i_rd_wb_fwd             => s_wb_ex_fwd,
+                o_ex_trap               => ex_stage_trap,
 		o_ex_if_bus             => s_ex_if_bus,
 		o_ex_mem_bus            => s_ex_mem_bus
 	);
@@ -209,6 +214,7 @@ BEGIN
 		o_mem_write_data => o_data_write,
 		o_mem_write_en   => o_data_write_en,
 		o_mem_byte_en    => o_data_byte_en,
+                o_mem_trap       => mem_stage_trap,
 		i_ex_mem_bus     => r_ex_mem_reg,
 		o_mem_wb_bus     => s_mem_wb_bus
 	);
@@ -284,7 +290,7 @@ BEGIN
 		IF i_rst = '1' THEN
 			r_ex_mem_reg <= C_EX_MEM_RESET;
 		ELSIF rising_edge(i_clk) THEN
-                        IF pipeline_kill = '1' THEN
+                        IF ex_stage_trap = '1' OR mem_stage_trap /= VALID THEN
                                 r_ex_mem_reg <= C_EX_MEM_RESET;
                         ELSE 
                                 r_ex_mem_reg <= s_ex_mem_bus;  

@@ -33,6 +33,8 @@ ENTITY memory_stage IS
 		o_mem_write_en   : OUT STD_LOGIC;                     --! Memory write enable signal
 		o_mem_byte_en    : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);  --! Byte enable mask (selects active bytes)
 
+                o_mem_trap : OUT t_mem_trap;
+
 		i_ex_mem_bus : IN  t_ex_mem_data; --! Input bus from Execute stage (ALU result, control signals)
 		o_mem_wb_bus : OUT t_mem_wb_data  --! Output bus to Writeback stage 
 
@@ -40,13 +42,46 @@ ENTITY memory_stage IS
 END ENTITY memory_stage;
 
 ARCHITECTURE structural OF memory_stage IS
+        SIGNAL s_misaligned_access : STD_LOGIC;
 BEGIN
 
-	-- Memory address is the ALU result (base + offset calculation from EX stage)
-	o_mem_addr <= i_ex_mem_bus.rd_bus.rd_data;
+        o_mem_addr <= i_ex_mem_bus.rd_bus.rd_data;
+
+        P_CHECK_ACCESS : PROCESS (i_ex_mem_bus.mem_write, i_ex_mem_bus.mem_read, i_ex_mem_bus.rd_bus.rd_data, i_ex_mem_bus.funct3)
+        BEGIN
+                s_misaligned_access <= '0';
+                IF i_ex_mem_bus.mem_read = '1' OR i_ex_mem_bus.mem_write = '1' THEN 
+			CASE i_ex_mem_bus.funct3(1 DOWNTO 0) IS
+				WHEN "10" =>  -- Word (32-bit)
+                                        IF i_ex_mem_bus.rd_bus.rd_data(1 DOWNTO 0) /= "00" THEN
+                                                s_misaligned_access <= '1';
+                                        END IF;
+
+				WHEN "01" =>  -- Halfword (16-bit)
+                                        IF i_ex_mem_bus.rd_bus.rd_data(0) /= '0' THEN
+                                                s_misaligned_access <= '1';
+                                        END IF;
+
+				WHEN OTHERS =>  -- Invalid or load operation
+                                        s_misaligned_access <='0';
+                        END CASE;
+                END IF;
+        END PROCESS P_CHECK_ACCESS;
+
+        o_mem_write_en <= i_ex_mem_bus.mem_write AND (NOT s_misaligned_access);
+
+        P_TRAP_SEL : PROCESS (s_misaligned_access, i_ex_mem_bus.mem_write, i_ex_mem_bus.mem_read)
+        BEGIN
+                o_mem_trap <= VALID;
+                IF s_misaligned_access = '1' THEN
+                        IF i_ex_mem_bus.mem_read = '1' THEN
+                                o_mem_trap <= L_MISALIGNED;
+                        ELSIF i_ex_mem_bus.mem_write = '1' THEN
+                                o_mem_trap <= S_MISALIGNED;
+                        END IF;
+                END IF;
+        END PROCESS P_TRAP_SEL;
 	
-	-- Memory write enable passes through from EX stage
-	o_mem_write_en <= i_ex_mem_bus.mem_write;
 
 	--! @brief Store Data Alignment and Byte Enable Logic
 	--! @details Combinational process that generates byte enable signals and aligns
@@ -69,12 +104,12 @@ BEGIN
 	--!
 	--! This replication and masking approach simplifies memory controller design by
 	--! presenting correctly aligned data on all byte lanes.
-	P_STORE : PROCESS (i_ex_mem_bus.mem_write, i_ex_mem_bus.funct3, i_ex_mem_bus.rd_bus.rd_data, i_ex_mem_bus.rs2_data)
+	P_STORE : PROCESS (i_ex_mem_bus.mem_write, i_ex_mem_bus.funct3, i_ex_mem_bus.rd_bus.rd_data, i_ex_mem_bus.rs2_data, s_misaligned_access)
 	BEGIN
 		o_mem_byte_en <= "0000";
 		o_mem_write_data <= i_ex_mem_bus.rs2_data;
 
-		IF i_ex_mem_bus.mem_write = '1' THEN
+		IF i_ex_mem_bus.mem_write = '1' AND s_misaligned_access = '0' THEN
 			CASE i_ex_mem_bus.funct3 IS
 				WHEN "010" =>  -- SW: Store Word (32-bit)
 					o_mem_byte_en <= "1111";

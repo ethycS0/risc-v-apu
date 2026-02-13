@@ -31,13 +31,14 @@ ENTITY execution_stage IS
 		i_rst : IN STD_LOGIC;  --! Synchronous reset (Active High)
 
 		i_minstret_increment_wb : IN STD_LOGIC;  --! Instruction retired signal from WB stage (for minstret counter)
-                o_kill_pipeline         : OUT STD_LOGIC; --| Kill Switch for Exceptions
+                i_mem_ex_trap           : IN t_mem_trap;
 
 		i_id_ex_bus  : IN t_id_ex_data;                   --! Input bus from ID stage (decoded instruction and operands)
 		i_rd_mem_bus : IN t_rd_reg_data;                  --! Writeback data from MEM stage (for forwarding)
 		i_rd_wb_bus  : IN t_rd_reg_data;                  --! Writeback data from WB stage (for forwarding)
 		i_rd_wb_fwd  : IN STD_LOGIC_VECTOR(31 DOWNTO 0);  --! Writeback data forwarding path (Separate due to Load bypass)
 
+                o_ex_trap    : OUT STD_LOGIC;     --| Kill Switch for Exceptions
 		o_ex_if_bus  : OUT t_ex_if_data;  --! Feedback bus to IF stage (branch/jump redirect signals)
 		o_ex_mem_bus : OUT t_ex_mem_data  --! Output bus to MEM stage (ALU result, control signals)
 
@@ -318,25 +319,36 @@ BEGIN
 
 	-- Trap type decoding
 	s_is_mret <= '1' WHEN s_trap_type = TRAP_MRET ELSE '0';
-	s_trap_trigger <= '1' WHEN (s_trap_type = TRAP_CALL OR s_trap_type = TRAP_BREAK OR s_lpad_trap = '1') ELSE '0';
+	s_trap_trigger <= '1' WHEN (s_trap_type = TRAP_CALL OR s_trap_type = TRAP_BREAK OR s_lpad_trap = '1' OR i_mem_ex_trap /= VALID) ELSE '0';
 	
 	-- CSR address mux (use mepc address for MRET, otherwise funct12)
 	s_csr_addr_mux <= x"341" WHEN s_trap_type = TRAP_MRET ELSE i_id_ex_bus.funct12;
 
 	-- Trap cause code assignment
-        P_CSR_CAUSE : PROCESS (s_lpad_trap, s_trap_type)
+        P_CSR_CAUSE : PROCESS (s_lpad_trap, s_trap_type, i_mem_ex_trap)
         BEGIN
-                IF s_lpad_trap = '1' THEN
-                        -- Cause 18: Software Check Fault (Zicfilp)
+                IF i_mem_ex_trap /= VALID THEN
+                        CASE i_mem_ex_trap IS 
+                                WHEN L_MISALIGNED =>
+                                        s_cause_code <= STD_LOGIC_VECTOR(to_unsigned(4, 32));
+                                WHEN L_ACCESS_FAULT =>
+                                        s_cause_code <= STD_LOGIC_VECTOR(to_unsigned(5, 32));
+                                WHEN S_MISALIGNED =>
+                                        s_cause_code <= STD_LOGIC_VECTOR(to_unsigned(6, 32));
+                                WHEN S_ACCESS_FAULT =>
+                                        s_cause_code <= STD_LOGIC_VECTOR(to_unsigned(7, 32));
+                                WHEN VALID => 
+                                        s_cause_code <= (OTHERS => '0');
+                        END CASE;
+
+                ELSIF s_lpad_trap = '1' THEN
                         s_cause_code <= STD_LOGIC_VECTOR(to_unsigned(18, 32));
 
                 ELSIF s_trap_type = TRAP_CALL THEN
-                        -- Cause 11: ECALL from M-mode
                         s_cause_code <= x"0000000B";
 
                 ELSIF s_trap_type = TRAP_BREAK THEN
-                        -- Cause 3: Breakpoint
-                        s_cause_code <= x"00000003";
+                        s_cause_code <= x"00000003"; 
 
                 ELSE
                         s_cause_code <= (OTHERS => '0');
@@ -344,14 +356,15 @@ BEGIN
         END PROCESS P_CSR_CAUSE;
 
 	-- Trap mtval assignment
-        P_CSR_VAL : PROCESS (s_lpad_trap, s_trap_type, i_id_ex_bus.pc)
+        P_CSR_VAL : PROCESS (s_lpad_trap, s_trap_type, i_id_ex_bus.pc, i_mem_ex_trap)
         BEGIN
-                IF s_lpad_trap = '1' THEN
-                        -- For Zicfilp, mtval is usually 0 
+                IF i_mem_ex_trap /= VALID THEN
+                        s_trap_mtval <= i_rd_mem_bus.rd_data;
+
+                ELSIF s_lpad_trap = '1' THEN
                         s_trap_mtval <= (OTHERS => '0');
 
                 ELSIF s_trap_type = TRAP_BREAK THEN
-                        -- For Breakpoint, mtval is the PC
                         s_trap_mtval <= i_id_ex_bus.pc;
 
                 ELSE
@@ -377,7 +390,7 @@ BEGIN
                 o_ex_if_bus.next_elp <= '0';
 		o_ex_if_bus.redirect_address <= s_branch_target;
 
-		IF s_trap_trigger = '1' THEN  -- Trap entry (ECALL/EBREAK)
+		IF s_trap_trigger = '1' THEN  -- Trap entry
 			o_ex_if_bus.pc_redirect <= '1';
 			o_ex_if_bus.redirect_address <= s_mtvec_val;
 
@@ -405,7 +418,7 @@ BEGIN
 		END IF;
 	END PROCESS;
 
-        o_kill_pipeline <='1' WHEN s_lpad_trap = '1' ELSE '0';
+        o_ex_trap <='1' WHEN s_lpad_trap = '1' ELSE '0';
 
 	-- Output bus assignments to MEM stage
 	o_ex_mem_bus.rs2_data <= s_rs2_data_fwd;
