@@ -76,6 +76,8 @@
           python312Packages.riscof
           python312Packages.distutils
           sail-riscv
+          spike
+          dtc
 
           # Documentation
           texlive.combined.scheme-full

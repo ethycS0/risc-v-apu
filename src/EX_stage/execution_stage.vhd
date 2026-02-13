@@ -31,7 +31,7 @@ ENTITY execution_stage IS
 		i_rst : IN STD_LOGIC;  --! Synchronous reset (Active High)
 
 		i_minstret_increment_wb : IN STD_LOGIC;  --! Instruction retired signal from WB stage (for minstret counter)
-                i_mem_ex_trap           : IN t_mem_trap;
+                i_mem_ex_trap           : IN t_mem_ex_fb;
 
 		i_id_ex_bus  : IN t_id_ex_data;                   --! Input bus from ID stage (decoded instruction and operands)
 		i_rd_mem_bus : IN t_rd_reg_data;                  --! Writeback data from MEM stage (for forwarding)
@@ -156,6 +156,9 @@ ARCHITECTURE structural OF execution_stage IS
 	SIGNAL s_mtvec_val    : STD_LOGIC_VECTOR(31 DOWNTO 0); --! Machine trap vector address
 	SIGNAL s_mepc_val     : STD_LOGIC_VECTOR(31 DOWNTO 0); --! Machine exception PC (return address)
 
+        SIGNAL s_trap_pc : STD_LOGIC_VECTOR(31 DOWNTO 0);
+        SIGNAL s_target_misaligned : STD_LOGIC;
+
         SIGNAL s_lpad_trap : STD_LOGIC;
         SIGNAL s_lpad_en : STD_LOGIC;
 
@@ -216,7 +219,7 @@ BEGIN
 		i_csr_data           => s_input_a,
 		i_csr_addr           => s_csr_addr_mux,
 		i_trap_triggered     => s_trap_trigger,
-		i_pc_at_trap         => i_id_ex_bus.pc,
+		i_pc_at_trap         => s_trap_pc,
 		i_cause_code         => s_cause_code,
 		i_trap_mtval         => s_trap_mtval,
                 o_lpad_en            => s_lpad_en,
@@ -243,6 +246,8 @@ BEGIN
 		i_branch_active => s_is_branch,
 		o_branch_taken  => s_branch_taken
 	);
+
+        s_trap_pc <= (i_mem_ex_trap.pc)  WHEN (i_mem_ex_trap.trap /= VALID) ELSE i_id_ex_bus.pc;
 
 	--! @brief Input Operand Selection and Forwarding Process
 	--! @details Combinational process that selects ALU operands based on source control
@@ -285,6 +290,28 @@ BEGIN
 		END IF;
 	END PROCESS;
 
+        P_CHECK_INSTR_ALIGN : PROCESS (ALL)
+        BEGIN
+                s_target_misaligned <= '0'; 
+
+                IF i_id_ex_bus.opr_type = OP_JUMP AND i_id_ex_bus.src_a = SRC_A_PC THEN
+                        IF s_branch_target(1 DOWNTO 0) /= "00" THEN
+                                s_target_misaligned <= '1';
+                        END IF;
+
+                ELSIF i_id_ex_bus.opr_type = OP_JUMP AND i_id_ex_bus.src_a = SRC_A_RS1 THEN
+                        IF s_alu_result(1) = '1' THEN
+                                s_target_misaligned <= '1';
+                        END IF;
+
+                ELSIF i_id_ex_bus.opr_type = OP_BRANCH AND s_branch_taken = '1' THEN
+                        IF s_branch_target(1) = '1' THEN
+                                s_target_misaligned <= '1';
+                        END IF;
+                END IF;
+        END PROCESS;
+
+
 	--! @brief Writeback Data Selection Process
 	--! @details Combinational process that selects the appropriate result to write back
 	--! to the register file. Sources include:
@@ -319,16 +346,16 @@ BEGIN
 
 	-- Trap type decoding
 	s_is_mret <= '1' WHEN s_trap_type = TRAP_MRET ELSE '0';
-	s_trap_trigger <= '1' WHEN (s_trap_type = TRAP_CALL OR s_trap_type = TRAP_BREAK OR s_lpad_trap = '1' OR i_mem_ex_trap /= VALID) ELSE '0';
+	s_trap_trigger <= '1' WHEN (s_target_misaligned ='1' OR s_trap_type = TRAP_CALL OR s_trap_type = TRAP_BREAK OR s_lpad_trap = '1' OR i_mem_ex_trap.trap /= VALID) ELSE '0';
 	
 	-- CSR address mux (use mepc address for MRET, otherwise funct12)
 	s_csr_addr_mux <= x"341" WHEN s_trap_type = TRAP_MRET ELSE i_id_ex_bus.funct12;
 
 	-- Trap cause code assignment
-        P_CSR_CAUSE : PROCESS (s_lpad_trap, s_trap_type, i_mem_ex_trap)
+        P_CSR_CAUSE : PROCESS (s_lpad_trap, s_trap_type, i_mem_ex_trap, s_target_misaligned)
         BEGIN
-                IF i_mem_ex_trap /= VALID THEN
-                        CASE i_mem_ex_trap IS 
+                IF i_mem_ex_trap.trap /= VALID THEN
+                        CASE i_mem_ex_trap.trap IS 
                                 WHEN L_MISALIGNED =>
                                         s_cause_code <= STD_LOGIC_VECTOR(to_unsigned(4, 32));
                                 WHEN L_ACCESS_FAULT =>
@@ -340,6 +367,9 @@ BEGIN
                                 WHEN VALID => 
                                         s_cause_code <= (OTHERS => '0');
                         END CASE;
+
+                ELSIF s_target_misaligned = '1' THEN
+                        s_cause_code <= STD_LOGIC_VECTOR(to_unsigned(0, 32));
 
                 ELSIF s_lpad_trap = '1' THEN
                         s_cause_code <= STD_LOGIC_VECTOR(to_unsigned(18, 32));
@@ -356,10 +386,17 @@ BEGIN
         END PROCESS P_CSR_CAUSE;
 
 	-- Trap mtval assignment
-        P_CSR_VAL : PROCESS (s_lpad_trap, s_trap_type, i_id_ex_bus.pc, i_mem_ex_trap)
+        P_CSR_VAL : PROCESS (ALL)
         BEGIN
-                IF i_mem_ex_trap /= VALID THEN
+                IF i_mem_ex_trap.trap /= VALID THEN
                         s_trap_mtval <= i_rd_mem_bus.rd_data;
+
+                ELSIF s_target_misaligned = '1' THEN
+                        IF i_id_ex_bus.opr_type = OP_JUMP AND i_id_ex_bus.src_a = SRC_A_RS1 THEN
+                                s_trap_mtval <= s_alu_result(31 DOWNTO 1) & '0';
+                        ELSE
+                                s_trap_mtval <= s_branch_target;
+                        END IF;
 
                 ELSIF s_lpad_trap = '1' THEN
                         s_trap_mtval <= (OTHERS => '0');
@@ -384,7 +421,7 @@ BEGIN
 	--! 4. Conditional branch: Redirect if branch condition is satisfied.
         --! 
         --! For JALR, the target address LSB is cleared to ensure alignment. ELP is also set here.
-	P_PC_REDR : PROCESS (s_trap_trigger, s_lpad_en, s_is_mret, s_mtvec_val, s_mepc_val, i_id_ex_bus.opr_type, s_branch_target, s_branch_taken, s_alu_result, i_id_ex_bus.src_a)
+	P_PC_REDR : PROCESS (ALL)
 	BEGIN
 		o_ex_if_bus.pc_redirect <= '0';
                 o_ex_if_bus.next_elp <= '0';
@@ -418,7 +455,7 @@ BEGIN
 		END IF;
 	END PROCESS;
 
-        o_ex_trap <='1' WHEN s_lpad_trap = '1' ELSE '0';
+        o_ex_trap <= '1' WHEN (s_lpad_trap = '1' OR s_target_misaligned = '1' OR s_trap_type = TRAP_CALL OR s_trap_type = TRAP_BREAK) ELSE '0';
 
 	-- Output bus assignments to MEM stage
 	o_ex_mem_bus.rs2_data <= s_rs2_data_fwd;
@@ -429,6 +466,7 @@ BEGIN
 	o_ex_mem_bus.wb_src <= i_id_ex_bus.wb_src;
 	o_ex_mem_bus.rd_bus.rd_addr <= i_id_ex_bus.rd_addr;
 	o_ex_mem_bus.funct3 <= i_id_ex_bus.funct3;
+	o_ex_mem_bus.pc <= i_id_ex_bus.pc;
 
 END ARCHITECTURE structural;
 

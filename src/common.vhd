@@ -189,6 +189,7 @@ PACKAGE rv32i_pkg IS
         TYPE t_ex_mem_data IS RECORD
                 rd_bus                  : t_rd_reg_data;                 --! Register file write details
                 rs2_data                : STD_LOGIC_VECTOR(31 DOWNTO 0); --! Data to be stored (STORE instructions)
+                pc                      : STD_LOGIC_VECTOR(31 DOWNTO 0); --! PC
                 pc4                     : STD_LOGIC_VECTOR(31 DOWNTO 0); --! Next PC
                 funct3                  : STD_LOGIC_VECTOR(2 DOWNTO 0);  --! Data width (Byte/Half/Word)
                 mem_read                : STD_LOGIC;                     --! Read Enable
@@ -199,6 +200,7 @@ PACKAGE rv32i_pkg IS
         CONSTANT C_EX_MEM_RESET : t_ex_mem_data := (
                 rd_bus                  => C_RD_BUS_RESET,
                 rs2_data                => (OTHERS => '0'),
+                pc                      => (OTHERS => '0'),
                 pc4                     => (OTHERS => '0'),
                 funct3                  => (OTHERS => '0'),
                 mem_read                => '0',
@@ -220,6 +222,12 @@ PACKAGE rv32i_pkg IS
                 funct3                  => (OTHERS => '0'),
                 wb_src                  => WB_SRC_EX_RESULT
         );
+
+        TYPE t_mem_ex_fb IS RECORD
+                pc : STD_LOGIC_VECTOR(31 DOWNTO 0);
+                trap : t_mem_trap;
+        END RECORD t_mem_ex_fb;
+
 
         --! Feedback signals from Execution to Fetch (Branching).
         TYPE t_ex_if_data IS RECORD

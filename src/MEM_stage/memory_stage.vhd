@@ -33,7 +33,7 @@ ENTITY memory_stage IS
 		o_mem_write_en   : OUT STD_LOGIC;                     --! Memory write enable signal
 		o_mem_byte_en    : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);  --! Byte enable mask (selects active bytes)
 
-                o_mem_trap : OUT t_mem_trap;
+                o_mem_trap : OUT t_mem_ex_fb;
 
 		i_ex_mem_bus : IN  t_ex_mem_data; --! Input bus from Execute stage (ALU result, control signals)
 		o_mem_wb_bus : OUT t_mem_wb_data  --! Output bus to Writeback stage 
@@ -68,16 +68,15 @@ BEGIN
                 END IF;
         END PROCESS P_CHECK_ACCESS;
 
-        o_mem_write_en <= i_ex_mem_bus.mem_write AND (NOT s_misaligned_access);
 
         P_TRAP_SEL : PROCESS (s_misaligned_access, i_ex_mem_bus.mem_write, i_ex_mem_bus.mem_read)
         BEGIN
-                o_mem_trap <= VALID;
+                o_mem_trap.trap <= VALID;
                 IF s_misaligned_access = '1' THEN
                         IF i_ex_mem_bus.mem_read = '1' THEN
-                                o_mem_trap <= L_MISALIGNED;
+                                o_mem_trap.trap <= L_MISALIGNED;
                         ELSIF i_ex_mem_bus.mem_write = '1' THEN
-                                o_mem_trap <= S_MISALIGNED;
+                                o_mem_trap.trap <= S_MISALIGNED;
                         END IF;
                 END IF;
         END PROCESS P_TRAP_SEL;
@@ -142,11 +141,18 @@ BEGIN
 		END IF;
 	END PROCESS P_STORE;
 
+        o_mem_write_en <= i_ex_mem_bus.mem_write AND (NOT s_misaligned_access);
+
 	-- Forward control signals to WB stage
 	o_mem_wb_bus.pc4 <= i_ex_mem_bus.pc4;
-	o_mem_wb_bus.rd_bus <= i_ex_mem_bus.rd_bus;
 	o_mem_wb_bus.wb_src <= i_ex_mem_bus.wb_src;
 	o_mem_wb_bus.funct3 <= i_ex_mem_bus.funct3;
+
+	o_mem_wb_bus.rd_bus.rd_addr <= i_ex_mem_bus.rd_bus.rd_addr;
+	o_mem_wb_bus.rd_bus.rd_data <= i_ex_mem_bus.rd_bus.rd_data;
+        o_mem_wb_bus.rd_bus.reg_write_en <= i_ex_mem_bus.rd_bus.reg_write_en AND (NOT s_misaligned_access);
+
+        o_mem_trap.pc <= i_ex_mem_bus.pc;
 
 END ARCHITECTURE structural;
 

@@ -79,7 +79,7 @@ ARCHITECTURE structural OF core IS
 			i_rst                   : IN  STD_LOGIC;
 			i_minstret_increment_wb : IN  STD_LOGIC;
 			i_id_ex_bus             : IN  t_id_ex_data;
-                        i_mem_ex_trap           : IN t_mem_trap;
+                        i_mem_ex_trap           : IN  t_mem_ex_fb;
 			i_rd_mem_bus            : IN  t_rd_reg_data;
 			i_rd_wb_bus             : IN  t_rd_reg_data;
 			i_rd_wb_fwd             : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -97,7 +97,7 @@ ARCHITECTURE structural OF core IS
 			o_mem_write_data : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			o_mem_write_en   : OUT STD_LOGIC;
 			o_mem_byte_en    : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
-                        o_mem_trap       : OUT t_mem_trap;
+                        o_mem_trap       : OUT t_mem_ex_fb;
 			i_ex_mem_bus     : IN  t_ex_mem_data;
 			o_mem_wb_bus     : OUT t_mem_wb_data
 
@@ -149,14 +149,14 @@ ARCHITECTURE structural OF core IS
 	SIGNAL pipeline_flush : STD_LOGIC;  --! Pipeline flush signal (inserts bubbles on control hazard)
 
         SIGNAL ex_stage_trap  : STD_LOGIC;  --| Trap triggered when LPAD etc
-        SIGNAL mem_stage_trap : t_mem_trap; --| Trap triggered when Load and Store MIsalign/Access Fault
+        SIGNAL mem_stage_trap : t_mem_ex_fb; --| Trap triggered when Load and Store MIsalign/Access Fault
 
 	SIGNAL minstret_increment : STD_LOGIC;  --! Instruction retired signal (for CSR counter)
 	SIGNAL instruction_valid  : STD_LOGIC;  --! Valid instruction in WB stage (not stalled)
 
 BEGIN
 	-- Pipeline control signals
-	pipeline_flush <= '1' WHEN s_ex_if_bus.pc_redirect = '1' OR mem_stage_trap /= VALID OR ex_stage_trap = '1' ELSE '0';
+	pipeline_flush <= '1' WHEN s_ex_if_bus.pc_redirect = '1' OR mem_stage_trap.trap /= VALID OR ex_stage_trap = '1' ELSE '0';
 	instruction_valid <= '1' WHEN pipeline_stall = '0' ELSE '0';
 
 
@@ -290,7 +290,7 @@ BEGIN
 		IF i_rst = '1' THEN
 			r_ex_mem_reg <= C_EX_MEM_RESET;
 		ELSIF rising_edge(i_clk) THEN
-                        IF ex_stage_trap = '1' OR mem_stage_trap /= VALID THEN
+                        IF ex_stage_trap = '1' OR mem_stage_trap.trap /= VALID THEN
                                 r_ex_mem_reg <= C_EX_MEM_RESET;
                         ELSE 
                                 r_ex_mem_reg <= s_ex_mem_bus;  
