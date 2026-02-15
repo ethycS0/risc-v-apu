@@ -29,6 +29,7 @@ LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
 USE ieee.std_logic_textio.ALL;
+USE work.rv32i_pkg.ALL;
 USE std.textio.ALL;
 USE std.env.ALL;
 
@@ -120,7 +121,7 @@ BEGIN
 				IF v_idx >= 0 AND v_idx < G_MEM_SIZE THEN
 					o_imem_data <= ram(v_idx);
 				ELSE
-					o_imem_data <= (OTHERS => '0');  -- Return zero for out-of-range
+					o_imem_data <= C_NOP;  -- Return zero for out-of-range
 				END IF;
 			END IF;
 		END PROCESS P_IMEM;
@@ -190,7 +191,7 @@ BEGIN
 				IF v_idx >= 0 AND v_idx < G_MEM_SIZE THEN
 					o_imem_data <= ram(v_idx);
 				ELSE
-					o_imem_data <= (OTHERS => '0');  -- Return zero for out-of-range
+					o_imem_data <= C_NOP;  -- Return zero for out-of-range
 				END IF;
 			END IF;
 		END PROCESS P_IMEM;

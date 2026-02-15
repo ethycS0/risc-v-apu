@@ -54,6 +54,7 @@ ARCHITECTURE structural OF core IS
 			i_clk        : IN  STD_LOGIC;
 			i_rst        : IN  STD_LOGIC;
 			i_stall      : IN  STD_LOGIC;
+                        i_pmp_fault  : IN  STD_LOGIC;
 			o_instr_addr : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			i_instr_data : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
 			i_ex_if_bus  : IN  t_ex_if_data;
@@ -83,6 +84,7 @@ ARCHITECTURE structural OF core IS
 			i_rd_mem_bus            : IN  t_rd_reg_data;
 			i_rd_wb_bus             : IN  t_rd_reg_data;
 			i_rd_wb_fwd             : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+                        o_ex_pmp_csr            : OUT t_ex_pmp_data;
                         o_ex_trap               : OUT STD_LOGIC; 
 			o_ex_if_bus             : OUT t_ex_if_data;
 			o_ex_mem_bus            : OUT t_ex_mem_data
@@ -93,6 +95,8 @@ ARCHITECTURE structural OF core IS
 	--! Memory Access stage component declaration
 	COMPONENT memory_stage IS
 		PORT (
+                        i_pmp_fault      : IN  STD_LOGIC;
+                        o_mem_valid      : OUT STD_LOGIC;
 			o_mem_addr       : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			o_mem_write_data : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			o_mem_write_en   : OUT STD_LOGIC;
@@ -130,6 +134,26 @@ ARCHITECTURE structural OF core IS
 		);
 	END COMPONENT hazard_detection_unit;
 
+        COMPONENT pmp_unit IS
+                PORT (
+                        i_pmp_csr   : IN t_ex_pmp_data;
+                        i_mem_valid : IN STD_LOGIC;
+
+                        i_fetch_addr : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+                        o_fetch_addr : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+
+                        i_mem_addr : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+                        o_mem_addr : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+
+                        i_mem_write : IN  STD_LOGIC;
+                        o_mem_write : OUT STD_LOGIC;
+
+                        o_fetch_fault : OUT STD_LOGIC;
+                        o_mem_fault   : OUT STD_LOGIC
+
+                );
+        END COMPONENT pmp_unit;
+
 	SIGNAL s_if_id_bus  : t_if_id_data;   --! IF stage output (to IF/ID pipeline register)
 	SIGNAL s_id_ex_bus  : t_id_ex_data;   --! ID stage output (to ID/EX pipeline register)
 	SIGNAL s_ex_mem_bus : t_ex_mem_data;  --! EX stage output (to EX/MEM pipeline register)
@@ -154,10 +178,34 @@ ARCHITECTURE structural OF core IS
 	SIGNAL minstret_increment : STD_LOGIC;  --! Instruction retired signal (for CSR counter)
 	SIGNAL instruction_valid  : STD_LOGIC;  --! Valid instruction in WB stage (not stalled)
 
+        SIGNAL s_pmp_csr : t_ex_pmp_data;
+        SIGNAL s_mem_valid : STD_LOGIC := '0';
+        SIGNAL s_mem_write : STD_LOGIC := '1';
+
+        SIGNAL s_fetch_addr : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERs => '0');
+        SIGNAL s_mem_addr : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERs => '0');
+
+        SIGNAL s_pmp_fetch_fault : STD_LOGIC;
+        SIGNAL s_pmp_mem_fault : STD_LOGIC;
+
 BEGIN
 	-- Pipeline control signals
 	pipeline_flush <= '1' WHEN s_ex_if_bus.pc_redirect = '1' OR mem_stage_trap.trap /= VALID OR ex_stage_trap = '1' ELSE '0';
 	instruction_valid <= '1' WHEN pipeline_stall = '0' ELSE '0';
+
+        U_PMP_UNIT : pmp_unit
+        PORT MAP(
+                i_pmp_csr => s_pmp_csr,
+                i_mem_valid => s_mem_valid,
+                i_fetch_addr => s_fetch_addr,
+                o_fetch_addr => o_instr_addr,
+                i_mem_addr => s_mem_addr,
+                o_mem_addr => o_data_addr,
+                i_mem_write => s_mem_write,
+                o_mem_write => o_data_write_en,
+                o_fetch_fault => s_pmp_fetch_fault,
+                o_mem_fault => s_pmp_mem_fault
+        );
 
 
 	--! @brief Instruction Fetch Stage Instance
@@ -168,7 +216,8 @@ BEGIN
 		i_clk        => i_clk,
 		i_rst        => i_rst,
 		i_stall      => pipeline_stall,
-		o_instr_addr => o_instr_addr,
+                i_pmp_fault  => s_pmp_fetch_fault,
+		o_instr_addr => s_fetch_addr,
 		i_instr_data => i_instr_data,
 		i_ex_if_bus  => s_ex_if_bus,
 		o_if_id_bus  => s_if_id_bus
@@ -200,6 +249,7 @@ BEGIN
 		i_rd_mem_bus            => r_ex_mem_reg.rd_bus,
 		i_rd_wb_bus             => r_mem_wb_reg.rd_bus,
 		i_rd_wb_fwd             => s_wb_ex_fwd,
+                o_ex_pmp_csr            => s_pmp_csr,
                 o_ex_trap               => ex_stage_trap,
 		o_ex_if_bus             => s_ex_if_bus,
 		o_ex_mem_bus            => s_ex_mem_bus
@@ -210,11 +260,13 @@ BEGIN
 	--! memory address, write data, byte enables, and control signals.
 	U_MEM_STAGE : memory_stage
 	PORT MAP(
-		o_mem_addr       => o_data_addr,
+		o_mem_addr       => s_mem_addr,
 		o_mem_write_data => o_data_write,
-		o_mem_write_en   => o_data_write_en,
+		o_mem_write_en   => s_mem_write,
 		o_mem_byte_en    => o_data_byte_en,
                 o_mem_trap       => mem_stage_trap,
+                o_mem_valid      => s_mem_valid,
+                i_pmp_fault      => s_pmp_mem_fault,
 		i_ex_mem_bus     => r_ex_mem_reg,
 		o_mem_wb_bus     => s_mem_wb_bus
 	);
@@ -307,7 +359,11 @@ BEGIN
 		IF i_rst = '1' THEN
 			r_mem_wb_reg <= C_MEM_WB_RESET;
 		ELSIF rising_edge(i_clk) THEN
-			r_mem_wb_reg <= s_mem_wb_bus;  -- Always update (no hazard control needed)
+                        IF mem_stage_trap.trap /= VALID THEN
+                                r_mem_wb_reg <= C_MEM_WB_RESET;
+                        ELSE 
+                                r_mem_wb_reg <= s_mem_wb_bus;  -- Always update (no hazard control needed)
+                        END IF;
 		END IF;
 	END PROCESS;
 

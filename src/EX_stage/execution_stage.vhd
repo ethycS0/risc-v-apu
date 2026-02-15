@@ -38,6 +38,7 @@ ENTITY execution_stage IS
 		i_rd_wb_bus  : IN t_rd_reg_data;                  --! Writeback data from WB stage (for forwarding)
 		i_rd_wb_fwd  : IN STD_LOGIC_VECTOR(31 DOWNTO 0);  --! Writeback data forwarding path (Separate due to Load bypass)
 
+                o_ex_pmp_csr : OUT t_ex_pmp_data;
                 o_ex_trap    : OUT STD_LOGIC;     --| Kill Switch for Exceptions
 		o_ex_if_bus  : OUT t_ex_if_data;  --! Feedback bus to IF stage (branch/jump redirect signals)
 		o_ex_mem_bus : OUT t_ex_mem_data  --! Output bus to MEM stage (ALU result, control signals)
@@ -120,6 +121,8 @@ ARCHITECTURE structural OF execution_stage IS
 			i_pc_at_trap         : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
 			i_cause_code         : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
 			i_trap_mtval         : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+                        o_pmp_csr            : OUT t_ex_pmp_data;
+                        o_pmp_changed        : OUT STD_LOGIC;
                         o_lpad_en            : OUT STD_LOGIC;
 			o_mtvec              : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			o_mepc               : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -162,6 +165,9 @@ ARCHITECTURE structural OF execution_stage IS
         SIGNAL s_lpad_trap : STD_LOGIC;
         SIGNAL s_lpad_en : STD_LOGIC;
 
+        SIGNAL s_pmp_changed : STD_LOGIC;
+
+        SIGNAL s_if_pmp_fault  : STD_LOGIC;
 BEGIN
 
 	--! @brief Execute Control Unit Instance
@@ -222,6 +228,8 @@ BEGIN
 		i_pc_at_trap         => s_trap_pc,
 		i_cause_code         => s_cause_code,
 		i_trap_mtval         => s_trap_mtval,
+                o_pmp_csr            => o_ex_pmp_csr,
+                o_pmp_changed        => s_pmp_changed,
                 o_lpad_en            => s_lpad_en,
 		o_mtvec              => s_mtvec_val,
 		o_mepc               => s_mepc_val,
@@ -331,28 +339,31 @@ BEGIN
 		END IF;
 	END PROCESS;
 
-        P_CHECK_LPAD : PROCESS (i_id_ex_bus, s_alu_flags, s_lpad_en)
+        P_CHECK_INSTR_TAG : PROCESS (i_id_ex_bus, s_alu_flags, s_lpad_en)
         BEGIN
                 s_lpad_trap <= '0';
-                IF i_id_ex_bus.elp = '1' AND s_lpad_en = '1' THEN
+                s_if_pmp_fault <= '0';
+                IF i_id_ex_bus.instr_tag = PMP_FAULT THEN
+                        s_if_pmp_fault <= '1';
+                ELSIF i_id_ex_bus.instr_tag = ELP AND s_lpad_en = '1' THEN
                         IF i_id_ex_bus.opr_type /= OP_LPAD THEN 
                                 s_lpad_trap <= '1';
                         ELSIF s_alu_flags.zero = '0' THEN 
                                 s_lpad_trap <= '1';
                         END IF;
                 END IF;
-        END PROCESS P_CHECK_LPAD;
+        END PROCESS P_CHECK_INSTR_TAG;
 
 
 	-- Trap type decoding
 	s_is_mret <= '1' WHEN s_trap_type = TRAP_MRET ELSE '0';
-	s_trap_trigger <= '1' WHEN (s_target_misaligned ='1' OR s_trap_type = TRAP_CALL OR s_trap_type = TRAP_BREAK OR s_lpad_trap = '1' OR i_mem_ex_trap.trap /= VALID) ELSE '0';
+	s_trap_trigger <= '1' WHEN (s_if_pmp_fault = '1' OR s_target_misaligned ='1' OR s_trap_type = TRAP_CALL OR s_trap_type = TRAP_BREAK OR s_lpad_trap = '1' OR i_mem_ex_trap.trap /= VALID) ELSE '0';
 	
 	-- CSR address mux (use mepc address for MRET, otherwise funct12)
 	s_csr_addr_mux <= x"341" WHEN s_trap_type = TRAP_MRET ELSE i_id_ex_bus.funct12;
 
 	-- Trap cause code assignment
-        P_CSR_CAUSE : PROCESS (s_lpad_trap, s_trap_type, i_mem_ex_trap, s_target_misaligned)
+        P_CSR_CAUSE : PROCESS (ALL)
         BEGIN
                 IF i_mem_ex_trap.trap /= VALID THEN
                         CASE i_mem_ex_trap.trap IS 
@@ -367,6 +378,9 @@ BEGIN
                                 WHEN VALID => 
                                         s_cause_code <= (OTHERS => '0');
                         END CASE;
+
+                ELSIF s_if_pmp_fault = '1' THEN
+                        s_cause_code <= STD_LOGIC_VECTOR(to_unsigned(1, 32));
 
                 ELSIF s_target_misaligned = '1' THEN
                         s_cause_code <= STD_LOGIC_VECTOR(to_unsigned(0, 32));
@@ -390,6 +404,9 @@ BEGIN
         BEGIN
                 IF i_mem_ex_trap.trap /= VALID THEN
                         s_trap_mtval <= i_rd_mem_bus.rd_data;
+
+                ELSIF s_if_pmp_fault = '1' THEN
+                        s_trap_mtval <= i_id_ex_bus.pc;
 
                 ELSIF s_target_misaligned = '1' THEN
                         IF i_id_ex_bus.opr_type = OP_JUMP AND i_id_ex_bus.src_a = SRC_A_RS1 THEN
@@ -452,10 +469,14 @@ BEGIN
 				o_ex_if_bus.pc_redirect <= '1';
 				o_ex_if_bus.redirect_address <= s_branch_target;
 			END IF;
+
+                ELSIF s_pmp_changed = '1' THEN
+                        o_ex_if_bus.pc_redirect <= '1';
+                        o_ex_if_bus.redirect_address <= i_id_ex_bus.pc4;
 		END IF;
 	END PROCESS;
 
-        o_ex_trap <= '1' WHEN (s_lpad_trap = '1' OR s_target_misaligned = '1' OR s_trap_type = TRAP_CALL OR s_trap_type = TRAP_BREAK) ELSE '0';
+        o_ex_trap <= '1' WHEN (s_pmp_changed = '1' OR i_mem_ex_trap.trap /= VALID OR s_if_pmp_fault = '1' OR s_lpad_trap = '1' OR s_target_misaligned = '1' OR s_trap_type = TRAP_CALL OR s_trap_type = TRAP_BREAK) ELSE '0';
 
 	-- Output bus assignments to MEM stage
 	o_ex_mem_bus.rs2_data <= s_rs2_data_fwd;

@@ -34,7 +34,9 @@ ENTITY memory_stage IS
 		o_mem_byte_en    : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);  --! Byte enable mask (selects active bytes)
 
                 o_mem_trap : OUT t_mem_ex_fb;
+                o_mem_valid : OUT STD_LOGIC;
 
+                i_pmp_fault  : IN STD_LOGIC;
 		i_ex_mem_bus : IN  t_ex_mem_data; --! Input bus from Execute stage (ALU result, control signals)
 		o_mem_wb_bus : OUT t_mem_wb_data  --! Output bus to Writeback stage 
 
@@ -46,8 +48,9 @@ ARCHITECTURE structural OF memory_stage IS
 BEGIN
 
         o_mem_addr <= i_ex_mem_bus.rd_bus.rd_data;
+        o_mem_valid <= i_ex_mem_bus.mem_read OR i_ex_mem_bus.mem_write;
 
-        P_CHECK_ACCESS : PROCESS (i_ex_mem_bus.mem_write, i_ex_mem_bus.mem_read, i_ex_mem_bus.rd_bus.rd_data, i_ex_mem_bus.funct3)
+        P_CHECK_ACCESS : PROCESS (ALL)
         BEGIN
                 s_misaligned_access <= '0';
                 IF i_ex_mem_bus.mem_read = '1' OR i_ex_mem_bus.mem_write = '1' THEN 
@@ -65,11 +68,13 @@ BEGIN
 				WHEN OTHERS =>  -- Invalid or load operation
                                         s_misaligned_access <='0';
                         END CASE;
+
                 END IF;
+
         END PROCESS P_CHECK_ACCESS;
 
 
-        P_TRAP_SEL : PROCESS (s_misaligned_access, i_ex_mem_bus.mem_write, i_ex_mem_bus.mem_read)
+        P_TRAP_SEL : PROCESS (ALL)
         BEGIN
                 o_mem_trap.trap <= VALID;
                 IF s_misaligned_access = '1' THEN
@@ -77,6 +82,12 @@ BEGIN
                                 o_mem_trap.trap <= L_MISALIGNED;
                         ELSIF i_ex_mem_bus.mem_write = '1' THEN
                                 o_mem_trap.trap <= S_MISALIGNED;
+                        END IF;
+                ELSIF i_pmp_fault = '1' THEN
+                        IF i_ex_mem_bus.mem_read = '1' THEN
+                                o_mem_trap.trap <= L_ACCESS_FAULT;
+                        ELSIF i_ex_mem_bus.mem_write = '1' THEN
+                                o_mem_trap.trap <= S_ACCESS_FAULT;
                         END IF;
                 END IF;
         END PROCESS P_TRAP_SEL;

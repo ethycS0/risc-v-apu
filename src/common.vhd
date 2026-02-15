@@ -84,6 +84,12 @@ PACKAGE rv32i_pkg IS
                 TRAP_MRET           
         );
 
+        TYPE t_if_trap IS (
+                VALID,
+                ELP,
+                PMP_FAULT
+        );
+
         --! Forwarding Unit data path selection.
         TYPE t_Forward IS (
                 FWD_NONE,          
@@ -126,14 +132,14 @@ PACKAGE rv32i_pkg IS
                 instruction             : STD_LOGIC_VECTOR(31 DOWNTO 0); --! Raw 32-bit instruction
                 pc                      : STD_LOGIC_VECTOR(31 DOWNTO 0); --! PC of current instruction
                 pc4                     : STD_LOGIC_VECTOR(31 DOWNTO 0); --! PC + 4 (Next Seq PC)
-                elp                     : STD_LOGIC;                     --| ELP speculative status
+                instr_tag               : t_if_trap;                     --| EX: Landing Pad
         END RECORD t_if_id_data;
 
         CONSTANT C_IF_ID_RESET : t_if_id_data := (
                 instruction             => C_NOP,
                 pc                      => (OTHERS => '0'),
                 pc4                     => (OTHERS => '0'),
-                elp                     => '0'
+                instr_tag               => VALID
         );
 
         --! ID/EX Pipeline Register Record.
@@ -146,7 +152,7 @@ PACKAGE rv32i_pkg IS
                 src_b                   : t_SrcB;                        --! EX: ALU Operand B select
                 opr_type                : t_OprType;                     --! EX: Operation Category
                 opr_unit                : t_OprUnit;                     --! EX: Functional Unit Select
-                elp                     : STD_LOGIC;                     --| EX: Landing Pad
+                instr_tag               : t_if_trap;                     --| EX: Landing Pad
                 
                 immediate               : STD_LOGIC_VECTOR(31 DOWNTO 0); --! Sign-Extended Immediate
                 rs1_data                : STD_LOGIC_VECTOR(31 DOWNTO 0); --! Read Data 1 from RegFile
@@ -171,7 +177,7 @@ PACKAGE rv32i_pkg IS
                 src_b                   => SRC_B_RS2,
                 opr_type                => OP_R_TYPE,
                 opr_unit                => UNIT_ALU,
-                elp                     => '0',
+                instr_tag               => VALID,
                 immediate               => (OTHERS => '0'),
                 rs1_data                => (OTHERS => '0'),
                 rs2_data                => (OTHERS => '0'),
@@ -235,6 +241,15 @@ PACKAGE rv32i_pkg IS
                 next_elp                : STD_LOGIC;                     --| ELP status
                 redirect_address        : STD_LOGIC_VECTOR(31 DOWNTO 0); --! Target Address
         END RECORD t_ex_if_data;
+
+        TYPE t_ex_pmp_data IS RECORD
+                priv_mode   : STD_LOGIC;
+                pmpcfg0     : STD_LOGIC_VECTOR(31 DOWNTO 0);
+                pmpaddr0    : STD_LOGIC_VECTOR(31 DOWNTO 0);
+                pmpaddr1    : STD_LOGIC_VECTOR(31 DOWNTO 0);
+                pmpaddr2    : STD_LOGIC_VECTOR(31 DOWNTO 0);
+                pmpaddr3    : STD_LOGIC_VECTOR(31 DOWNTO 0);
+        END RECORD t_ex_pmp_data;
 
 
 END PACKAGE rv32i_pkg;

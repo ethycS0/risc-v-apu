@@ -68,6 +68,7 @@ class eSC_V(pluginTemplate):
             "src/WB_stage/writeback_stage.vhd",
             # Memory
             "src/unified_memory_unit.vhd",
+            "src/pmp_unit.vhd",
             # UART
             "src/uart.vhd",
             # SoC
