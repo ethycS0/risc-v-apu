@@ -52,7 +52,7 @@ END ENTITY tb_soc_riscof;
 
 ARCHITECTURE behavioral OF tb_soc_riscof IS
 
-	CONSTANT MEM_BASE   : UNSIGNED(31 DOWNTO 0) := x"00000000"; --! Memory base address
+	CONSTANT MEM_BASE   : UNSIGNED(31 DOWNTO 0) := x"80000000"; --! Memory base address
 	CONSTANT CLK_PERIOD : TIME := 10 ns;                         --! Clock period (100 MHz)
 
         --! Termination magic address (calculated from offset)

@@ -1,29 +1,3 @@
---! @file csr_unit.vhd
---! Control and Status Register Unit
---! @author ethycS
---! @details This module implements the Machine-mode Control and Status Registers
---! (CSRs) for the RV32I processor with basic trap handling support. It provides
---! read/write access to CSRs via CSR instructions (CSRRW, CSRRS, CSRRC) and
---! automatically updates trap-related CSRs during exception/interrupt handling.
---!
---! Implemented CSRs:
---! - mvendorid (0xF11): Vendor ID (read-only, hardwired to 0)
---! - misa (0x301): ISA and extensions (read-only, RV32I base)
---! - mstatus (0x300): Machine status register (MIE, MPIE fields)
---! - mtvec (0x305): Machine trap vector base address
---! - mepc (0x341): Machine exception program counter
---! - mcause (0x342): Machine trap cause
---! - mtval (0x343): Machine trap value (bad address or instruction)
---! - mie (0x304): Machine interrupt enable register
---! - mip (0x344): Machine interrupt pending register
---! - mscratch (0x340): Machine scratch register
---! - mcycle (0xB00): Machine cycle counter
---! - minstret (0xB02): Machine instructions retired counter
---!
---! Trap handling automatically saves PC to mepc, updates mcause/mtval, and
---! disables interrupts (MIE=0, MPIE=previous MIE). MRET restores interrupt
---! enable state and returns to mepc.
-
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
@@ -67,7 +41,6 @@ ARCHITECTURE behavioral OF csr_unit IS
 
 	SIGNAL r_mie_bit  : STD_LOGIC := '0'; --! Machine Interrupt Enable bit (mstatus[3])
 	SIGNAL r_mpie_bit : STD_LOGIC := '0'; --! Machine Previous Interrupt Enable bit (mstatus[7])
-        SIGNAL r_mpp      : STD_LOGIC_VECTOR(1 DOWNTO 0) := "11";
 
 	SIGNAL r_mtvec    : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0'); --! Machine Trap Vector register
 	SIGNAL r_mtval    : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0'); --! Machine Trap Value register
@@ -88,8 +61,6 @@ ARCHITECTURE behavioral OF csr_unit IS
         SIGNAL r_pmpaddr2    :  STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0'); 
         SIGNAL r_pmpaddr3    :  STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0'); 
 
-        SIGNAL r_current_priv : STD_LOGIC := '1'; 
-
 BEGIN
 
 	--! @brief CSR Read Multiplexer Process
@@ -105,7 +76,7 @@ BEGIN
 
                         WHEN x"300" =>
                                 s_selected_reg_val(31 DOWNTO 13) <= (OTHERS => '0');
-                                s_selected_reg_val(12 DOWNTO 11) <= r_mpp;
+                                s_selected_reg_val(12 DOWNTO 11) <= "11";
                                 s_selected_reg_val(10 DOWNTO 8) <= (OTHERS => '0');
                                 s_selected_reg_val(7) <= r_mpie_bit;
                                 s_selected_reg_val(6 DOWNTO 4) <= (OTHERS => '0');
@@ -163,7 +134,6 @@ BEGIN
 		IF i_rst = '1' THEN
 			r_mie_bit <= '0';
 			r_mpie_bit <= '0';
-                        r_mpp <= "11";
 			r_mtvec <= (OTHERS => '0');
 			r_mepc <= (OTHERS => '0');
 			r_mcause <= (OTHERS => '0');
@@ -173,7 +143,6 @@ BEGIN
 			r_minstret <= (OTHERS => '0');
 			r_mscratch <= (OTHERS => '0');
                         r_pmpcfg0 <= (OTHERS => '0');
-                        r_current_priv <= '1';
 		ELSIF rising_edge(i_clk) THEN
 
 			-- Trap entry logic (highest priority)
@@ -183,15 +152,11 @@ BEGIN
 				r_mtval <= i_trap_mtval;       -- Save trap value
 				r_mpie_bit <= r_mie_bit;       -- Save current MIE to MPIE
 				r_mie_bit <= '0';              -- Disable interrupts
-                                r_mpp <= r_current_priv & r_current_priv;
-                                r_current_priv <= '1';
 
 			-- MRET instruction logic
 			ELSIF i_is_mret = '1' THEN
 				r_mie_bit <= r_mpie_bit;  -- Restore MIE from MPIE
 				r_mpie_bit <= '1';        -- Set MPIE to 1
-                                r_current_priv <= r_mpp(1);
-                                r_mpp      <= "00";
 
 			-- Normal CSR write logic
 			ELSIF i_write_en = '1' THEN
@@ -199,7 +164,6 @@ BEGIN
 					WHEN x"300" =>  -- mstatus
 						r_mie_bit  <= s_new_csr_value(3);
 						r_mpie_bit <= s_new_csr_value(7);
-                                                r_mpp      <= s_new_csr_value(12 DOWNTO 11);
 					WHEN x"305" => r_mtvec <= s_new_csr_value;     -- mtvec
 					WHEN x"340" => r_mscratch <= s_new_csr_value;  -- mscratch
 					WHEN x"341" => r_mepc <= s_new_csr_value;      -- mepc
@@ -288,7 +252,6 @@ BEGIN
         o_pmp_csr.pmpaddr1 <= r_pmpaddr1;
         o_pmp_csr.pmpaddr2 <= r_pmpaddr2;
         o_pmp_csr.pmpaddr3 <= r_pmpaddr3;
-        o_pmp_csr.priv_mode <= r_current_priv;
 
 END ARCHITECTURE behavioral;
 

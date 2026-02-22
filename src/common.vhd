@@ -10,7 +10,7 @@ USE ieee.std_logic_1164.ALL;
 
 PACKAGE rv32i_pkg IS
 
-        CONSTANT RESET_ADDRESS : STD_LOGIC_VECTOR(31 DOWNTO 0) := x"00000000";
+        CONSTANT RESET_ADDRESS : STD_LOGIC_VECTOR(31 DOWNTO 0) := x"80000000";
         CONSTANT C_NOP : STD_LOGIC_VECTOR(31 DOWNTO 0) := x"00000013"; --! NOP instruction (ADDI x0, x0, 0) used for flushing
 
         --! Decoded high-level operation types.
@@ -243,7 +243,6 @@ PACKAGE rv32i_pkg IS
         END RECORD t_ex_if_data;
 
         TYPE t_ex_pmp_data IS RECORD
-                priv_mode   : STD_LOGIC;
                 pmpcfg0     : STD_LOGIC_VECTOR(31 DOWNTO 0);
                 pmpaddr0    : STD_LOGIC_VECTOR(31 DOWNTO 0);
                 pmpaddr1    : STD_LOGIC_VECTOR(31 DOWNTO 0);

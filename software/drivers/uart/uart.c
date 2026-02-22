@@ -1,7 +1,6 @@
 #include "uart.h"
 
-#define MEM_BASE 0x00000000
-#define UART_BASE 0x80000000
+#define UART_BASE 0x00000000
 
 #define REG(base, offset) (*((volatile unsigned char *)(base + offset)))
 

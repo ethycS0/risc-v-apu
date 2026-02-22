@@ -13,18 +13,18 @@
 --! - Power-on-reset (POR) generation circuit (Tang Primer 20K FPGA does not have IO easily accessible)
 --!
 --! Memory map:
---! - 0x00000000 - 0x((RAM_SIZE * 4) - 1): Main memory (code + data)
---! - 0x80000000: UART data register (read: RX data, write: TX data)
---! - 0x80000004: UART status register
+--! - 0x80000000 - 0x(80000000 + (RAM_SIZE * 4) - 1): Main memory (code + data)
+--! - 0x00000000: UART data register (read: RX data, write: TX data)
+--! - 0x00000004: UART status register
 --!   - Bit [0]: TX ready flag (1 = can transmit)
 --!   - Bit [1]: RX data valid flag (1 = new byte received)
 --!   - Write: Clear RX data valid flag
 --!
 --! UART interface:
---! - Write to 0x80000000: Initiates transmission of byte (if TX ready)
---! - Read from 0x80000000: Returns last received byte (latched)
---! - Write to 0x80000004: Clears RX data valid flag (acknowledge read)
---! - Read from 0x80000004: Returns TX ready and RX valid status bits
+--! - Write to 0x00000000: Initiates transmission of byte (if TX ready)
+--! - Read from 0x00000000: Returns last received byte (latched)
+--! - Write to 0x00000004: Clears RX data valid flag (acknowledge read)
+--! - Read from 0x00000004: Returns TX ready and RX valid status bits
 --!
 --! The module includes debug outputs for RISCOF (RISC-V Compliance Framework)
 --! verification, exposing data memory signals for external monitoring.
@@ -260,33 +260,38 @@ BEGIN
 	--! @brief Memory-Mapped Write Decode Process
 	--! @details Combinational process that decodes write operations to memory vs I/O space.
 	--! Address ranges:
-	--! - 0x00000000 to (RAM_SIZE*4-1): RAM write (s_mem_write_en asserted)
-	--! - 0x80000000: UART TX data register (s_uart_tx_start pulsed if TX ready)
-	--! - 0x80000004: UART status register (write clears RX valid flag)
+	--! - 0x80000000 to (80000000 + RAM_SIZE*4-1): RAM write (s_mem_write_en asserted)
+	--! - 0x00000000: UART TX data register (s_uart_tx_start pulsed if TX ready)
+	--! - 0x00000004: UART status register (write clears RX valid flag)
 	--!
 	--! The write decode ensures only one destination is activated per transaction. UART
 	--! TX writes are gated by the TX ready flag to prevent data loss when the transmitter
 	--! is busy. All I/O writes are single-cycle operations (no multi-cycle handshaking).
-	P_WRITE_LOGIC : PROCESS (s_data_addr, s_data_write_en, s_uart_tx_ready)
-	BEGIN
-		s_mem_write_en <= '0';
-		s_uart_tx_start <= '0';
-		s_clear_rx_flag <= '0';
 
-		IF unsigned(s_data_addr) < C_RAM_BYTE_LIMIT THEN
-			s_mem_write_en <= s_data_write_en;  -- RAM write
+        P_WRITE_LOGIC : PROCESS (s_data_addr, s_data_write_en, s_uart_tx_ready)
+    BEGIN
+        s_mem_write_en <= '0';
+        s_uart_tx_start <= '0';
+        s_clear_rx_flag <= '0';
 
-		ELSIF s_data_addr = x"8000_0000" THEN  -- UART TX data register
-			IF s_data_write_en = '1' AND s_uart_tx_ready = '1' THEN
-				s_uart_tx_start <= '1';  -- Initiate transmission
-			END IF;
+        IF s_data_addr(31) = '1' THEN 
+            -- Address is 0x8000_XXXX -> RAM space
+            -- (Optional: add your C_RAM_BYTE_LIMIT check here if you want bounds checking)
+            s_mem_write_en <= s_data_write_en; 
 
-		ELSIF s_data_addr = x"8000_0004" THEN  -- UART status register
-			IF s_data_write_en = '1' THEN
-				s_clear_rx_flag <= '1';  -- Acknowledge RX read
-			END IF;
-		END IF;
-	END PROCESS;
+        ELSE 
+            -- Address is 0x0000_XXXX -> I/O space
+            IF s_data_addr = x"0000_0000" THEN  -- UART TX
+                IF s_data_write_en = '1' AND s_uart_tx_ready = '1' THEN
+                    s_uart_tx_start <= '1';
+                END IF;
+            ELSIF s_data_addr = x"0000_0004" THEN  -- UART Status
+                IF s_data_write_en = '1' THEN
+                    s_clear_rx_flag <= '1';
+                END IF;
+            END IF;
+        END IF;
+    END PROCESS;
 
 	--! @brief Memory-Mapped Read Decode Process (Combinational)
 	--! @details Combinational process that generates I/O read data based on the data
@@ -294,8 +299,8 @@ BEGIN
 	--! is then registered in P_IO_READ_SYNC to match the memory read latency.
 	--!
 	--! I/O register reads:
-	--! - 0x80000000: Returns latched RX data byte in bits [7:0], upper bits zero
-	--! - 0x80000004: Returns status register:
+	--! - 0x00000000: Returns latched RX data byte in bits [7:0], upper bits zero
+	--! - 0x00000004: Returns status register:
 	--!   - Bit [0]: TX ready flag (1 = can transmit)
 	--!   - Bit [1]: RX data valid flag (1 = new byte available)
 	--!   - Bits [31:2]: Reserved (return zero)
@@ -305,10 +310,10 @@ BEGIN
 	BEGIN
 		s_io_read_combinational <= (OTHERS => '0');
 
-		IF s_data_addr = x"8000_0000" THEN  -- UART RX data register
+		IF s_data_addr = x"0000_0000" THEN  -- UART RX data register
 			s_io_read_combinational(7 DOWNTO 0) <= r_rx_byte_buf;
 
-		ELSIF s_data_addr = x"8000_0004" THEN  -- UART status register
+		ELSIF s_data_addr = x"0000_0004" THEN  -- UART status register
 			s_io_read_combinational(0) <= s_uart_tx_ready;   -- TX ready
 			s_io_read_combinational(1) <= r_rx_data_valid;   -- RX valid
 		END IF;
@@ -324,17 +329,18 @@ BEGIN
 	--! the processor's perspective - all reads complete in one cycle after the address
 	--! is presented. Without this registration, I/O reads would appear instantaneous
 	--! while RAM reads take a cycle, creating timing hazards.
-	P_IO_READ_SYNC : PROCESS (clk)
-	BEGIN
-		IF rising_edge(clk) THEN
-			r_io_read_delayed <= s_io_read_combinational;  -- Register I/O read data
-			IF unsigned(s_data_addr) >= C_RAM_BYTE_LIMIT THEN
-				r_access_was_io <= '1';  -- Mark as I/O access
-			ELSE
-				r_access_was_io <= '0';  -- Mark as RAM access
-			END IF;
-		END IF;
-	END PROCESS;
+        P_IO_READ_SYNC : PROCESS (clk)
+    BEGIN
+        IF rising_edge(clk) THEN
+            r_io_read_delayed <= s_io_read_combinational; 
+            
+            IF s_data_addr(31) = '0' THEN 
+                r_access_was_io <= '1'; 
+            ELSE
+                r_access_was_io <= '0'; 
+            END IF;
+        END IF;
+    END PROCESS;
 
 	-- Mux between I/O and RAM read data based on registered access type
 	s_data_rdata <= r_io_read_delayed WHEN r_access_was_io = '1' ELSE s_mem_rdata;

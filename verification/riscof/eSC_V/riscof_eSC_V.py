@@ -171,7 +171,7 @@ class eSC_V(pluginTemplate):
 
             sig_begin = None
             sig_end = None
-            mem_base = 0x00000000
+            mem_base = 0x80000000
             tohost = 0
 
             # Parse nm output once for all symbols

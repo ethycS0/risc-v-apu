@@ -29,7 +29,19 @@ hart0:
               - unchanged
     rv64:
       accessible: false
-
+  mstatus:
+    reset-val: 0x0
+    rv32:
+      accessible: true
+      mpp:
+        implemented: true
+        type:
+          warl:
+            dependency_fields: []
+            legal:
+              - mpp[1:0] in [0x3]
+            wr_illegal:
+              - unchanged
   pmpcfg0:
     reset-val: 0x0
     rv32:
@@ -81,7 +93,7 @@ hart0:
         warl:
           dependency_fields: []
           legal:
-            - pmpaddr0[31:0] in [0x00000000:0x00002000]
+            - pmpaddr0[31:0] in [0x00000000:0xFFFFFFFF]
           wr_illegal:
             - unchanged
     rv64:
@@ -95,7 +107,7 @@ hart0:
         warl:
           dependency_fields: []
           legal:
-            - pmpaddr1[31:0] in [0x00000000:0x00002000]
+            - pmpaddr1[31:0] in [0x00000000:0xFFFFFFFF]
           wr_illegal:
             - unchanged
     rv64:
@@ -109,7 +121,7 @@ hart0:
         warl:
           dependency_fields: []
           legal:
-            - pmpaddr2[31:0] in [0x00000000:0x00002000]
+            - pmpaddr2[31:0] in [0x00000000:0xFFFFFFFF]
           wr_illegal:
             - unchanged
     rv64:
@@ -123,7 +135,7 @@ hart0:
         warl:
           dependency_fields: []
           legal:
-            - pmpaddr3[31:0] in [0x00000000:0x00002000]
+            - pmpaddr3[31:0] in [0x00000000:0xFFFFFFFF]
           wr_illegal:
             - unchanged
     rv64:

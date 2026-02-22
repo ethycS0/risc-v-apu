@@ -150,7 +150,7 @@ class spike(pluginTemplate):
 
             spike_cmd = self.spike_exe[
                 self.xlen
-            ] + " --isa={0} +signature={1} +signature-granularity=4 {2}".format(
+            ] + " --isa={0} --priv=m --pmpregions=4 +signature={1} +signature-granularity=4 {2}".format(
                 self.isa, sig_file, elf
             )
 

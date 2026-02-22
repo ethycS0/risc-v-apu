@@ -27,7 +27,6 @@ ARCHITECTURE behavioral OF pmp_unit IS
         FUNCTION check_access (
                 addr : STD_LOGIC_VECTOR(31 DOWNTO 0);
                 access_type : STD_LOGIC_VECTOR(2 DOWNTO 0);
-                priv_mode : STD_LOGIC;
                 pmp_csr : t_ex_pmp_data
         ) RETURN STD_LOGIC IS
 
@@ -122,7 +121,7 @@ ARCHITECTURE behavioral OF pmp_unit IS
 
                                 IF v_match_found THEN
 
-                                        IF (v_cfg_byte(7) = '0') AND (priv_mode = '1') THEN
+                                        IF (v_cfg_byte(7) = '0') THEN
                                                 v_fault := '0';
                                         ELSE
                                                 IF (access_type(2) = '1' AND v_cfg_byte(2) = '0') OR
@@ -138,11 +137,7 @@ ARCHITECTURE behavioral OF pmp_unit IS
                 END LOOP;
 
                 IF NOT v_match_found THEN
-                        IF priv_mode = '1' THEN
                                 v_fault := '0';
-                        ELSE
-                                v_fault := '1';
-                        END IF;
                 END IF;
 
                 RETURN v_fault;
@@ -155,7 +150,7 @@ BEGIN
 
         P_FETCH_ACCESS_CHECK : PROCESS (i_fetch_addr, i_pmp_csr)
         BEGIN
-                s_fetch_fault <= check_access(i_fetch_addr, "100", i_pmp_csr.priv_mode, i_pmp_csr);
+                s_fetch_fault <= check_access(i_fetch_addr, "100", i_pmp_csr);
         END PROCESS P_FETCH_ACCESS_CHECK;
 
         P_MEM_ACCESS_CHECK : PROCESS (i_mem_addr, i_mem_write, i_mem_valid, i_pmp_csr)
@@ -168,7 +163,7 @@ BEGIN
                                 v_acc_type := "001";
                         END IF;
 
-                        s_mem_fault <= check_access(i_mem_addr, v_acc_type, i_pmp_csr.priv_mode, i_pmp_csr);
+                        s_mem_fault <= check_access(i_mem_addr, v_acc_type, i_pmp_csr);
                 ELSE
                         s_mem_fault <= '0';
                 END IF;
