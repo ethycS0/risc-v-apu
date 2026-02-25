@@ -79,6 +79,7 @@ ARCHITECTURE structural OF core IS
 			i_clk                   : IN  STD_LOGIC;
 			i_rst                   : IN  STD_LOGIC;
 			i_minstret_increment_wb : IN  STD_LOGIC;
+                        o_msse                  : OUT STD_LOGIC;
 			i_id_ex_bus             : IN  t_id_ex_data;
                         i_mem_ex_trap           : IN  t_mem_ex_fb;
 			i_rd_mem_bus            : IN  t_rd_reg_data;
@@ -148,6 +149,9 @@ ARCHITECTURE structural OF core IS
                         i_mem_write : IN  STD_LOGIC;
                         o_mem_write : OUT STD_LOGIC;
 
+                        i_msse : IN STD_LOGIC;
+                        i_ss_write : IN STD_LOGIC;
+
                         o_fetch_fault : OUT STD_LOGIC;
                         o_mem_fault   : OUT STD_LOGIC
 
@@ -188,6 +192,9 @@ ARCHITECTURE structural OF core IS
         SIGNAL s_pmp_fetch_fault : STD_LOGIC;
         SIGNAL s_pmp_mem_fault : STD_LOGIC;
 
+        SIGNAL s_msse     : STD_LOGIC;
+        SIGNAL s_ss_write : STD_LOGIC := '0';
+
 BEGIN
 	-- Pipeline control signals
 	pipeline_flush <= '1' WHEN s_ex_if_bus.pc_redirect = '1' OR mem_stage_trap.trap /= VALID OR ex_stage_trap = '1' ELSE '0';
@@ -203,6 +210,8 @@ BEGIN
                 o_mem_addr => o_data_addr,
                 i_mem_write => s_mem_write,
                 o_mem_write => o_data_write_en,
+                i_msse  => s_msse,
+                i_ss_write => s_ss_write,
                 o_fetch_fault => s_pmp_fetch_fault,
                 o_mem_fault => s_pmp_mem_fault
         );
@@ -244,6 +253,7 @@ BEGIN
 		i_clk                   => i_clk,
 		i_rst                   => i_rst,
 		i_minstret_increment_wb => minstret_increment,
+                o_msse                  => s_msse,
                 i_mem_ex_trap           => mem_stage_trap,
 		i_id_ex_bus             => r_id_ex_reg,
 		i_rd_mem_bus            => r_ex_mem_reg.rd_bus,

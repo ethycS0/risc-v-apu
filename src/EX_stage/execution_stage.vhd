@@ -32,6 +32,7 @@ ENTITY execution_stage IS
 
 		i_minstret_increment_wb : IN STD_LOGIC;  --! Instruction retired signal from WB stage (for minstret counter)
                 i_mem_ex_trap           : IN t_mem_ex_fb;
+                o_msse                  : OUT STD_LOGIC;
 
 		i_id_ex_bus  : IN t_id_ex_data;                   --! Input bus from ID stage (decoded instruction and operands)
 		i_rd_mem_bus : IN t_rd_reg_data;                  --! Writeback data from MEM stage (for forwarding)
@@ -126,6 +127,7 @@ ARCHITECTURE structural OF execution_stage IS
                         o_lpad_en            : OUT STD_LOGIC;
 			o_mtvec              : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			o_mepc               : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			o_msse               : OUT STD_LOGIC;
 			o_read_data          : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
 		);
 	END COMPONENT csr_unit;
@@ -220,6 +222,7 @@ BEGIN
 		i_rst                => i_rst,
 		i_write_en           => s_csr_write_en,
 		i_minstret_increment => i_minstret_increment_wb,
+                o_msse               => o_msse,
 		i_is_mret            => s_is_mret,
 		i_csr_op             => s_csr_command,
 		i_csr_data           => s_input_a,
@@ -357,7 +360,7 @@ BEGIN
 
 	-- Trap type decoding
 	s_is_mret <= '1' WHEN s_trap_type = TRAP_MRET ELSE '0';
-	s_trap_trigger <= '1' WHEN (s_if_pmp_fault = '1' OR s_target_misaligned ='1' OR s_trap_type = TRAP_CALL OR s_trap_type = TRAP_BREAK OR s_lpad_trap = '1' OR i_mem_ex_trap.trap /= VALID) ELSE '0';
+	s_trap_trigger <= '1' WHEN (s_if_pmp_fault = '1' OR s_target_misaligned ='1' OR s_trap_type = TRAP_CALL OR s_trap_type = TRAP_BREAK OR s_trap_type = TRAP_ILLEGAL OR s_lpad_trap = '1' OR i_mem_ex_trap.trap /= VALID) ELSE '0';
 	
 	-- CSR address mux (use mepc address for MRET, otherwise funct12)
 	s_csr_addr_mux <= x"341" WHEN s_trap_type = TRAP_MRET ELSE i_id_ex_bus.funct12;
@@ -394,6 +397,9 @@ BEGIN
                 ELSIF s_trap_type = TRAP_BREAK THEN
                         s_cause_code <= x"00000003"; 
 
+                ELSIF s_trap_type = TRAP_ILLEGAL THEN
+                        s_cause_code <= x"00000002"; 
+
                 ELSE
                         s_cause_code <= (OTHERS => '0');
                 END IF;
@@ -420,6 +426,9 @@ BEGIN
 
                 ELSIF s_trap_type = TRAP_BREAK THEN
                         s_trap_mtval <= i_id_ex_bus.pc;
+
+                ELSIF s_trap_type = TRAP_ILLEGAL THEN
+                        s_trap_mtval <= x"00000000"; 
 
                 ELSE
                         s_trap_mtval <= (OTHERS => '0');

@@ -27,6 +27,7 @@ ENTITY csr_unit IS
                 o_lpad_en   : OUT STD_LOGIC;                     --| Zicfilp enable status
 		o_mtvec     : OUT STD_LOGIC_VECTOR(31 DOWNTO 0); --! Machine trap vector (trap handler address)
 		o_mepc      : OUT STD_LOGIC_VECTOR(31 DOWNTO 0); --! Machine exception PC (return address)
+                o_msse      : OUT STD_LOGIC;
 		o_read_data : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)  --! CSR read data output
 	);
 END ENTITY csr_unit;
@@ -61,6 +62,11 @@ ARCHITECTURE behavioral OF csr_unit IS
         SIGNAL r_pmpaddr2    :  STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0'); 
         SIGNAL r_pmpaddr3    :  STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0'); 
 
+        SIGNAL r_miselect   : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0');
+        SIGNAL r_mireg      : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0');
+        SIGNAL r_mireg2     : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0');
+        SIGNAL r_pmp_e_bits : STD_LOGIC_VECTOR(3 DOWNTO 0) := (OTHERS => '0');
+
 BEGIN
 
 	--! @brief CSR Read Multiplexer Process
@@ -73,7 +79,6 @@ BEGIN
                 CASE i_csr_addr IS
                         WHEN x"F11" => s_selected_reg_val <= c_mvendorid;
                         WHEN x"301" => s_selected_reg_val <= c_misa_val;
-
                         WHEN x"300" =>
                                 s_selected_reg_val(31 DOWNTO 13) <= (OTHERS => '0');
                                 s_selected_reg_val(12 DOWNTO 11) <= "11";
@@ -98,6 +103,35 @@ BEGIN
                         WHEN x"3B1" => s_selected_reg_val <= r_pmpaddr1;
                         WHEN x"3B2" => s_selected_reg_val <= r_pmpaddr2;
                         WHEN x"3B3" => s_selected_reg_val <= r_pmpaddr3;
+                        WHEN x"350" =>
+                                s_selected_reg_val(31 DOWNTO 2) <= (OTHERS => '0');
+                                s_selected_reg_val(1 DOWNTO 0) <= r_miselect(1 DOWNTO 0);
+                        WHEN x"351" =>
+                                CASE r_miselect(1 DOWNTO 0) IS 
+                                        WHEN "00" => s_selected_reg_val <= r_pmpaddr0;
+                                        WHEN "01" => s_selected_reg_val <= r_pmpaddr1;
+                                        WHEN "10" => s_selected_reg_val <= r_pmpaddr2;
+                                        WHEN "11" => s_selected_reg_val <= r_pmpaddr3;
+                                        WHEN OTHERS => s_selected_reg_val <= (OTHERS => '0');
+                                END CASE;
+                        WHEN x"352" => 
+                                s_selected_reg_val(30 DOWNTO 8) <= (OTHERS => '0');
+                                CASE r_miselect(1 DOWNTO 0) IS
+                                        WHEN "00" =>
+                                                s_selected_reg_val(31) <= r_pmp_e_bits(0);
+                                                s_selected_reg_val(7 DOWNTO 0) <= r_pmpcfg0(7 DOWNTO 0);
+                                        WHEN "01" =>
+                                                s_selected_reg_val(31) <= r_pmp_e_bits(1);
+                                                s_selected_reg_val(7 DOWNTO 0) <= r_pmpcfg0(15 DOWNTO 8);
+                                        WHEN "10" =>
+                                                s_selected_reg_val(31) <= r_pmp_e_bits(2);
+                                                s_selected_reg_val(7 DOWNTO 0) <= r_pmpcfg0(23 DOWNTO 16);
+                                        WHEN "11" =>
+                                                s_selected_reg_val(31) <= r_pmp_e_bits(3);
+                                                s_selected_reg_val(7 DOWNTO 0) <= r_pmpcfg0(31 DOWNTO 24);
+                                        WHEN OTHERS => s_selected_reg_val <= (OTHERS => '0');
+                                END CASE;
+
 
                         WHEN OTHERS => s_selected_reg_val <= (OTHERS => '0');
                 END CASE;
@@ -143,6 +177,8 @@ BEGIN
 			r_minstret <= (OTHERS => '0');
 			r_mscratch <= (OTHERS => '0');
                         r_pmpcfg0 <= (OTHERS => '0');
+                        r_miselect <= (OTHERS => '0');
+                        r_pmp_e_bits <= (OTHERS => '0');
 		ELSIF rising_edge(i_clk) THEN
 
 			-- Trap entry logic (highest priority)
@@ -211,6 +247,43 @@ BEGIN
                                                         r_pmpaddr3 <= s_new_csr_value;
                                                 END IF;
 
+                                        WHEN x"350" =>
+                                                r_miselect(1 DOWNTO 0) <= s_new_csr_value(1 DOWNTO 0);
+
+                                        WHEN x"351" => 
+                                                CASE r_miselect(1 DOWNTO 0) IS
+                                                        WHEN "00" => IF r_pmpcfg0(7) = '0' THEN r_pmpaddr0 <= s_new_csr_value; END IF;
+                                                        WHEN "01" => IF r_pmpcfg0(15) = '0' THEN r_pmpaddr1 <= s_new_csr_value; END IF;
+                                                        WHEN "10" => IF r_pmpcfg0(23) = '0' THEN r_pmpaddr2 <= s_new_csr_value; END IF;
+                                                        WHEN "11" => IF r_pmpcfg0(31) = '0' THEN r_pmpaddr3 <= s_new_csr_value; END IF;
+                                                        WHEN OTHERS => NULL;
+                                                END CASE;
+
+                                        WHEN x"352" => 
+                                                CASE r_miselect(1 DOWNTO 0) IS
+                                                        WHEN "00" =>
+                                                                IF r_pmpcfg0(7) = '0' THEN
+                                                                        r_pmpcfg0(7 DOWNTO 0) <= s_new_csr_value(7 DOWNTO 0);
+                                                                        r_pmp_e_bits(0) <= s_new_csr_value(31);
+                                                                END IF;
+                                                        WHEN "01" =>
+                                                                IF r_pmpcfg0(15) = '0' THEN
+                                                                        r_pmpcfg0(15 DOWNTO 8) <= s_new_csr_value(15 DOWNTO 8);
+                                                                        r_pmp_e_bits(1) <= s_new_csr_value(31);
+                                                                END IF;
+                                                        WHEN "10" =>
+                                                                IF r_pmpcfg0(23) = '0' THEN
+                                                                        r_pmpcfg0(23 DOWNTO 16) <= s_new_csr_value(23 DOWNTO 16);
+                                                                        r_pmp_e_bits(2) <= s_new_csr_value(31);
+                                                                END IF;
+                                                        WHEN "11" =>
+                                                                IF r_pmpcfg0(31) = '0' THEN
+                                                                        r_pmpcfg0(31 DOWNTO 24) <= s_new_csr_value(31 DOWNTO 24);
+                                                                        r_pmp_e_bits(3) <= s_new_csr_value(31);
+                                                                END IF;
+                                                        WHEN OTHERS => NULL;
+                                                END CASE;
+
                                         WHEN OTHERS => NULL;
                                         END CASE;
 			END IF;
@@ -231,7 +304,7 @@ BEGIN
                 s_pmp_changed <= '0';
                 IF i_write_en = '1' THEN
                         CASE i_csr_addr IS
-                                WHEN x"3A0" | x"3B0" | x"3B1" | x"3B2" | x"3B3" =>
+                                WHEN x"3A0" | x"3B0" | x"3B1" | x"3B2" | x"3B3" | x"351" | x"352" =>
                                         s_pmp_changed <= '1';
                                 WHEN OTHERS =>
                                         s_pmp_changed <= '0';
@@ -244,6 +317,7 @@ BEGIN
 	o_mtvec <= r_mtvec;
         o_lpad_en <= r_mseccfg(0);
 	o_mepc <= r_mepc;
+        o_msse <= r_mseccfg(2);  
 	o_read_data <= s_selected_reg_val;
 
         o_pmp_changed <= s_pmp_changed;
@@ -252,6 +326,7 @@ BEGIN
         o_pmp_csr.pmpaddr1 <= r_pmpaddr1;
         o_pmp_csr.pmpaddr2 <= r_pmpaddr2;
         o_pmp_csr.pmpaddr3 <= r_pmpaddr3;
+        o_pmp_csr.pmp_e_bits <= r_pmp_e_bits;
 
 END ARCHITECTURE behavioral;
 

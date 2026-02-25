@@ -143,6 +143,11 @@ BEGIN
 						NULL;
 				END CASE;
 
+                        WHEN OP_ILLEGAL => 
+-- 🚾                                o_trap_type <= TRAP_ILLEGAL;
+				o_alu_command <= ALU_ADD;
+				o_csr_command <= CSR_ILLEGAL;
+
 			WHEN OTHERS =>  -- Illegal or unsupported operation
 				o_alu_command <= ALU_ADD;
 				o_csr_command <= CSR_ILLEGAL;

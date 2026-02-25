@@ -81,6 +81,7 @@ PACKAGE rv32i_pkg IS
                 TRAP_NONE,
                 TRAP_CALL,          
                 TRAP_BREAK,         
+                TRAP_ILLEGAL,         
                 TRAP_MRET           
         );
 
@@ -248,6 +249,7 @@ PACKAGE rv32i_pkg IS
                 pmpaddr1    : STD_LOGIC_VECTOR(31 DOWNTO 0);
                 pmpaddr2    : STD_LOGIC_VECTOR(31 DOWNTO 0);
                 pmpaddr3    : STD_LOGIC_VECTOR(31 DOWNTO 0);
+                pmp_e_bits  : STD_LOGIC_VECTOR(3 DOWNTO 0);
         END RECORD t_ex_pmp_data;
 
 

@@ -17,6 +17,9 @@ ENTITY pmp_unit IS
 		i_mem_write : IN  STD_LOGIC;
 		o_mem_write : OUT STD_LOGIC;
 
+                i_msse : IN STD_LOGIC;
+                i_ss_write : IN STD_LOGIC;
+
 		o_fetch_fault : OUT STD_LOGIC;
 		o_mem_fault   : OUT STD_LOGIC
 
@@ -27,7 +30,9 @@ ARCHITECTURE behavioral OF pmp_unit IS
         FUNCTION check_access (
                 addr : STD_LOGIC_VECTOR(31 DOWNTO 0);
                 access_type : STD_LOGIC_VECTOR(2 DOWNTO 0);
-                pmp_csr : t_ex_pmp_data
+                pmp_csr : t_ex_pmp_data;
+                msse : STD_LOGIC;
+                ss_write : STD_LOGIC
         ) RETURN STD_LOGIC IS
 
                 VARIABLE v_fault : STD_LOGIC := '0';
@@ -43,6 +48,7 @@ ARCHITECTURE behavioral OF pmp_unit IS
                 VARIABLE v_napot_mask : UNSIGNED(29 DOWNTO 0);
                 VARIABLE v_pmp_bits : UNSIGNED(29 DOWNTO 0);
                 VARIABLE v_addr_bits : UNSIGNED(31 DOWNTO 2);
+                VARIABLE v_is_ss_region : BOOLEAN;
 
                 TYPE t_addr_array IS ARRAY (0 TO 3) OF STD_LOGIC_VECTOR(31 DOWNTO 0);
                 VARIABLE v_addrs : t_addr_array;
@@ -120,16 +126,32 @@ ARCHITECTURE behavioral OF pmp_unit IS
                                 END CASE;
 
                                 IF v_match_found THEN
-
-                                        IF (v_cfg_byte(7) = '0') THEN
-                                                v_fault := '0';
-                                        ELSE
-                                                IF (access_type(2) = '1' AND v_cfg_byte(2) = '0') OR
-                                                        (access_type(1) = '1' AND v_cfg_byte(1) = '0') OR
-                                                        (access_type(0) = '1' AND v_cfg_byte(0) = '0') THEN
-                                                        v_fault := '1';
-                                                ELSE
+                                        v_is_ss_region := (pmp_csr.pmp_e_bits(i) = '1') AND 
+                                                (v_cfg_byte(2 DOWNTO 0) = "010") AND 
+                                                (msse = '1');
+                                        IF v_is_ss_region THEN
+                                                IF access_type(2) = '1' THEN
+                                                        v_fault := '1'; 
+                                                ELSIF access_type(1) = '1' THEN
+                                                        IF ss_write = '1' THEN
+                                                                v_fault := '0'; 
+                                                        ELSE
+                                                                v_fault := '1'; 
+                                                        END IF;
+                                                ELSIF access_type(0) = '1' THEN
                                                         v_fault := '0';
+                                                END IF;
+                                        ELSE
+                                                IF (v_cfg_byte(7) = '0') THEN
+                                                        v_fault := '0';
+                                                ELSE
+                                                        IF (access_type(2) = '1' AND v_cfg_byte(2) = '0') OR
+                                                                (access_type(1) = '1' AND v_cfg_byte(1) = '0') OR
+                                                                (access_type(0) = '1' AND v_cfg_byte(0) = '0') THEN
+                                                                v_fault := '1';
+                                                        ELSE
+                                                                v_fault := '0';
+                                                        END IF;
                                                 END IF;
                                         END IF;
                                 END IF;
@@ -137,7 +159,11 @@ ARCHITECTURE behavioral OF pmp_unit IS
                 END LOOP;
 
                 IF NOT v_match_found THEN
+                        IF access_type(1) = '1' AND ss_write = '1' THEN
+                                v_fault := '1';
+                        ELSE
                                 v_fault := '0';
+                        END IF;
                 END IF;
 
                 RETURN v_fault;
@@ -150,10 +176,10 @@ BEGIN
 
         P_FETCH_ACCESS_CHECK : PROCESS (i_fetch_addr, i_pmp_csr)
         BEGIN
-                s_fetch_fault <= check_access(i_fetch_addr, "100", i_pmp_csr);
+                s_fetch_fault <= check_access(i_fetch_addr, "100", i_pmp_csr, '0', '0');
         END PROCESS P_FETCH_ACCESS_CHECK;
 
-        P_MEM_ACCESS_CHECK : PROCESS (i_mem_addr, i_mem_write, i_mem_valid, i_pmp_csr)
+        P_MEM_ACCESS_CHECK : PROCESS (i_mem_addr, i_mem_write, i_mem_valid, i_pmp_csr, i_msse, i_ss_write)
                 VARIABLE v_acc_type : STD_LOGIC_VECTOR(2 DOWNTO 0);
         BEGIN
                 IF i_mem_valid = '1' THEN
@@ -163,7 +189,7 @@ BEGIN
                                 v_acc_type := "001";
                         END IF;
 
-                        s_mem_fault <= check_access(i_mem_addr, v_acc_type, i_pmp_csr);
+                        s_mem_fault <= check_access(i_mem_addr, v_acc_type, i_pmp_csr, i_msse, i_ss_write);
                 ELSE
                         s_mem_fault <= '0';
                 END IF;
