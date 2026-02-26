@@ -142,15 +142,19 @@ ARCHITECTURE behavioral OF pmp_unit IS
                                                         v_fault := '0';
                                                 END IF;
                                         ELSE
-                                                IF (v_cfg_byte(7) = '0') THEN
-                                                        v_fault := '0';
+                                                IF ss_instr = '1' THEN
+                                                        v_fault := '1';
                                                 ELSE
-                                                        IF (access_type(2) = '1' AND v_cfg_byte(2) = '0') OR
-                                                                (access_type(1) = '1' AND v_cfg_byte(1) = '0') OR
-                                                                (access_type(0) = '1' AND v_cfg_byte(0) = '0') THEN
-                                                                v_fault := '1';
-                                                        ELSE
+                                                        IF (v_cfg_byte(7) = '0') THEN
                                                                 v_fault := '0';
+                                                        ELSE
+                                                                IF (access_type(2) = '1' AND v_cfg_byte(2) = '0') OR
+                                                                        (access_type(1) = '1' AND v_cfg_byte(1) = '0') OR
+                                                                        (access_type(0) = '1' AND v_cfg_byte(0) = '0') THEN
+                                                                        v_fault := '1';
+                                                                ELSE
+                                                                        v_fault := '0';
+                                                                END IF;
                                                         END IF;
                                                 END IF;
                                         END IF;
@@ -159,7 +163,7 @@ ARCHITECTURE behavioral OF pmp_unit IS
                 END LOOP;
 
                 IF NOT v_match_found THEN
-                        IF access_type(1) = '1' AND ss_instr = '1' THEN
+                        IF ss_instr = '1' THEN
                                 v_fault := '1';
                         ELSE
                                 v_fault := '0';
@@ -176,7 +180,7 @@ BEGIN
 
         P_FETCH_ACCESS_CHECK : PROCESS (i_fetch_addr, i_pmp_csr)
         BEGIN
-                s_fetch_fault <= check_access(i_fetch_addr, "100", i_pmp_csr, '0', '0');
+                s_fetch_fault <= check_access(i_fetch_addr, "100", i_pmp_csr, i_msse, '0');
         END PROCESS P_FETCH_ACCESS_CHECK;
 
         P_MEM_ACCESS_CHECK : PROCESS (i_mem_addr, i_mem_write, i_mem_valid, i_pmp_csr, i_msse, i_ss_instr)

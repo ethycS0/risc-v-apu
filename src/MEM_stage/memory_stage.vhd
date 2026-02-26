@@ -11,6 +11,7 @@ ENTITY memory_stage IS
 		o_mem_byte_en    : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);  --! Byte enable mask (selects active bytes)
 
                 o_mem_valid : OUT STD_LOGIC;
+                o_ss_instr : OUT STD_LOGIC;
 
                 i_pmp_fault  : IN STD_LOGIC;
 		i_ex_mem_bus : IN  t_ex_mem_data; --! Input bus from Execute stage (ALU result, control signals)
@@ -65,45 +66,48 @@ BEGIN
                                 END IF;
                         END IF;
                 END IF;
-
         END PROCESS P_FAULT_TAG;
 
-
-	P_STORE : PROCESS (i_ex_mem_bus.mem_write, i_ex_mem_bus.funct3, i_ex_mem_bus.rd_bus.rd_data, i_ex_mem_bus.rs2_data, s_fault_tag)
+	P_STORE : PROCESS (ALL)
 	BEGIN
 		o_mem_byte_en <= "0000";
 		o_mem_write_data <= i_ex_mem_bus.rs2_data;
 
 		IF i_ex_mem_bus.mem_write = '1' AND s_fault_tag = VALID THEN
-			CASE i_ex_mem_bus.funct3 IS
-				WHEN "010" =>  -- SW: Store Word (32-bit)
-					o_mem_byte_en <= "1111";
-					o_mem_write_data <= i_ex_mem_bus.rs2_data;
+                        IF i_ex_mem_bus.ss_instr = '1' THEN
+                                o_mem_byte_en <= "1111";
+                                o_mem_write_data <= i_ex_mem_bus.rs2_data;
+                        ELSE
+                                CASE i_ex_mem_bus.funct3 IS
+                                        WHEN "010" =>  -- SW: Store Word (32-bit)
+                                                o_mem_byte_en <= "1111";
+                                                o_mem_write_data <= i_ex_mem_bus.rs2_data;
 
-				WHEN "001" =>  -- SH: Store Halfword (16-bit)
-					o_mem_write_data <= i_ex_mem_bus.rs2_data(15 DOWNTO 0) & i_ex_mem_bus.rs2_data(15 DOWNTO 0);
+                                        WHEN "001" =>  -- SH: Store Halfword (16-bit)
+                                                o_mem_write_data <= i_ex_mem_bus.rs2_data(15 DOWNTO 0) & i_ex_mem_bus.rs2_data(15 DOWNTO 0);
 
-					IF i_ex_mem_bus.rd_bus.rd_data(1) = '0' THEN
-						o_mem_byte_en <= "0011";  -- Lower halfword (bytes 1:0)
-					ELSE
-						o_mem_byte_en <= "1100";  -- Upper halfword (bytes 3:2)
-					END IF;
+                                                IF i_ex_mem_bus.rd_bus.rd_data(1) = '0' THEN
+                                                        o_mem_byte_en <= "0011";  -- Lower halfword (bytes 1:0)
+                                                ELSE
+                                                        o_mem_byte_en <= "1100";  -- Upper halfword (bytes 3:2)
+                                                END IF;
 
-				WHEN "000" =>  -- SB: Store Byte (8-bit)
-					o_mem_write_data <= i_ex_mem_bus.rs2_data(7 DOWNTO 0) & i_ex_mem_bus.rs2_data(7 DOWNTO 0) &
-					                    i_ex_mem_bus.rs2_data(7 DOWNTO 0) & i_ex_mem_bus.rs2_data(7 DOWNTO 0);
+                                        WHEN "000" =>  -- SB: Store Byte (8-bit)
+                                                o_mem_write_data <= i_ex_mem_bus.rs2_data(7 DOWNTO 0) & i_ex_mem_bus.rs2_data(7 DOWNTO 0) &
+                                                                    i_ex_mem_bus.rs2_data(7 DOWNTO 0) & i_ex_mem_bus.rs2_data(7 DOWNTO 0);
 
-					CASE i_ex_mem_bus.rd_bus.rd_data(1 DOWNTO 0) IS
-						WHEN "00" => o_mem_byte_en <= "0001";  -- Byte 0
-						WHEN "01" => o_mem_byte_en <= "0010";  -- Byte 1
-						WHEN "10" => o_mem_byte_en <= "0100";  -- Byte 2
-						WHEN "11" => o_mem_byte_en <= "1000";  -- Byte 3
-						WHEN OTHERS => o_mem_byte_en <= "0000";
-					END CASE;
+                                                CASE i_ex_mem_bus.rd_bus.rd_data(1 DOWNTO 0) IS
+                                                        WHEN "00" => o_mem_byte_en <= "0001";  -- Byte 0
+                                                        WHEN "01" => o_mem_byte_en <= "0010";  -- Byte 1
+                                                        WHEN "10" => o_mem_byte_en <= "0100";  -- Byte 2
+                                                        WHEN "11" => o_mem_byte_en <= "1000";  -- Byte 3
+                                                        WHEN OTHERS => o_mem_byte_en <= "0000";
+                                                END CASE;
 
-				WHEN OTHERS =>  -- Invalid or load operation
-					o_mem_byte_en <= "0000";
-			END CASE;
+                                        WHEN OTHERS =>  -- Invalid or load operation
+                                                o_mem_byte_en <= "0000";
+                                END CASE;
+                        END IF;
 		END IF;
 	END PROCESS P_STORE;
 
@@ -115,7 +119,7 @@ BEGIN
 	o_mem_wb_bus.funct3 <= i_ex_mem_bus.funct3;
 
 	o_mem_wb_bus.rd_bus.rd_addr <= i_ex_mem_bus.rd_bus.rd_addr;
-	o_mem_wb_bus.rd_bus.rd_data <= i_ex_mem_bus.rd_bus.rd_data;
+        o_mem_wb_bus.rd_bus.rd_data <= i_ex_mem_bus.rs2_data WHEN (i_ex_mem_bus.ss_instr = '1' AND i_ex_mem_bus.mem_read = '1') ELSE i_ex_mem_bus.rd_bus.rd_data;
         o_mem_wb_bus.rd_bus.reg_write_en <= i_ex_mem_bus.rd_bus.reg_write_en WHEN s_fault_tag = VALID ELSE '0';
 
         o_mem_wb_bus.csr_bus.csr_addr <= i_ex_mem_bus.csr_bus.csr_addr;
@@ -124,6 +128,9 @@ BEGIN
 
         o_mem_wb_bus.fault_tag <= s_fault_tag;
         o_mem_wb_bus.pc <= i_ex_mem_bus.pc;
+
+        o_mem_wb_bus.ss_instr <= '1' WHEN (i_ex_mem_bus.ss_instr = '1' AND i_ex_mem_bus.mem_read = '1') ELSE '0';
+        o_ss_instr <= i_ex_mem_bus.ss_instr;
 
 END ARCHITECTURE structural;
 

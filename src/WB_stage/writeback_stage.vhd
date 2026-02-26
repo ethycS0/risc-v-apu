@@ -30,7 +30,16 @@ BEGIN
                 o_wb_ex_fb.trap <= '0';
                 o_wb_ex_fb.mret <= '0';
 
-                IF i_mem_wb_bus.fault_tag = IF_ACCESS_FAULT THEN
+                IF i_mem_wb_bus.fault_tag = VALID AND i_mem_wb_bus.ss_instr = '1' THEN
+                        IF s_read_data /= i_mem_wb_bus.rd_bus.rd_data THEN
+                                o_wb_ex_fb.mcause <= STD_LOGIC_VECTOR(to_unsigned(18, 32));
+                                o_wb_ex_fb.mtval  <= (OTHERS => '0');
+                                o_wb_ex_fb.mepc   <= i_mem_wb_bus.pc;
+                                o_wb_ex_fb.trap   <= '1';
+                                s_fault_tag       <= WB_SHADOW_STACK_FAULT;
+                        END IF;
+
+                ELSIF i_mem_wb_bus.fault_tag = IF_ACCESS_FAULT THEN
                         o_wb_ex_fb.mcause <= STD_LOGIC_VECTOR(to_unsigned(1, 32));
                         o_wb_ex_fb.mtval <= i_mem_wb_bus.pc;
                         o_wb_ex_fb.mepc <= i_mem_wb_bus.pc;
@@ -139,7 +148,7 @@ BEGIN
 
 		END CASE;
 	END PROCESS P_LOAD;
-
+        
 	P_RD_WB_MUX : PROCESS (ALL)
 	BEGIN
 		CASE i_mem_wb_bus.wb_src IS

@@ -97,7 +97,8 @@ PACKAGE rv32i_pkg IS
                 MEM_L_MISALIGNED,
                 MEM_S_MISALIGNED,
                 MEM_L_ACCESS_FAULT,
-                MEM_S_ACCESS_FAULT
+                MEM_S_ACCESS_FAULT,
+                WB_SHADOW_STACK_FAULT
         );
 
         --! ALU output status flags.
@@ -208,6 +209,7 @@ PACKAGE rv32i_pkg IS
                 csr_bus                 : t_csr_reg_data;
                 rs2_data                : STD_LOGIC_VECTOR(31 DOWNTO 0); --! Data to be stored (STORE instructions)
                 fault_tag               : t_fault_tag;                     --| EX: Landing Pad
+                ss_instr                : STD_LOGIC;
                 pc                      : STD_LOGIC_VECTOR(31 DOWNTO 0); --! PC
                 pc4                     : STD_LOGIC_VECTOR(31 DOWNTO 0); --! Next PC
                 funct3                  : STD_LOGIC_VECTOR(2 DOWNTO 0);  --! Data width (Byte/Half/Word)
@@ -221,6 +223,7 @@ PACKAGE rv32i_pkg IS
                 csr_bus                 => C_CSR_BUS_RESET,
                 rs2_data                => (OTHERS => '0'),
                 fault_tag               => VALID,
+                ss_instr                => '0',
                 pc                      => (OTHERS => '0'),
                 pc4                     => (OTHERS => '0'),
                 funct3                  => (OTHERS => '0'),
@@ -234,6 +237,7 @@ PACKAGE rv32i_pkg IS
                 rd_bus                  : t_rd_reg_data;                 --! Register file write details
                 csr_bus                 : t_csr_reg_data;
                 fault_tag               : t_fault_tag;                     --| EX: Landing Pad
+                ss_instr                : STD_LOGIC;
                 pc                      : STD_LOGIC_VECTOR(31 DOWNTO 0); --! PC
                 pc4                     : STD_LOGIC_VECTOR(31 DOWNTO 0); --! PC+4
                 funct3                  : STD_LOGIC_VECTOR(2 DOWNTO 0);  --! Load extension mode
@@ -244,6 +248,7 @@ PACKAGE rv32i_pkg IS
                 rd_bus                  => C_RD_BUS_RESET,
                 csr_bus                 => C_CSR_BUS_RESET,
                 fault_tag               => VALID,
+                ss_instr                => '0',
                 pc                      => (OTHERS => '0'),
                 pc4                     => (OTHERS => '0'),
                 funct3                  => (OTHERS => '0'),

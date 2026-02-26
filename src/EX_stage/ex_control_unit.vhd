@@ -6,6 +6,7 @@ USE work.rv32i_pkg.ALL;
 ENTITY ex_control_unit IS
 	PORT (
 		i_opr_type   : IN t_OprType;
+                i_reg_write_en : IN STD_LOGIC;
 		i_funct3     : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
 		i_funct12    : IN STD_LOGIC_VECTOR(11 DOWNTO 0);
 		i_src_a_data : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -107,9 +108,13 @@ BEGIN
                                         WHEN "100" =>
                                                 IF i_funct12 = "110011011100" THEN
                                                         o_csr_command <= CSR_SSR;
+                                                        IF i_reg_write_en = '1' THEN
+                                                                o_csr_write_en <= '0';
+                                                        ELSE
+                                                                o_csr_write_en <= '1';
+                                                        END IF;
                                                 ELSIF i_funct12(11 DOWNTO 5) = "1100111" THEN
                                                         o_csr_command <= CSR_SSW;
-							o_csr_write_en <= '1';
                                                 END IF;
 
 					WHEN OTHERS =>

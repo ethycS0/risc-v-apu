@@ -42,6 +42,7 @@ ARCHITECTURE structural OF execution_stage IS
 	COMPONENT ex_control_unit IS
 		PORT (
 			i_opr_type     : IN  t_OprType;
+                        i_reg_write_en : IN STD_LOGIC;
 			i_funct3       : IN  STD_LOGIC_VECTOR(2 DOWNTO 0);
 			i_funct12      : IN  STD_LOGIC_VECTOR(11 DOWNTO 0);
 			i_src_a_data   : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -130,6 +131,8 @@ ARCHITECTURE structural OF execution_stage IS
 	SIGNAL s_fwd_b_select   : t_Forward;
 	SIGNAL s_csr_fwd_select : t_Forward;
 
+        SIGNAL s_ss_instr : STD_LOGIC;
+
 	SIGNAL s_input_a              : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL s_input_b              : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL s_rs2_data_fwd         : STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -154,6 +157,7 @@ BEGIN
 	U_EX_DECODE_UNIT : ex_control_unit
 	PORT MAP(
 		i_opr_type     => i_id_ex_bus.opr_type,
+                i_reg_write_en => i_id_ex_bus.reg_write,
 		i_funct3       => i_id_ex_bus.funct3,
 		i_funct12      => i_id_ex_bus.funct12,
 		i_src_a_data   => s_input_a,
@@ -262,7 +266,19 @@ BEGIN
 
 	END PROCESS;
 
-	s_csr_addr_mux <= x"341" WHEN s_trap_type = TRAP_MRET ELSE i_id_ex_bus.funct12;
+        P_CSR_ADDR_OVERRIDE : PROCESS (ALL)
+        BEGIN
+                IF s_trap_type = TRAP_MRET THEN
+                        s_csr_addr_mux <= x"341";
+                ELSIF s_csr_command = CSR_SSW OR s_csr_command = CSR_SSR THEN
+                        s_csr_addr_mux <= x"011";
+                ELSE
+                        s_csr_addr_mux <= i_id_ex_bus.funct12;
+                END IF;
+
+        END PROCESS P_CSR_ADDR_OVERRIDE;
+
+
 	P_CSR_FWD_MUX : PROCESS (ALL)
 	BEGIN
 		CASE s_csr_fwd_select IS
@@ -275,6 +291,7 @@ BEGIN
         -- Calculation
 	P_CSR_ALU : PROCESS (ALL)
 	BEGIN
+                s_ss_instr <= '0';
 		CASE s_csr_command IS
 			WHEN CSR_RW =>
 				s_new_csr_value <= s_input_a;
@@ -287,9 +304,11 @@ BEGIN
 
 			WHEN CSR_SSW =>
 				s_new_csr_value <= STD_LOGIC_VECTOR(unsigned(s_actual_csr_read_data) - 4);
+                                s_ss_instr <= '1';
 
 			WHEN CSR_SSR =>
 				s_new_csr_value <= STD_LOGIC_VECTOR(unsigned(s_actual_csr_read_data) + 4);
+                                s_ss_instr <= '1';
 
 			WHEN OTHERS =>
 				s_new_csr_value <= s_actual_csr_read_data;
@@ -310,7 +329,11 @@ BEGIN
 			o_ex_mem_bus.rd_bus.rd_data <= i_id_ex_bus.pc4;
 
 		ELSIF i_id_ex_bus.opr_unit = UNIT_CSR THEN
-			o_ex_mem_bus.rd_bus.rd_data <= s_actual_csr_read_data;
+                        IF s_csr_command = CSR_SSW THEN
+                                o_ex_mem_bus.rd_bus.rd_data <= s_new_csr_value;
+                        ELSE
+                                o_ex_mem_bus.rd_bus.rd_data <= s_actual_csr_read_data;
+                        END IF;
 
 		ELSE
 			o_ex_mem_bus.rd_bus.rd_data <= s_alu_result;
@@ -392,7 +415,7 @@ BEGIN
 	o_ex_mem_bus.rd_bus.reg_write_en  <= i_id_ex_bus.reg_write WHEN s_fault_tag = VALID ELSE '0';
 	o_ex_mem_bus.csr_bus.csr_write_en <= s_csr_write_en WHEN s_fault_tag = VALID ELSE '0';
 
-	o_ex_mem_bus.rs2_data             <= s_rs2_data_fwd;
+        o_ex_mem_bus.rs2_data             <= s_input_a WHEN (s_ss_instr = '1' AND i_id_ex_bus.mem_read = '1') ELSE s_rs2_data_fwd;
 	o_ex_mem_bus.pc4                  <= i_id_ex_bus.pc4;
 	o_ex_mem_bus.wb_src               <= i_id_ex_bus.wb_src;
 	o_ex_mem_bus.rd_bus.rd_addr       <= i_id_ex_bus.rd_addr;
@@ -403,6 +426,7 @@ BEGIN
 	o_ex_mem_bus.csr_bus.csr_addr     <= s_csr_addr_mux;
         o_ex_mem_bus.fault_tag <=s_fault_tag;
 
+        o_ex_mem_bus.ss_instr <= s_ss_instr WHEN s_fault_tag = VALID ELSE '0';
         o_pipeline_flush <= '1' WHEN (s_fault_tag /= VALID OR o_ex_if_bus.pc_redirect = '1') ELSE '0';
 
 END ARCHITECTURE structural;

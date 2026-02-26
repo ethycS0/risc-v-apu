@@ -79,6 +79,7 @@ ARCHITECTURE structural OF core IS
                         o_mem_byte_en    : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);  --! Byte enable mask (selects active bytes)
 
                         o_mem_valid : OUT STD_LOGIC;
+                        o_ss_instr : OUT STD_LOGIC;
 
                         i_pmp_fault  : IN STD_LOGIC;
                         i_ex_mem_bus : IN  t_ex_mem_data; --! Input bus from Execute stage (ALU result, control signals)
@@ -167,7 +168,7 @@ ARCHITECTURE structural OF core IS
         SIGNAL s_pmp_mem_fault : STD_LOGIC;
 
         SIGNAL s_msse     : STD_LOGIC;
-        SIGNAL s_ss_instr : STD_LOGIC := '0';
+        SIGNAL s_ss_instr : STD_LOGIC;
 
 BEGIN
 	-- Pipeline control signals
@@ -248,6 +249,7 @@ BEGIN
 		o_mem_write_en   => s_mem_write,
 		o_mem_byte_en    => o_data_byte_en,
                 o_mem_valid      => s_mem_valid,
+                o_ss_instr       => s_ss_instr,
                 i_pmp_fault      => s_pmp_mem_fault,
 		i_ex_mem_bus     => r_ex_mem_reg,
 		o_mem_wb_bus     => s_mem_wb_bus
