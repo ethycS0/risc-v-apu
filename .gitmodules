@@ -1,0 +1,3 @@
+[submodule "verification/riscof/riscv-arch-test"]
+    path = verification/riscof/riscv-arch-test
+    url = https://github.com/riscv/riscv-arch-test.git

@@ -54,7 +54,7 @@ BEGIN
 	--! - I-type ALU (0010011): ADDI, SLTI, SLTIU, XORI, ORI, ANDI, SLLI, SRLI, SRAI
 	--! - R-type ALU (0110011): ADD, SUB, SLL, SLT, SLTU, XOR, SRL, SRA, OR, AND
 	--! - System/CSR (1110011): CSRRW, CSRRS, CSRRC, CSRRWI, CSRRSI, CSRRCI
-	U_CONTROL_SIGNAL_GEN : PROCESS (i_instruction)
+	U_CONTROL_SIGNAL_GEN : PROCESS (ALL)
 	BEGIN
 		-- Default control signal values (safe defaults for illegal/unknown instructions)
 		o_reg_write <= '0';
@@ -132,15 +132,35 @@ BEGIN
 				o_opr_type <= OP_R_TYPE;
 
 			WHEN "1110011" =>  -- System/CSR instructions
-				o_opr_unit <= UNIT_CSR;
-				o_opr_type <= OP_SYSTEM;
-				o_reg_write <= '1';
-				IF i_instruction(14) = '1' THEN  -- Immediate variant (CSRRWI, CSRRSI, CSRRCI)
-					o_src_a <= SRC_A_UIMM;
-				ELSE  -- Register variant (CSRRW, CSRRS, CSRRC)
-					o_src_a <= SRC_A_RS1;
-				END IF;
-				o_src_b <= SRC_B_IMM;
+                                IF i_instruction(14 DOWNTO 12) = "100" THEN
+                                        o_opr_unit <= UNIT_CSR;
+                                        o_opr_type <= OP_SYSTEM;
+                                        IF i_instruction(31 DOWNTO 25) = "1100111" THEN
+                                                o_mem_write <= '1';
+                                                o_src_a <= SRC_A_RS1;
+                                                o_src_b <= SRC_B_RS2;
+                                        ELSIF i_instruction(31 DOWNTO 20) = "110011011100" THEN
+                                                IF i_instruction(11 DOWNTO 7) = "00000" THEN
+                                                        o_mem_read <= '1';
+                                                        o_src_a <= SRC_A_RS1;
+                                                        o_src_b <= SRC_B_RS2;
+                                                ELSE
+                                                        o_reg_write <= '1';
+                                                        o_src_a <= SRC_A_RS1;
+                                                        o_src_b <= SRC_B_RS2;
+                                                END IF;
+                                        END IF;
+                                ELSE
+                                        o_opr_type <= OP_SYSTEM;
+                                        o_opr_unit <= UNIT_CSR;
+                                        o_reg_write <= '1';
+                                        IF i_instruction(14) = '1' THEN  
+                                                o_src_a <= SRC_A_UIMM;
+                                        ELSE  
+                                                o_src_a <= SRC_A_RS1;
+                                        END IF;
+                                        o_src_b <= SRC_B_IMM;
+                                END IF;
 
 			WHEN OTHERS =>  -- Illegal or unsupported opcode
 				NULL;

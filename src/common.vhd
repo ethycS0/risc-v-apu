@@ -72,23 +72,10 @@ PACKAGE rv32i_pkg IS
                 CSR_RW,              
                 CSR_RS,              
                 CSR_RC,              
+                CSR_SSW,
+                CSR_SSR,
                 CSR_TRAP,            
                 CSR_ILLEGAL          
-        );
-
-        --! Internal Trap classification.
-        TYPE t_TrapType IS (
-                TRAP_NONE,
-                TRAP_CALL,          
-                TRAP_BREAK,         
-                TRAP_ILLEGAL,         
-                TRAP_MRET           
-        );
-
-        TYPE t_if_trap IS (
-                VALID,
-                ELP,
-                PMP_FAULT
         );
 
         --! Forwarding Unit data path selection.
@@ -98,12 +85,19 @@ PACKAGE rv32i_pkg IS
                 FWD_FROM_MEM_WB    
         );
 
-        TYPE t_mem_trap IS (
+        TYPE t_fault_tag IS (
                 VALID,
-                L_MISALIGNED,
-                S_MISALIGNED,
-                L_ACCESS_FAULT,
-                S_ACCESS_FAULT
+                TRAP_ECALL,          
+                TRAP_EBREAK,         
+                TRAP_MRET,           
+                IF_ACCESS_FAULT,
+                ID_INVALID_INSTR,
+                EX_REDIR_MISALIGNED,
+                EX_LPAD_FAULT,
+                MEM_L_MISALIGNED,
+                MEM_S_MISALIGNED,
+                MEM_L_ACCESS_FAULT,
+                MEM_S_ACCESS_FAULT
         );
 
         --! ALU output status flags.
@@ -128,19 +122,33 @@ PACKAGE rv32i_pkg IS
                 rd_data                 => (OTHERS => '0')
         );
 
+        TYPE t_csr_reg_data IS RECORD 
+                csr_addr        : STD_LOGIC_VECTOR(11 DOWNTO 0);
+                csr_data        : STD_LOGIC_VECTOR(31 DOWNTO 0);
+                csr_write_en    : STD_LOGIC;
+        END RECORD t_csr_reg_data;
+
+        CONSTANT C_CSR_BUS_RESET : t_csr_reg_data := (
+                csr_write_en => '0',
+                csr_addr => x"301",
+                csr_data => x"40000100"
+        );
+
         --! IF/ID Pipeline Register Record.
         TYPE t_if_id_data IS RECORD
                 instruction             : STD_LOGIC_VECTOR(31 DOWNTO 0); --! Raw 32-bit instruction
                 pc                      : STD_LOGIC_VECTOR(31 DOWNTO 0); --! PC of current instruction
                 pc4                     : STD_LOGIC_VECTOR(31 DOWNTO 0); --! PC + 4 (Next Seq PC)
-                instr_tag               : t_if_trap;                     --| EX: Landing Pad
+                elp_active              : STD_LOGIC;
+                fault_tag               : t_fault_tag;                     --| EX: Landing Pad
         END RECORD t_if_id_data;
 
         CONSTANT C_IF_ID_RESET : t_if_id_data := (
                 instruction             => C_NOP,
                 pc                      => (OTHERS => '0'),
                 pc4                     => (OTHERS => '0'),
-                instr_tag               => VALID
+                elp_active              => '0',
+                fault_tag               => VALID
         );
 
         --! ID/EX Pipeline Register Record.
@@ -153,7 +161,8 @@ PACKAGE rv32i_pkg IS
                 src_b                   : t_SrcB;                        --! EX: ALU Operand B select
                 opr_type                : t_OprType;                     --! EX: Operation Category
                 opr_unit                : t_OprUnit;                     --! EX: Functional Unit Select
-                instr_tag               : t_if_trap;                     --| EX: Landing Pad
+                fault_tag               : t_fault_tag;                     --| EX: Landing Pad
+                elp_active              : STD_LOGIC;
                 
                 immediate               : STD_LOGIC_VECTOR(31 DOWNTO 0); --! Sign-Extended Immediate
                 rs1_data                : STD_LOGIC_VECTOR(31 DOWNTO 0); --! Read Data 1 from RegFile
@@ -178,7 +187,8 @@ PACKAGE rv32i_pkg IS
                 src_b                   => SRC_B_RS2,
                 opr_type                => OP_R_TYPE,
                 opr_unit                => UNIT_ALU,
-                instr_tag               => VALID,
+                fault_tag               => VALID,
+                elp_active              => '0',
                 immediate               => (OTHERS => '0'),
                 rs1_data                => (OTHERS => '0'),
                 rs2_data                => (OTHERS => '0'),
@@ -195,7 +205,9 @@ PACKAGE rv32i_pkg IS
         --! EX/MEM Pipeline Register Record.
         TYPE t_ex_mem_data IS RECORD
                 rd_bus                  : t_rd_reg_data;                 --! Register file write details
+                csr_bus                 : t_csr_reg_data;
                 rs2_data                : STD_LOGIC_VECTOR(31 DOWNTO 0); --! Data to be stored (STORE instructions)
+                fault_tag               : t_fault_tag;                     --| EX: Landing Pad
                 pc                      : STD_LOGIC_VECTOR(31 DOWNTO 0); --! PC
                 pc4                     : STD_LOGIC_VECTOR(31 DOWNTO 0); --! Next PC
                 funct3                  : STD_LOGIC_VECTOR(2 DOWNTO 0);  --! Data width (Byte/Half/Word)
@@ -206,7 +218,9 @@ PACKAGE rv32i_pkg IS
 
         CONSTANT C_EX_MEM_RESET : t_ex_mem_data := (
                 rd_bus                  => C_RD_BUS_RESET,
+                csr_bus                 => C_CSR_BUS_RESET,
                 rs2_data                => (OTHERS => '0'),
+                fault_tag               => VALID,
                 pc                      => (OTHERS => '0'),
                 pc4                     => (OTHERS => '0'),
                 funct3                  => (OTHERS => '0'),
@@ -218,6 +232,9 @@ PACKAGE rv32i_pkg IS
         --! MEM/WB Pipeline Register Record.
         TYPE t_mem_wb_data IS RECORD
                 rd_bus                  : t_rd_reg_data;                 --! Register file write details
+                csr_bus                 : t_csr_reg_data;
+                fault_tag               : t_fault_tag;                     --| EX: Landing Pad
+                pc                      : STD_LOGIC_VECTOR(31 DOWNTO 0); --! PC
                 pc4                     : STD_LOGIC_VECTOR(31 DOWNTO 0); --! PC+4
                 funct3                  : STD_LOGIC_VECTOR(2 DOWNTO 0);  --! Load extension mode
                 wb_src                  : t_WritebackSrc;                --! Writeback Mux selection
@@ -225,15 +242,24 @@ PACKAGE rv32i_pkg IS
 
         CONSTANT C_MEM_WB_RESET : t_mem_wb_data := (
                 rd_bus                  => C_RD_BUS_RESET,
+                csr_bus                 => C_CSR_BUS_RESET,
+                fault_tag               => VALID,
+                pc                      => (OTHERS => '0'),
                 pc4                     => (OTHERS => '0'),
                 funct3                  => (OTHERS => '0'),
                 wb_src                  => WB_SRC_EX_RESULT
         );
 
-        TYPE t_mem_ex_fb IS RECORD
-                pc : STD_LOGIC_VECTOR(31 DOWNTO 0);
-                trap : t_mem_trap;
-        END RECORD t_mem_ex_fb;
+        TYPE t_wb_ex_fb IS RECORD
+                csr_bus         : t_csr_reg_data;
+                trap            : STD_LOGIC;
+                mret            : STD_LOGIC;
+                mepc            : STD_LOGIC_VECTOR(31 DOWNTO 0);
+                mtval           : STD_LOGIC_VECTOR(31 DOWNTO 0);
+                mcause          : STD_LOGIC_VECTOR(31 DOWNTO 0);
+                minstret        : STD_LOGIC;
+                fwd             : STD_LOGIC_VECTOR(31 DOWNTO 0);
+        END RECORD t_wb_ex_fb;
 
 
         --! Feedback signals from Execution to Fetch (Branching).

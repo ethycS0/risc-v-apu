@@ -1,20 +1,3 @@
---! @file instruction_decode_stage.vhd
---! Instruction Decode Stage
---! @author ethycS
---! @details This module implements the Instruction Decode (ID) stage of the RV32I
---! pipeline. It receives fetched instructions from the IF stage, decodes them,
---! reads operands from the register file, and generates all control signals needed
---! for subsequent pipeline stages.
---!
---! The ID stage consists of three main components:
---! - Control Unit: Decodes opcode and generates control signals
---! - Immediate Reconstruction Unit: Extracts and formats immediate values
---! - Register File: Provides dual-port read access to architectural registers
---!
---! This stage also extracts instruction fields (rs1, rs2, rd, funct3, funct12)
---! and forwards them along with control signals to the Execute stage via the
---! ID/EX pipeline register bus.
-
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
@@ -80,9 +63,25 @@ ARCHITECTURE structural OF instruction_decode_stage IS
 	SIGNAL s_funct12   : STD_LOGIC_VECTOR(11 DOWNTO 0); --! Function field 12 bits for system instructions (instruction[31:20])
 
         SIGNAL elp_tag : STD_LOGIC := '0';
+        SIGNAL s_fault_tag : t_fault_tag := VALID;
+
+        SIGNAL s_mem_read  : STD_LOGIC := '0';
+        SIGNAL s_mem_write : STD_LOGIC := '0';
+        SIGNAL s_reg_write : STD_LOGIC := '0';
+        SIGNAL s_opr_type  : t_OprType := OP_R_TYPE;
 
 BEGIN
-        elp_tag <= '1' WHEN i_if_id_bus.instr_tag = ELP ELSE '0';
+        elp_tag <= '1' WHEN i_if_id_bus.elp_active = '1' ELSE '0';
+
+        P_FAULT_TAG : PROCESS (ALL)
+        BEGIN
+                s_fault_tag <= i_if_id_bus.fault_tag;
+                IF i_if_id_bus.fault_tag = VALID THEN 
+                        IF o_id_ex_bus.opr_type = OP_ILLEGAL THEN
+                                -- s_fault_tag <= ID_INVALID_INSTR; Commented cuz RISCOF
+                        END IF;
+                END IF;
+        END PROCESS P_FAULT_TAG;
 
 	-- Extract instruction fields from the incoming instruction
         s_rs1_addr <= "00111" WHEN elp_tag = '1' ELSE i_if_id_bus.instruction(19 DOWNTO 15);  -- Source register 1
@@ -98,14 +97,14 @@ BEGIN
 	PORT MAP(
                 i_elp         => elp_tag,
 		i_instruction => i_if_id_bus.instruction,
-		o_reg_write   => o_id_ex_bus.reg_write,
-		o_mem_read    => o_id_ex_bus.mem_read,
-		o_mem_write   => o_id_ex_bus.mem_write,
+		o_reg_write   => s_reg_write,
+		o_mem_read    => s_mem_read,
+		o_mem_write   => s_mem_write,
 		o_src_a       => o_id_ex_bus.src_a,
 		o_src_b       => o_id_ex_bus.src_b,
 		o_wb_src      => o_id_ex_bus.wb_src,
 		o_opr_unit    => o_id_ex_bus.opr_unit,
-		o_opr_type    => o_id_ex_bus.opr_type
+		o_opr_type    => s_opr_type
 	);
 
 	--! @brief Immediate Reconstruction Unit Instance
@@ -144,7 +143,13 @@ BEGIN
 	-- Forward function fields to EX stage for operation decoding
 	o_id_ex_bus.funct3    <= s_funct3;
 	o_id_ex_bus.funct12   <= s_funct12;
-        o_id_ex_bus.instr_tag <= i_if_id_bus.instr_tag;
+        o_id_ex_bus.fault_tag <= s_fault_tag;
+        o_id_ex_bus.elp_active <= i_if_id_bus.elp_active;
+
+        o_id_ex_bus.mem_read  <= s_mem_read  WHEN s_fault_tag = VALID ELSE '0';
+        o_id_ex_bus.mem_write <= s_mem_write WHEN s_fault_tag = VALID ELSE '0';
+        o_id_ex_bus.reg_write <= s_reg_write WHEN s_fault_tag = VALID ELSE '0';
+        o_id_ex_bus.opr_type  <= s_opr_type  WHEN s_fault_tag = VALID ELSE OP_R_TYPE;
 
 END ARCHITECTURE structural;
 

@@ -8,34 +8,27 @@ ENTITY csr_unit IS
 		i_clk : IN STD_LOGIC;  --! Global clock
 		i_rst : IN STD_LOGIC;  --! Synchronous reset (Active High)
 
-		i_write_en           : IN STD_LOGIC;  --! CSR write enable (from CSR instructions)
-		i_minstret_increment : IN STD_LOGIC;  --! Increment minstret counter (instruction retired)
-		i_is_mret            : IN STD_LOGIC;  --! MRET instruction detected (return from trap)
+                i_csr_raddr : IN STD_LOGIC_VECTOR(11 DOWNTO 0);
+                o_csr_rdata : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 
-		i_csr_op   : IN t_CsrOpcodes;                   --! CSR operation (RW, RS, RC)
-		i_csr_addr : IN STD_LOGIC_VECTOR(11 DOWNTO 0); --! CSR address from instruction
-		i_csr_data : IN STD_LOGIC_VECTOR(31 DOWNTO 0); --! CSR write data (rs1 or uimm)
-
-		i_trap_triggered : IN STD_LOGIC;                    --! Trap entry signal (exception or interrupt)
-		i_pc_at_trap     : IN STD_LOGIC_VECTOR(31 DOWNTO 0); --! PC value at trap occurrence
-		i_cause_code     : IN STD_LOGIC_VECTOR(31 DOWNTO 0); --! Trap cause code (exception/interrupt type)
-		i_trap_mtval     : IN STD_LOGIC_VECTOR(31 DOWNTO 0); --! Trap value (faulting address or instruction)
+                i_csr_wbus        : IN t_csr_reg_data;
+                i_trap            : IN STD_LOGIC;
+                i_trap_pc         : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+                i_trap_mtval      : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+                i_trap_mcause     : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+                i_minstret        : IN STD_LOGIC;
+                i_mret            : IN STD_LOGIC;
 
                 o_pmp_csr       : OUT t_ex_pmp_data;
                 o_pmp_changed   : OUT STD_LOGIC;
-
-                o_lpad_en   : OUT STD_LOGIC;                     --| Zicfilp enable status
-		o_mtvec     : OUT STD_LOGIC_VECTOR(31 DOWNTO 0); --! Machine trap vector (trap handler address)
-		o_mepc      : OUT STD_LOGIC_VECTOR(31 DOWNTO 0); --! Machine exception PC (return address)
-                o_msse      : OUT STD_LOGIC;
-		o_read_data : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)  --! CSR read data output
+                o_lpad_en       : OUT STD_LOGIC;                     
+		o_mtvec         : OUT STD_LOGIC_VECTOR(31 DOWNTO 0); 
+		o_mepc          : OUT STD_LOGIC_VECTOR(31 DOWNTO 0); 
+                o_msse          : OUT STD_LOGIC
 	);
 END ENTITY csr_unit;
 
 ARCHITECTURE behavioral OF csr_unit IS
-
-	SIGNAL s_selected_reg_val : STD_LOGIC_VECTOR(31 DOWNTO 0); --! Selected CSR value for read operations
-	SIGNAL s_new_csr_value    : STD_LOGIC_VECTOR(31 DOWNTO 0); --! Computed new CSR value after operation
 
 	CONSTANT c_mvendorid : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0'); --! Vendor ID (non-commercial implementation)
 	CONSTANT c_misa_val  : STD_LOGIC_VECTOR(31 DOWNTO 0) := x"40000100";     --! ISA = RV32I (bit 8 = I extension, bit 30-31 = XLEN=32)
@@ -67,102 +60,85 @@ ARCHITECTURE behavioral OF csr_unit IS
         SIGNAL r_mireg2     : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0');
         SIGNAL r_pmp_e_bits : STD_LOGIC_VECTOR(3 DOWNTO 0) := (OTHERS => '0');
 
-BEGIN
+        SIGNAL r_ssp : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0');
 
-	--! @brief CSR Read Multiplexer Process
-	--! @details Combinational process that selects the appropriate CSR value based on
-	--! the CSR address. Reconstructs mstatus from individual MIE/MPIE bits with proper
-	--! field positioning. Returns zero for unimplemented or invalid CSR addresses.
-        P_CSR_SELECT : PROCESS (i_csr_addr, r_mtvec, r_mepc, r_mcause, r_mtval, r_mie_reg, r_mip_reg, r_mcycle, r_minstret, r_mie_bit, r_mpie_bit, r_mscratch)
+        IMPURE FUNCTION read_csr (
+                csr_addr : STD_LOGIC_VECTOR(11 DOWNTO 0)
+        ) RETURN STD_LOGIC_VECTOR IS
+                VARIABLE v_read_data : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0');
         BEGIN
-                s_selected_reg_val <= (OTHERS => '0');
-                CASE i_csr_addr IS
-                        WHEN x"F11" => s_selected_reg_val <= c_mvendorid;
-                        WHEN x"301" => s_selected_reg_val <= c_misa_val;
-                        WHEN x"300" =>
-                                s_selected_reg_val(31 DOWNTO 13) <= (OTHERS => '0');
-                                s_selected_reg_val(12 DOWNTO 11) <= "11";
-                                s_selected_reg_val(10 DOWNTO 8) <= (OTHERS => '0');
-                                s_selected_reg_val(7) <= r_mpie_bit;
-                                s_selected_reg_val(6 DOWNTO 4) <= (OTHERS => '0');
-                                s_selected_reg_val(3) <= r_mie_bit;
-                                s_selected_reg_val(2 DOWNTO 0) <= (OTHERS => '0');
+                v_read_data := (OTHERS => '0');
 
-                        WHEN x"305" => s_selected_reg_val <= r_mtvec;
-                        WHEN x"341" => s_selected_reg_val <= r_mepc;
-                        WHEN x"342" => s_selected_reg_val <= r_mcause;
-                        WHEN x"343" => s_selected_reg_val <= r_mtval;
-                        WHEN x"304" => s_selected_reg_val <= r_mie_reg;
-                        WHEN x"340" => s_selected_reg_val <= r_mscratch;
-                        WHEN x"344" => s_selected_reg_val <= r_mip_reg;
-                        WHEN x"B00" => s_selected_reg_val <= r_mcycle;
-                        WHEN x"B02" => s_selected_reg_val <= r_minstret;
-                        WHEN x"747" => s_selected_reg_val <= r_mseccfg;
-                        WHEN x"3A0" => s_selected_reg_val <= r_pmpcfg0;
-                        WHEN x"3B0" => s_selected_reg_val <= r_pmpaddr0;
-                        WHEN x"3B1" => s_selected_reg_val <= r_pmpaddr1;
-                        WHEN x"3B2" => s_selected_reg_val <= r_pmpaddr2;
-                        WHEN x"3B3" => s_selected_reg_val <= r_pmpaddr3;
+                CASE csr_addr IS
+                        WHEN x"F11" => v_read_data := c_mvendorid;
+                        WHEN x"301" => v_read_data := c_misa_val;
+                        WHEN x"300" =>
+                                v_read_data(31 DOWNTO 13) := (OTHERS => '0');
+                                v_read_data(12 DOWNTO 11) := "11";
+                                v_read_data(10 DOWNTO 8)  := (OTHERS => '0');
+                                v_read_data(7)            := r_mpie_bit;
+                                v_read_data(6 DOWNTO 4)   := (OTHERS => '0');
+                                v_read_data(3)            := r_mie_bit;
+                                v_read_data(2 DOWNTO 0)   := (OTHERS => '0');
+
+                        WHEN x"011" => v_read_data := r_ssp;
+                        WHEN x"305" => v_read_data := r_mtvec;
+                        WHEN x"341" => v_read_data := r_mepc;
+                        WHEN x"342" => v_read_data := r_mcause;
+                        WHEN x"343" => v_read_data := r_mtval;
+                        WHEN x"304" => v_read_data := r_mie_reg;
+                        WHEN x"340" => v_read_data := r_mscratch;
+                        WHEN x"344" => v_read_data := r_mip_reg;
+                        WHEN x"B00" => v_read_data := r_mcycle;
+                        WHEN x"B02" => v_read_data := r_minstret;
+                        WHEN x"747" => v_read_data := r_mseccfg;
+                        WHEN x"3A0" => v_read_data := r_pmpcfg0;
+                        WHEN x"3B0" => v_read_data := r_pmpaddr0;
+                        WHEN x"3B1" => v_read_data := r_pmpaddr1;
+                        WHEN x"3B2" => v_read_data := r_pmpaddr2;
+                        WHEN x"3B3" => v_read_data := r_pmpaddr3;
+
                         WHEN x"350" =>
-                                s_selected_reg_val(31 DOWNTO 2) <= (OTHERS => '0');
-                                s_selected_reg_val(1 DOWNTO 0) <= r_miselect(1 DOWNTO 0);
+                                v_read_data(31 DOWNTO 2) := (OTHERS => '0');
+                                v_read_data(1 DOWNTO 0)  := r_miselect(1 DOWNTO 0);
+
                         WHEN x"351" =>
-                                CASE r_miselect(1 DOWNTO 0) IS 
-                                        WHEN "00" => s_selected_reg_val <= r_pmpaddr0;
-                                        WHEN "01" => s_selected_reg_val <= r_pmpaddr1;
-                                        WHEN "10" => s_selected_reg_val <= r_pmpaddr2;
-                                        WHEN "11" => s_selected_reg_val <= r_pmpaddr3;
-                                        WHEN OTHERS => s_selected_reg_val <= (OTHERS => '0');
+                                CASE r_miselect(1 DOWNTO 0) IS
+                                        WHEN "00" => v_read_data   := r_pmpaddr0;
+                                        WHEN "01" => v_read_data   := r_pmpaddr1;
+                                        WHEN "10" => v_read_data   := r_pmpaddr2;
+                                        WHEN "11" => v_read_data   := r_pmpaddr3;
+                                        WHEN OTHERS => v_read_data := (OTHERS => '0');
                                 END CASE;
-                        WHEN x"352" => 
-                                s_selected_reg_val(30 DOWNTO 8) <= (OTHERS => '0');
+
+                        WHEN x"352" =>
+                                v_read_data(30 DOWNTO 8) := (OTHERS => '0');
                                 CASE r_miselect(1 DOWNTO 0) IS
                                         WHEN "00" =>
-                                                s_selected_reg_val(31) <= r_pmp_e_bits(0);
-                                                s_selected_reg_val(7 DOWNTO 0) <= r_pmpcfg0(7 DOWNTO 0);
+                                                v_read_data(31)         := r_pmp_e_bits(0);
+                                                v_read_data(7 DOWNTO 0) := r_pmpcfg0(7 DOWNTO 0);
                                         WHEN "01" =>
-                                                s_selected_reg_val(31) <= r_pmp_e_bits(1);
-                                                s_selected_reg_val(7 DOWNTO 0) <= r_pmpcfg0(15 DOWNTO 8);
+                                                v_read_data(31)         := r_pmp_e_bits(1);
+                                                v_read_data(7 DOWNTO 0) := r_pmpcfg0(15 DOWNTO 8);
                                         WHEN "10" =>
-                                                s_selected_reg_val(31) <= r_pmp_e_bits(2);
-                                                s_selected_reg_val(7 DOWNTO 0) <= r_pmpcfg0(23 DOWNTO 16);
+                                                v_read_data(31)         := r_pmp_e_bits(2);
+                                                v_read_data(7 DOWNTO 0) := r_pmpcfg0(23 DOWNTO 16);
                                         WHEN "11" =>
-                                                s_selected_reg_val(31) <= r_pmp_e_bits(3);
-                                                s_selected_reg_val(7 DOWNTO 0) <= r_pmpcfg0(31 DOWNTO 24);
-                                        WHEN OTHERS => s_selected_reg_val <= (OTHERS => '0');
+                                                v_read_data(31)         := r_pmp_e_bits(3);
+                                                v_read_data(7 DOWNTO 0) := r_pmpcfg0(31 DOWNTO 24);
+                                        WHEN OTHERS            =>
+                                                v_read_data := (OTHERS => '0');
                                 END CASE;
 
-
-                        WHEN OTHERS => s_selected_reg_val <= (OTHERS => '0');
+                        WHEN OTHERS =>
+                                v_read_data := (OTHERS => '0');
                 END CASE;
-        END PROCESS;
 
+                RETURN v_read_data;
+        END FUNCTION;
 
-	--! @brief CSR Operation Logic Process
-	--! @details Combinational process that computes the new CSR value based on the
-	--! CSR operation type:
-	--! - CSR_RW (CSRRW): Write = rs1 value (replace)
-	--! - CSR_RS (CSRRS): Write = CSR | rs1 (set bits)
-	--! - CSR_RC (CSRRC): Write = CSR & ~rs1 (clear bits)
-	P_CST_OPR : PROCESS (s_selected_reg_val, i_csr_data, i_csr_op)
-	BEGIN
-		CASE i_csr_op IS
-			WHEN CSR_RW => s_new_csr_value <= i_csr_data;  -- Write (replace)
-			WHEN CSR_RS => s_new_csr_value <= s_selected_reg_val OR i_csr_data;  -- Set bits
-			WHEN CSR_RC => s_new_csr_value <= s_selected_reg_val AND (NOT i_csr_data);  -- Clear bits
-			WHEN OTHERS => s_new_csr_value <= s_selected_reg_val;  -- No operation
-		END CASE;
-	END PROCESS;
+BEGIN
 
-	--! @brief CSR Register Update Process
-	--! @details Synchronous process that updates CSR registers on the rising clock edge.
-	--! Priority order (highest to lowest):
-	--! 1. Trap entry: Save PC to mepc, update mcause/mtval, disable interrupts
-	--! 2. MRET: Restore interrupt enable state from MPIE
-	--! 3. CSR write: Update CSR based on write enable and address
-	--!
-	--! Performance counters (mcycle, minstret) increment independently unless being
-	--! explicitly written by a CSR instruction.
 	P_CSR_UPDATE : PROCESS (i_clk, i_rst)
 	BEGIN
 		IF i_rst = '1' THEN
@@ -179,83 +155,80 @@ BEGIN
                         r_pmpcfg0 <= (OTHERS => '0');
                         r_miselect <= (OTHERS => '0');
                         r_pmp_e_bits <= (OTHERS => '0');
+                        r_ssp <= (OTHERS => '0');
 		ELSIF rising_edge(i_clk) THEN
+                        IF i_trap = '1' THEN
+                                r_mepc   <= i_trap_pc;
+                                r_mcause <= i_trap_mcause;
+                                r_mtval  <= i_trap_mtval;
 
-			-- Trap entry logic (highest priority)
-			IF i_trap_triggered = '1' THEN
-				r_mepc <= i_pc_at_trap;        -- Save faulting PC
-				r_mcause <= i_cause_code;      -- Save trap cause
-				r_mtval <= i_trap_mtval;       -- Save trap value
-				r_mpie_bit <= r_mie_bit;       -- Save current MIE to MPIE
-				r_mie_bit <= '0';              -- Disable interrupts
+                                r_mpie_bit <= r_mie_bit;
+                                r_mie_bit  <= '0';
 
-			-- MRET instruction logic
-			ELSIF i_is_mret = '1' THEN
-				r_mie_bit <= r_mpie_bit;  -- Restore MIE from MPIE
-				r_mpie_bit <= '1';        -- Set MPIE to 1
+                        ELSIF i_mret = '1' THEN
+                                r_mie_bit  <= r_mpie_bit;
+                                r_mpie_bit <= '1';
 
-			-- Normal CSR write logic
-			ELSIF i_write_en = '1' THEN
-				CASE i_csr_addr IS
+                        ELSIF i_csr_wbus.csr_write_en = '1' THEN
+				CASE i_csr_wbus.csr_addr IS
 					WHEN x"300" =>  -- mstatus
-						r_mie_bit  <= s_new_csr_value(3);
-						r_mpie_bit <= s_new_csr_value(7);
-					WHEN x"305" => r_mtvec <= s_new_csr_value;     -- mtvec
-					WHEN x"340" => r_mscratch <= s_new_csr_value;  -- mscratch
-					WHEN x"341" => r_mepc <= s_new_csr_value;      -- mepc
-					WHEN x"342" => r_mcause <= s_new_csr_value;    -- mcause
-					WHEN x"343" => r_mtval <= s_new_csr_value;     -- mtval
-					WHEN x"304" => r_mie_reg <= s_new_csr_value;   -- mie
-					WHEN x"B00" => r_mcycle <= s_new_csr_value;    -- mcycle
-					WHEN x"B02" => r_minstret <= s_new_csr_value;  -- minstret
-                                        WHEN x"747" => r_mseccfg <= s_new_csr_value;   -- mseccfg
+						r_mie_bit  <= i_csr_wbus.csr_data(3);
+						r_mpie_bit <= i_csr_wbus.csr_data(7);
+					WHEN x"305" => r_mtvec <= i_csr_wbus.csr_data;     -- mtvec
+					WHEN x"340" => r_mscratch <= i_csr_wbus.csr_data;  -- mscratch
+					WHEN x"341" => r_mepc <= i_csr_wbus.csr_data;      -- mepc
+					WHEN x"342" => r_mcause <= i_csr_wbus.csr_data;    -- mcause
+					WHEN x"343" => r_mtval <= i_csr_wbus.csr_data;     -- mtval
+					WHEN x"304" => r_mie_reg <= i_csr_wbus.csr_data;   -- mie
+					WHEN x"B00" => r_mcycle <= i_csr_wbus.csr_data;    -- mcycle
+					WHEN x"B02" => r_minstret <= i_csr_wbus.csr_data;  -- minstret
+                                        WHEN x"747" => r_mseccfg <= i_csr_wbus.csr_data;   -- mseccfg
                                         WHEN x"3A0" =>
                                                 IF r_pmpcfg0(7) = '0' THEN
-                                                        r_pmpcfg0(7 DOWNTO 0) <= s_new_csr_value(7 DOWNTO 0);
+                                                        r_pmpcfg0(7 DOWNTO 0) <= i_csr_wbus.csr_data(7 DOWNTO 0);
                                                 END IF;
 
                                                 IF r_pmpcfg0(15) = '0' THEN
-                                                        r_pmpcfg0(15 DOWNTO 8) <= s_new_csr_value(15 DOWNTO 8);
+                                                        r_pmpcfg0(15 DOWNTO 8) <= i_csr_wbus.csr_data(15 DOWNTO 8);
                                                 END IF;
 
                                                 IF r_pmpcfg0(23) = '0' THEN
-                                                        r_pmpcfg0(23 DOWNTO 16) <= s_new_csr_value(23 DOWNTO 16);
+                                                        r_pmpcfg0(23 DOWNTO 16) <= i_csr_wbus.csr_data(23 DOWNTO 16);
                                                 END IF;
 
                                                 IF r_pmpcfg0(31) = '0' THEN
-                                                        r_pmpcfg0(31 DOWNTO 24) <= s_new_csr_value(31 DOWNTO 24);
+                                                        r_pmpcfg0(31 DOWNTO 24) <= i_csr_wbus.csr_data(31 DOWNTO 24);
                                                 END IF;
 
                                         WHEN x"3B0" =>
                                                 IF r_pmpcfg0(7) = '0' THEN
-                                                        r_pmpaddr0 <= s_new_csr_value;
+                                                        r_pmpaddr0 <= i_csr_wbus.csr_data;
                                                 END IF;
 
                                         WHEN x"3B1" =>
                                                 IF r_pmpcfg0(15) = '0' THEN
-                                                        r_pmpaddr1 <= s_new_csr_value;
+                                                        r_pmpaddr1 <= i_csr_wbus.csr_data;
                                                 END IF;
 
                                         WHEN x"3B2" =>
                                                 IF r_pmpcfg0(23) = '0' THEN
-                                                        r_pmpaddr2 <= s_new_csr_value;
+                                                        r_pmpaddr2 <= i_csr_wbus.csr_data;
                                                 END IF;
 
                                         WHEN x"3B3" =>
                                                 IF r_pmpcfg0(31) = '0' THEN
-
-                                                        r_pmpaddr3 <= s_new_csr_value;
+                                                        r_pmpaddr3 <= i_csr_wbus.csr_data;
                                                 END IF;
 
                                         WHEN x"350" =>
-                                                r_miselect(1 DOWNTO 0) <= s_new_csr_value(1 DOWNTO 0);
+                                                r_miselect(1 DOWNTO 0) <= i_csr_wbus.csr_data(1 DOWNTO 0);
 
                                         WHEN x"351" => 
                                                 CASE r_miselect(1 DOWNTO 0) IS
-                                                        WHEN "00" => IF r_pmpcfg0(7) = '0' THEN r_pmpaddr0 <= s_new_csr_value; END IF;
-                                                        WHEN "01" => IF r_pmpcfg0(15) = '0' THEN r_pmpaddr1 <= s_new_csr_value; END IF;
-                                                        WHEN "10" => IF r_pmpcfg0(23) = '0' THEN r_pmpaddr2 <= s_new_csr_value; END IF;
-                                                        WHEN "11" => IF r_pmpcfg0(31) = '0' THEN r_pmpaddr3 <= s_new_csr_value; END IF;
+                                                        WHEN "00" => IF r_pmpcfg0(7) = '0' THEN r_pmpaddr0 <= i_csr_wbus.csr_data; END IF;
+                                                        WHEN "01" => IF r_pmpcfg0(15) = '0' THEN r_pmpaddr1 <= i_csr_wbus.csr_data; END IF;
+                                                        WHEN "10" => IF r_pmpcfg0(23) = '0' THEN r_pmpaddr2 <= i_csr_wbus.csr_data; END IF;
+                                                        WHEN "11" => IF r_pmpcfg0(31) = '0' THEN r_pmpaddr3 <= i_csr_wbus.csr_data; END IF;
                                                         WHEN OTHERS => NULL;
                                                 END CASE;
 
@@ -263,47 +236,49 @@ BEGIN
                                                 CASE r_miselect(1 DOWNTO 0) IS
                                                         WHEN "00" =>
                                                                 IF r_pmpcfg0(7) = '0' THEN
-                                                                        r_pmpcfg0(7 DOWNTO 0) <= s_new_csr_value(7 DOWNTO 0);
-                                                                        r_pmp_e_bits(0) <= s_new_csr_value(31);
+                                                                        r_pmpcfg0(7 DOWNTO 0) <= i_csr_wbus.csr_data(7 DOWNTO 0);
+                                                                        r_pmp_e_bits(0) <= i_csr_wbus.csr_data(31);
                                                                 END IF;
                                                         WHEN "01" =>
                                                                 IF r_pmpcfg0(15) = '0' THEN
-                                                                        r_pmpcfg0(15 DOWNTO 8) <= s_new_csr_value(15 DOWNTO 8);
-                                                                        r_pmp_e_bits(1) <= s_new_csr_value(31);
+                                                                        r_pmpcfg0(15 DOWNTO 8) <= i_csr_wbus.csr_data(15 DOWNTO 8);
+                                                                        r_pmp_e_bits(1) <= i_csr_wbus.csr_data(31);
                                                                 END IF;
                                                         WHEN "10" =>
                                                                 IF r_pmpcfg0(23) = '0' THEN
-                                                                        r_pmpcfg0(23 DOWNTO 16) <= s_new_csr_value(23 DOWNTO 16);
-                                                                        r_pmp_e_bits(2) <= s_new_csr_value(31);
+                                                                        r_pmpcfg0(23 DOWNTO 16) <= i_csr_wbus.csr_data(23 DOWNTO 16);
+                                                                        r_pmp_e_bits(2) <= i_csr_wbus.csr_data(31);
                                                                 END IF;
                                                         WHEN "11" =>
                                                                 IF r_pmpcfg0(31) = '0' THEN
-                                                                        r_pmpcfg0(31 DOWNTO 24) <= s_new_csr_value(31 DOWNTO 24);
-                                                                        r_pmp_e_bits(3) <= s_new_csr_value(31);
+                                                                        r_pmpcfg0(31 DOWNTO 24) <= i_csr_wbus.csr_data(31 DOWNTO 24);
+                                                                        r_pmp_e_bits(3) <= i_csr_wbus.csr_data(31);
                                                                 END IF;
                                                         WHEN OTHERS => NULL;
                                                 END CASE;
+                                        WHEN x"011" => 
+                                                r_ssp <= i_csr_wbus.csr_data;
 
                                         WHEN OTHERS => NULL;
                                         END CASE;
 			END IF;
 
-                        IF NOT (i_write_en = '1' AND i_csr_addr = x"B00") THEN
+                        IF NOT (i_csr_wbus.csr_write_en = '1' AND i_csr_wbus.csr_addr = x"B00") THEN
                                 r_mcycle <= STD_LOGIC_VECTOR(unsigned(r_mcycle) + 1);
                         END IF;
 
-                        IF i_minstret_increment = '1' AND NOT (i_write_en = '1' AND i_csr_addr = x"B02") THEN
+                        IF i_minstret = '1' AND NOT (i_csr_wbus.csr_write_en = '1' AND i_csr_wbus.csr_addr= x"B02") THEN
                                 r_minstret <= STD_LOGIC_VECTOR(unsigned(r_minstret) + 1);
                         END IF;
 
 		END IF;
 	END PROCESS;
 
-        P_PMP_CHANGE_DETECT : PROCESS (i_write_en, i_csr_addr)
+        P_PMP_CHANGE_DETECT : PROCESS (i_csr_wbus.csr_write_en, i_csr_wbus.csr_addr)
         BEGIN
                 s_pmp_changed <= '0';
-                IF i_write_en = '1' THEN
-                        CASE i_csr_addr IS
+                IF i_csr_wbus.csr_write_en = '1' THEN
+                        CASE i_csr_wbus.csr_addr IS
                                 WHEN x"3A0" | x"3B0" | x"3B1" | x"3B2" | x"3B3" | x"351" | x"352" =>
                                         s_pmp_changed <= '1';
                                 WHEN OTHERS =>
@@ -312,14 +287,12 @@ BEGIN
                 END IF;
         END PROCESS;
 
-
 	-- Output assignments
+	o_csr_rdata <= read_csr(i_csr_raddr);
 	o_mtvec <= r_mtvec;
         o_lpad_en <= r_mseccfg(0);
 	o_mepc <= r_mepc;
         o_msse <= r_mseccfg(2);  
-	o_read_data <= s_selected_reg_val;
-
         o_pmp_changed <= s_pmp_changed;
         o_pmp_csr.pmpcfg0  <= r_pmpcfg0;
         o_pmp_csr.pmpaddr0 <= r_pmpaddr0;

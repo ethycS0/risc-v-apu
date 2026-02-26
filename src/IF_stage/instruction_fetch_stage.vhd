@@ -123,7 +123,7 @@ BEGIN
 		o_if_id_bus.pc <= s_pc_aligned;
 		o_if_id_bus.pc4 <= STD_LOGIC_VECTOR(unsigned(s_pc_aligned) + 4);
 		o_if_id_bus.instruction <= i_instr_data;
-		o_if_id_bus.instr_tag <= VALID;
+		o_if_id_bus.fault_tag <= VALID;
 
 		IF s_skid_valid = '1' THEN
 			o_if_id_bus.instruction <= s_skid_buffer_instr;
@@ -137,19 +137,18 @@ BEGIN
 			v_elp_status := s_elp_aligned;
 		END IF;
 
+                o_if_id_bus.elp_active <= v_elp_status;
+
 		IF s_flush_pending = '1' THEN
 			o_if_id_bus.instruction <= C_NOP;
-			o_if_id_bus.instr_tag <= VALID;
+			o_if_id_bus.fault_tag <= VALID;
+                        o_if_id_bus.elp_active <= '0';
 
 		ELSIF v_pmp_fault = '1' THEN
 			o_if_id_bus.instruction <= C_NOP;
-			o_if_id_bus.instr_tag <= PMP_FAULT;
-
-		ELSIF v_elp_status = '1' THEN
-			o_if_id_bus.instr_tag <= ELP;
-
+                        o_if_id_bus.fault_tag <= IF_ACCESS_FAULT;
 		ELSE
-			o_if_id_bus.instr_tag <= VALID;
+			o_if_id_bus.fault_tag <= VALID;
 		END IF;
 
 	END PROCESS;

@@ -18,7 +18,7 @@ ENTITY pmp_unit IS
 		o_mem_write : OUT STD_LOGIC;
 
                 i_msse : IN STD_LOGIC;
-                i_ss_write : IN STD_LOGIC;
+                i_ss_instr : IN STD_LOGIC;
 
 		o_fetch_fault : OUT STD_LOGIC;
 		o_mem_fault   : OUT STD_LOGIC
@@ -32,7 +32,7 @@ ARCHITECTURE behavioral OF pmp_unit IS
                 access_type : STD_LOGIC_VECTOR(2 DOWNTO 0);
                 pmp_csr : t_ex_pmp_data;
                 msse : STD_LOGIC;
-                ss_write : STD_LOGIC
+                ss_instr : STD_LOGIC
         ) RETURN STD_LOGIC IS
 
                 VARIABLE v_fault : STD_LOGIC := '0';
@@ -133,7 +133,7 @@ ARCHITECTURE behavioral OF pmp_unit IS
                                                 IF access_type(2) = '1' THEN
                                                         v_fault := '1'; 
                                                 ELSIF access_type(1) = '1' THEN
-                                                        IF ss_write = '1' THEN
+                                                        IF ss_instr = '1' THEN
                                                                 v_fault := '0'; 
                                                         ELSE
                                                                 v_fault := '1'; 
@@ -159,7 +159,7 @@ ARCHITECTURE behavioral OF pmp_unit IS
                 END LOOP;
 
                 IF NOT v_match_found THEN
-                        IF access_type(1) = '1' AND ss_write = '1' THEN
+                        IF access_type(1) = '1' AND ss_instr = '1' THEN
                                 v_fault := '1';
                         ELSE
                                 v_fault := '0';
@@ -179,7 +179,7 @@ BEGIN
                 s_fetch_fault <= check_access(i_fetch_addr, "100", i_pmp_csr, '0', '0');
         END PROCESS P_FETCH_ACCESS_CHECK;
 
-        P_MEM_ACCESS_CHECK : PROCESS (i_mem_addr, i_mem_write, i_mem_valid, i_pmp_csr, i_msse, i_ss_write)
+        P_MEM_ACCESS_CHECK : PROCESS (i_mem_addr, i_mem_write, i_mem_valid, i_pmp_csr, i_msse, i_ss_instr)
                 VARIABLE v_acc_type : STD_LOGIC_VECTOR(2 DOWNTO 0);
         BEGIN
                 IF i_mem_valid = '1' THEN
@@ -189,7 +189,7 @@ BEGIN
                                 v_acc_type := "001";
                         END IF;
 
-                        s_mem_fault <= check_access(i_mem_addr, v_acc_type, i_pmp_csr, i_msse, i_ss_write);
+                        s_mem_fault <= check_access(i_mem_addr, v_acc_type, i_pmp_csr, i_msse, i_ss_instr);
                 ELSE
                         s_mem_fault <= '0';
                 END IF;
