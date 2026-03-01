@@ -268,7 +268,7 @@ BEGIN
 	--! TX writes are gated by the TX ready flag to prevent data loss when the transmitter
 	--! is busy. All I/O writes are single-cycle operations (no multi-cycle handshaking).
 
-        P_WRITE_LOGIC : PROCESS (s_data_addr, s_data_write_en, s_uart_tx_ready)
+        P_WRITE_LOGIC : PROCESS (ALL)
     BEGIN
         s_mem_write_en <= '0';
         s_uart_tx_start <= '0';
@@ -306,7 +306,7 @@ BEGIN
 	--!   - Bits [31:2]: Reserved (return zero)
 	--!
 	--! For addresses outside I/O space, this process returns zero (ignored by mux).
-	P_IO_READ_COMB : PROCESS (s_data_addr, r_rx_byte_buf, s_uart_tx_ready, r_rx_data_valid)
+    P_IO_READ_COMB : PROCESS (ALL)
 	BEGIN
 		s_io_read_combinational <= (OTHERS => '0');
 

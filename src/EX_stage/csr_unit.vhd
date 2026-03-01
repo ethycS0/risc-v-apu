@@ -20,7 +20,6 @@ ENTITY csr_unit IS
                 i_mret            : IN STD_LOGIC;
 
                 o_pmp_csr       : OUT t_ex_pmp_data;
-                o_pmp_changed   : OUT STD_LOGIC;
                 o_lpad_en       : OUT STD_LOGIC;                     
 		o_mtvec         : OUT STD_LOGIC_VECTOR(31 DOWNTO 0); 
 		o_mepc          : OUT STD_LOGIC_VECTOR(31 DOWNTO 0); 
@@ -41,14 +40,12 @@ ARCHITECTURE behavioral OF csr_unit IS
 	SIGNAL r_mepc     : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0'); --! Machine Exception Program Counter
 	SIGNAL r_mcause   : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0'); --! Machine Cause register
 	SIGNAL r_mie_reg  : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0'); --! Machine Interrupt Enable register
-	SIGNAL r_mip_reg  : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0'); --! Machine Interrupt Pending register
 
 	SIGNAL r_mcycle    : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0'); --! Machine Cycle counter (increments every clock)
 	SIGNAL r_minstret  : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0'); --! Machine Instructions Retired counter
 	SIGNAL r_mscratch  : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0'); --! Machine Scratch register (software use)
         SIGNAL r_mseccfg   : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0'); --| Machine Security Configuration Register 
 
-        SIGNAL s_pmp_changed : STD_LOGIC;
         SIGNAL r_pmpcfg0     :  STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0'); 
         SIGNAL r_pmpaddr0    :  STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0'); 
         SIGNAL r_pmpaddr1    :  STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0'); 
@@ -88,7 +85,6 @@ ARCHITECTURE behavioral OF csr_unit IS
                         WHEN x"343" => v_read_data := r_mtval;
                         WHEN x"304" => v_read_data := r_mie_reg;
                         WHEN x"340" => v_read_data := r_mscratch;
-                        WHEN x"344" => v_read_data := r_mip_reg;
                         WHEN x"B00" => v_read_data := r_mcycle;
                         WHEN x"B02" => v_read_data := r_minstret;
                         WHEN x"747" => v_read_data := r_mseccfg;
@@ -241,17 +237,17 @@ BEGIN
                                                                 END IF;
                                                         WHEN "01" =>
                                                                 IF r_pmpcfg0(15) = '0' THEN
-                                                                        r_pmpcfg0(15 DOWNTO 8) <= i_csr_wbus.csr_data(15 DOWNTO 8);
+                                                                        r_pmpcfg0(15 DOWNTO 8) <= i_csr_wbus.csr_data(7 DOWNTO 0);
                                                                         r_pmp_e_bits(1) <= i_csr_wbus.csr_data(31);
                                                                 END IF;
                                                         WHEN "10" =>
                                                                 IF r_pmpcfg0(23) = '0' THEN
-                                                                        r_pmpcfg0(23 DOWNTO 16) <= i_csr_wbus.csr_data(23 DOWNTO 16);
+                                                                        r_pmpcfg0(23 DOWNTO 16) <= i_csr_wbus.csr_data(7 DOWNTO 0);
                                                                         r_pmp_e_bits(2) <= i_csr_wbus.csr_data(31);
                                                                 END IF;
                                                         WHEN "11" =>
                                                                 IF r_pmpcfg0(31) = '0' THEN
-                                                                        r_pmpcfg0(31 DOWNTO 24) <= i_csr_wbus.csr_data(31 DOWNTO 24);
+                                                                        r_pmpcfg0(31 DOWNTO 24) <= i_csr_wbus.csr_data(7 DOWNTO 0);
                                                                         r_pmp_e_bits(3) <= i_csr_wbus.csr_data(31);
                                                                 END IF;
                                                         WHEN OTHERS => NULL;
@@ -274,26 +270,12 @@ BEGIN
 		END IF;
 	END PROCESS;
 
-        P_PMP_CHANGE_DETECT : PROCESS (i_csr_wbus.csr_write_en, i_csr_wbus.csr_addr)
-        BEGIN
-                s_pmp_changed <= '0';
-                IF i_csr_wbus.csr_write_en = '1' THEN
-                        CASE i_csr_wbus.csr_addr IS
-                                WHEN x"3A0" | x"3B0" | x"3B1" | x"3B2" | x"3B3" | x"351" | x"352" =>
-                                        s_pmp_changed <= '1';
-                                WHEN OTHERS =>
-                                        s_pmp_changed <= '0';
-                        END CASE;
-                END IF;
-        END PROCESS;
-
 	-- Output assignments
 	o_csr_rdata <= read_csr(i_csr_raddr);
 	o_mtvec <= r_mtvec;
         o_lpad_en <= r_mseccfg(0);
 	o_mepc <= r_mepc;
         o_msse <= r_mseccfg(2);  
-        o_pmp_changed <= s_pmp_changed;
         o_pmp_csr.pmpcfg0  <= r_pmpcfg0;
         o_pmp_csr.pmpaddr0 <= r_pmpaddr0;
         o_pmp_csr.pmpaddr1 <= r_pmpaddr1;

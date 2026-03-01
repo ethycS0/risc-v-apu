@@ -26,7 +26,7 @@ ARCHITECTURE behavioral OF ex_control_unit IS
 BEGIN
 
 	funct7 <= i_funct12(11 DOWNTO 5);
-	PROCESS (i_opr_type, i_funct3, funct7, i_funct12, i_src_a_data)
+	P_STAGE_2_DECODE : PROCESS (ALL)
 		VARIABLE v_src_is_zero : BOOLEAN;
 	BEGIN
 		o_alu_command  <= ALU_ADD;
@@ -130,7 +130,7 @@ BEGIN
 				o_alu_command <= ALU_ADD;
 				o_csr_command <= CSR_ILLEGAL;
 		END CASE;
-	END PROCESS;
+	END PROCESS P_STAGE_2_DECODE;
 
 END ARCHITECTURE behavioral;
 

@@ -63,7 +63,7 @@ BEGIN
 	--! stale data from being read and eliminates the need for pipeline stalls on
 	--! read-after-write hazards. Forwarding is bypassed for register x0, which always
 	--! reads as zero regardless of write operations.
-	read_proc : PROCESS (s_registers, i_rd1_addr, i_rd2_addr, i_wr_addr, i_wr_data, i_wr_en)
+        read_proc : PROCESS (ALL)
 	BEGIN
 		IF (i_wr_en = '1') AND (i_wr_addr = i_rd1_addr) AND (to_integer(unsigned(i_wr_addr)) /= 0) THEN
 			o_rd1_data <= i_wr_data; 

@@ -144,6 +144,8 @@ ARCHITECTURE behavioral OF pmp_unit IS
                                         ELSE
                                                 IF ss_instr = '1' THEN
                                                         v_fault := '1';
+                                                ELSIF (pmp_csr.pmp_e_bits(i) = '1') THEN
+                                                        v_fault := '1';
                                                 ELSE
                                                         IF (v_cfg_byte(7) = '0') THEN
                                                                 v_fault := '0';
@@ -178,12 +180,12 @@ ARCHITECTURE behavioral OF pmp_unit IS
 
 BEGIN
 
-        P_FETCH_ACCESS_CHECK : PROCESS (i_fetch_addr, i_pmp_csr)
+        P_FETCH_ACCESS_CHECK : PROCESS (ALL)
         BEGIN
                 s_fetch_fault <= check_access(i_fetch_addr, "100", i_pmp_csr, i_msse, '0');
         END PROCESS P_FETCH_ACCESS_CHECK;
 
-        P_MEM_ACCESS_CHECK : PROCESS (i_mem_addr, i_mem_write, i_mem_valid, i_pmp_csr, i_msse, i_ss_instr)
+        P_MEM_ACCESS_CHECK : PROCESS (ALL)
                 VARIABLE v_acc_type : STD_LOGIC_VECTOR(2 DOWNTO 0);
         BEGIN
                 IF i_mem_valid = '1' THEN

@@ -59,9 +59,13 @@ BEGIN
                                         s_fault_tag <= MEM_S_MISALIGNED;
                                 END IF;
                         ELSIF i_pmp_fault = '1' THEN
-                                IF i_ex_mem_bus.mem_read = '1' THEN
-                                        s_fault_tag <= MEM_L_ACCESS_FAULT;
-                                ELSIF i_ex_mem_bus.mem_write = '1' THEN
+                                IF i_ex_mem_bus.ss_instr = '0' THEN
+                                        IF i_ex_mem_bus.mem_read = '1' THEN
+                                                s_fault_tag <= MEM_L_ACCESS_FAULT;
+                                        ELSIF i_ex_mem_bus.mem_write = '1' THEN
+                                                s_fault_tag <= MEM_S_ACCESS_FAULT;
+                                        END IF;
+                                ELSE
                                         s_fault_tag <= MEM_S_ACCESS_FAULT;
                                 END IF;
                         END IF;

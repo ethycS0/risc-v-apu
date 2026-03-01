@@ -102,6 +102,9 @@ ARCHITECTURE structural OF core IS
 	--! Hazard detection unit component declaration
 	COMPONENT hazard_detection_unit IS
 		PORT (
+                        i_src_a : IN t_SrcA;        
+                        i_src_b : IN t_SrcB;        
+
 			i_rs1_addr_id : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 			i_rs2_addr_id : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 
@@ -154,7 +157,6 @@ ARCHITECTURE structural OF core IS
 	SIGNAL front_pipeline_flush : STD_LOGIC;  --! Pipeline flush signal (inserts bubbles on control hazard)
 	SIGNAL back_pipeline_flush : STD_LOGIC;  --! Pipeline flush signal (inserts bubbles on control hazard)
 
-	SIGNAL minstret_increment : STD_LOGIC;  --! Instruction retired signal (for CSR counter)
 	SIGNAL instruction_valid  : STD_LOGIC;  --! Valid instruction in WB stage (not stalled)
 
         SIGNAL s_pmp_csr : t_ex_pmp_data;
@@ -273,6 +275,8 @@ BEGIN
 	--! to insert bubbles when necessary.
 	U_HZD_DET : hazard_detection_unit
 	PORT MAP(
+                i_src_a          => s_id_ex_bus.src_a,
+                i_src_b          => s_id_ex_bus.src_b,
 		i_rs1_addr_id    => s_id_ex_bus.rs1_addr,
 		i_rs2_addr_id    => s_id_ex_bus.rs2_addr,
 		i_rd_addr_ex     => r_id_ex_reg.rd_addr,

@@ -41,7 +41,7 @@ BEGIN
 	--! - BLTU/BGEU use unsigned comparison (carry flag from subtraction)
 	--! The process only evaluates conditions when i_branch_active is high; otherwise
 	--! it defaults to not taken.
-	P_BRANCH_CONTROL : PROCESS (i_flags, i_funct3, i_branch_active)
+        P_BRANCH_CONTROL : PROCESS (ALL)
 	BEGIN
 		o_branch_taken <= '0';
 		IF i_branch_active = '1' THEN

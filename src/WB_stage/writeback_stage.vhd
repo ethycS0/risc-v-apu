@@ -17,7 +17,7 @@ END ENTITY writeback_stage;
 
 ARCHITECTURE behavioral OF writeback_stage IS
 
-	SIGNAL s_read_data : STD_LOGIC_VECTOR(31 DOWNTO 0); --! Load data (after extraction and extension)
+	SIGNAL s_read_data : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0'); --! Load data (after extraction and extension)
         SIGNAL s_fault_tag : t_fault_tag;
 
 BEGIN
@@ -108,7 +108,7 @@ BEGIN
 		VARIABLE half_val : STD_LOGIC_VECTOR(15 DOWNTO 0); -- Extracted halfword value (before extension)
 
 	BEGIN
-		s_read_data <= (OTHERS => 'X');
+		s_read_data <= (OTHERS => '0');
 
 		-- Byte extraction based on address alignment
 		CASE i_mem_wb_bus.rd_bus.rd_data(1 DOWNTO 0) IS
@@ -170,10 +170,27 @@ BEGIN
 
 		END CASE;
 	END PROCESS P_RD_WB_MUX;
+
+        P_CSR_CRITICAL : PROCESS (ALL)
+        BEGIN
+                o_wb_ex_fb.crit_csr <= '0';
+                IF i_mem_wb_bus.csr_bus.csr_write_en = '1' THEN
+                        CASE i_mem_wb_bus.csr_bus.csr_addr IS
+                                WHEN x"3A0" | x"3B0" | x"3B1" | x"3B2" | x"3B3" | x"351" | x"352" =>
+                                        o_wb_ex_fb.crit_csr <= '1';
+                                WHEN OTHERS =>
+                                        o_wb_ex_fb.crit_csr <= '0';
+                        END CASE;
+                END IF;
+        END PROCESS;
+
+
         
         o_wb_ex_fb.csr_bus.csr_data <= i_mem_wb_bus.csr_bus.csr_data;
         o_wb_ex_fb.csr_bus.csr_addr <= i_mem_wb_bus.csr_bus.csr_addr;
         o_wb_ex_fb.csr_bus.csr_write_en <= i_mem_wb_bus.csr_bus.csr_write_en WHEN s_fault_tag = VALID ELSE '0';
+
+        o_wb_ex_fb.pc4 <= i_mem_wb_bus.pc4;
 
 	-- Control signals to ID stage for register file write
 	o_wb_id_fb.rd_addr <= i_mem_wb_bus.rd_bus.rd_addr;
@@ -181,7 +198,7 @@ BEGIN
 	
 	-- Instruction retirement signal for minstret CSR counter
         o_wb_ex_fb.minstret <= i_instruction_valid WHEN s_fault_tag = VALID ELSE '0';
-        o_pipeline_flush <= '1' WHEN s_fault_tag /= VALID ELSE '0';
+        o_pipeline_flush <= '1' WHEN s_fault_tag /= VALID OR o_wb_ex_fb.crit_csr = '1' ELSE '0';
 
 END ARCHITECTURE behavioral;
 

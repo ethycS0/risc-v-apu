@@ -111,7 +111,6 @@ ARCHITECTURE structural OF execution_stage IS
                         i_mret            : IN STD_LOGIC;
 
                         o_pmp_csr       : OUT t_ex_pmp_data;
-                        o_pmp_changed   : OUT STD_LOGIC;
                         o_lpad_en       : OUT STD_LOGIC;                     
                         o_mtvec         : OUT STD_LOGIC_VECTOR(31 DOWNTO 0); 
                         o_mepc          : OUT STD_LOGIC_VECTOR(31 DOWNTO 0); 
@@ -145,12 +144,11 @@ ARCHITECTURE structural OF execution_stage IS
 	SIGNAL s_csr_output   : STD_LOGIC_VECTOR(31 DOWNTO 0);
 
 	SIGNAL s_trap_type    : t_fault_tag;
-        SIGNAL s_cause_code   : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL s_trap_mtval   : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL s_mtvec_val    : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL s_mepc_val     : STD_LOGIC_VECTOR(31 DOWNTO 0);
         SIGNAL s_lpad_en : STD_LOGIC;
-        SIGNAL s_pmp_changed : STD_LOGIC;
+        SIGNAL s_crit_csr : STD_LOGIC;
         SIGNAL s_fault_tag : t_fault_tag;
 
 BEGIN
@@ -211,7 +209,6 @@ BEGIN
                 i_mret        => i_wb_ex_bus.mret,
 
 		o_pmp_csr     => o_ex_pmp_csr,
-		o_pmp_changed => s_pmp_changed,
 		o_lpad_en     => s_lpad_en,
 		o_mtvec       => s_mtvec_val,
 		o_mepc        => s_mepc_val
@@ -234,7 +231,7 @@ BEGIN
 	);
 
         -- Forwarding
-	P_INPUT_SEL_FWD : PROCESS (ALL)
+        P_INPUT_SEL_FWD : PROCESS (ALL)
 	BEGIN
 		s_input_a      <= x"00000000";
 		s_input_b      <= x"00000000";
@@ -279,7 +276,7 @@ BEGIN
         END PROCESS P_CSR_ADDR_OVERRIDE;
 
 
-	P_CSR_FWD_MUX : PROCESS (ALL)
+        P_CSR_FWD_MUX : PROCESS (ALL)
 	BEGIN
 		CASE s_csr_fwd_select IS
 			WHEN FWD_FROM_EX_MEM => s_actual_csr_read_data <= i_csr_mem_bus.csr_data;
@@ -288,8 +285,22 @@ BEGIN
 		END CASE;
 	END PROCESS;
 
+        P_CSR_CRITICAL : PROCESS (ALL)
+        BEGIN
+                s_crit_csr <= '0';
+                IF s_csr_write_en = '1' THEN
+                        CASE s_csr_addr_mux IS
+                                WHEN x"3A0" | x"3B0" | x"3B1" | x"3B2" | x"3B3" | x"351" | x"352" =>
+                                        s_crit_csr <= '1';
+                                WHEN OTHERS =>
+                                        s_crit_csr <= '0';
+                        END CASE;
+                END IF;
+        END PROCESS;
+
+
         -- Calculation
-	P_CSR_ALU : PROCESS (ALL)
+        P_CSR_ALU : PROCESS (ALL)
 	BEGIN
                 s_ss_instr <= '0';
 		CASE s_csr_command IS
@@ -316,7 +327,7 @@ BEGIN
 	END PROCESS;
 
         -- Output Selection
-	P_RD_SEL : PROCESS (ALL)
+        P_RD_SEL : PROCESS (ALL)
 	BEGIN
                 IF s_fault_tag = EX_REDIR_MISALIGNED THEN
                         IF i_id_ex_bus.opr_type = OP_JUMP AND i_id_ex_bus.src_a = SRC_A_RS1 THEN
@@ -375,7 +386,7 @@ BEGIN
         END PROCESS P_FAULT_TAG;
 
 	s_is_branch <= '1' WHEN i_id_ex_bus.opr_type = OP_BRANCH ELSE '0';
-	P_PC_REDR : PROCESS (ALL)
+        P_PC_REDR : PROCESS (ALL)
 	BEGIN
 		o_ex_if_bus.pc_redirect      <= '0';
 		o_ex_if_bus.next_elp         <= '0';
@@ -406,6 +417,14 @@ BEGIN
                                 o_ex_if_bus.pc_redirect <= '1' WHEN s_fault_tag = VALID ELSE '0';
 				o_ex_if_bus.redirect_address <= s_branch_target;
 			END IF;
+
+                ELSIF i_wb_ex_bus.crit_csr = '1' THEN
+                        o_ex_if_bus.pc_redirect <= '1';
+                        o_ex_if_bus.redirect_address <= i_wb_ex_bus.pc4;
+
+                ELSIF s_crit_csr = '1' THEN
+                        o_ex_if_bus.pc_redirect <= '1';
+                        o_ex_if_bus.redirect_address <= i_id_ex_bus.pc;
 
 		END IF;
 	END PROCESS;

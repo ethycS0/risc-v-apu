@@ -264,6 +264,8 @@ PACKAGE rv32i_pkg IS
                 mcause          : STD_LOGIC_VECTOR(31 DOWNTO 0);
                 minstret        : STD_LOGIC;
                 fwd             : STD_LOGIC_VECTOR(31 DOWNTO 0);
+                crit_csr        : STD_LOGIC;
+                pc4             : STD_LOGIC_VECTOR(31 DOWNTO 0);
         END RECORD t_wb_ex_fb;
 
 

@@ -35,7 +35,7 @@ BEGIN
 	--! - I-type (JALR, Load, I-ALU): 12-bit signed immediate
 	--! - S-type (Store): 12-bit signed immediate split between [31:25] and [11:7]
 	--! - CSR immediate: 12-bit zero-extended for UIMM field
-	imm_reconstruct : PROCESS (i_instruction)
+        imm_reconstruct : PROCESS (ALL)
 	BEGIN
 		CASE i_instruction(6 DOWNTO 2) IS
 
