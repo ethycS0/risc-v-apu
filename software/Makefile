@@ -2,7 +2,7 @@
 PREFIX = riscv32-unknown-elf-
 OBJCOPY = $(PREFIX)objcopy
 
-.PHONY: all  clean ascii-tetris pong-c libc
+.PHONY: all  clean ascii-tetris pong-c libc zicfilp
 
 all: libc
 
@@ -11,6 +11,12 @@ libc:
 	$(OBJCOPY) -O binary tests/libc/libc.elf tests/libc/libc.bin
 	hexdump -v -e '1/4 "%08x" "\n"' tests/libc/libc.bin > ../code.hex
 	@echo "Generated code.hex for libc"
+
+zicfilp:  
+	$(MAKE) -C tests/zicfilp
+	$(OBJCOPY) -O binary tests/zicfilp/zicfilp.elf tests/zicfilp/zicfilp.bin
+	hexdump -v -e '1/4 "%08x" "\n"' tests/zicfilp/zicfilp.bin > ../code.hex
+	@echo "Generated code.hex for zicfilp"
 
 ascii-tetris: 
 	$(MAKE) -C apps/ascii-tetris
@@ -29,5 +35,6 @@ clean:
 	$(MAKE) -C apps/ascii-tetris clean
 	$(MAKE) -C apps/pong-c clean
 	$(MAKE) -C tests/libc clean
+	$(MAKE) -C tests/zicfilp clean
 	rm -f ../code.hex apps/*/*.bin tests/*/*.bin
 

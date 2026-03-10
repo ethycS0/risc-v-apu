@@ -36,3 +36,10 @@ int uart_getc(unsigned char *c) {
         UART_STATUS = 0; // Clear data valid flag
         return 1;
 }
+
+void uart_puts(const char *str) {
+
+        while (*str) {
+                uart_putc(*str++);
+        }
+}

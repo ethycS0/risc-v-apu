@@ -1,7 +1,9 @@
 #include "debug.h"
 #include "uart.h"
 
-extern void enable_lp(void);
+#define __ENABLE_ZICFILP__
+
+extern void _enable_lp(void);
 
 void win_function(char *ignored) {
         uart_puts("\n\n[!] CRITICAL: JOP EXPLOIT SUCCESSFUL!\n");
@@ -26,7 +28,7 @@ int main(void) {
         init();
 
 #ifdef __ENABLE_ZICFILP__
-        enable_lp();
+        _enable_lp();
         uart_puts("\n[SYSTEM] Zicfilp (Landing Pads) ENABLED.\n");
 #else
         uart_puts("\n[SYSTEM] Zicfilp (Landing Pads) DISABLED.\n");

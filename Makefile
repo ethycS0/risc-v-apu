@@ -7,7 +7,7 @@ OPENFPGALOADER = openFPGALoader
 
 ROOT_DIR := $(shell pwd)
 
-VARIANTS := ascii-tetris pong-c libc
+VARIANTS := ascii-tetris pong-c libc zicfilp
 CMD_VARIANT := $(filter $(VARIANTS),$(MAKECMDGOALS))
 
 ifneq ($(CMD_VARIANT),)

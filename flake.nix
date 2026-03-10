@@ -56,6 +56,7 @@
         commonPackages = with pkgs; [
           # Language Runtimes
           python312
+          python312Packages.pyserial
 
           # Language Servers
           vhdl-ls
