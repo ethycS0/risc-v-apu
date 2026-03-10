@@ -31,9 +31,6 @@ USE work.rv32i_pkg.ALL;
 
 ENTITY hazard_detection_unit IS
 	PORT (
-                i_src_a : IN t_SrcA;        
-                i_src_b : IN t_SrcB;        
-
 		i_rs1_addr_id : IN STD_LOGIC_VECTOR(4 DOWNTO 0); --! Source register 1 address (ID stage)
 		i_rs2_addr_id : IN STD_LOGIC_VECTOR(4 DOWNTO 0); --! Source register 2 address (ID stage)
 
@@ -46,10 +43,19 @@ END ENTITY hazard_detection_unit;
 
 ARCHITECTURE behavioral OF hazard_detection_unit IS
 
+	SIGNAL s_stall_condition : STD_LOGIC; --! Internal stall condition flag
+
 BEGIN
-	o_pipeline_stall <= '1' WHEN 
-                (i_mem_read_ex = '1') AND (to_integer(unsigned(i_rd_addr_ex)) /= 0) AND
-		(((i_rd_addr_ex = i_rs1_addr_id) AND i_src_a = SRC_A_RS1) OR ((i_rd_addr_ex = i_rs2_addr_id) AND i_src_b = SRC_B_RS2))
+
+	-- Detect load-use hazard: load in EX stage writing to register needed by instruction in ID stage
+	s_stall_condition <= '1' WHEN (i_mem_read_ex = '1') AND
+		(to_integer(unsigned(i_rd_addr_ex)) /= 0) AND
+		((i_rd_addr_ex = i_rs1_addr_id) OR
+		(i_rd_addr_ex = i_rs2_addr_id))
 		ELSE '0';
+
+	-- Output stall signal to pipeline control
+	o_pipeline_stall <= s_stall_condition;
+
 END ARCHITECTURE behavioral;
 
