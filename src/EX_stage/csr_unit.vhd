@@ -21,9 +21,9 @@ ENTITY csr_unit IS
 
                 o_pmp_csr       : OUT t_ex_pmp_data;
                 o_lpad_en       : OUT STD_LOGIC;                     
+                o_ss_en         : OUT STD_LOGIC;
 		o_mtvec         : OUT STD_LOGIC_VECTOR(31 DOWNTO 0); 
-		o_mepc          : OUT STD_LOGIC_VECTOR(31 DOWNTO 0); 
-                o_msse          : OUT STD_LOGIC
+		o_mepc          : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
 	);
 END ENTITY csr_unit;
 
@@ -275,7 +275,7 @@ BEGIN
 	o_mtvec <= r_mtvec;
         o_lpad_en <= r_mseccfg(0);
 	o_mepc <= r_mepc;
-        o_msse <= r_mseccfg(2);  
+        o_ss_en <= r_mseccfg(2);  
         o_pmp_csr.pmpcfg0  <= r_pmpcfg0;
         o_pmp_csr.pmpaddr0 <= r_pmpaddr0;
         o_pmp_csr.pmpaddr1 <= r_pmpaddr1;

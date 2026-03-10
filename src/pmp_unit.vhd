@@ -17,7 +17,6 @@ ENTITY pmp_unit IS
 		i_mem_write : IN  STD_LOGIC;
 		o_mem_write : OUT STD_LOGIC;
 
-                i_msse : IN STD_LOGIC;
                 i_ss_instr : IN STD_LOGIC;
 
 		o_fetch_fault : OUT STD_LOGIC;
@@ -31,7 +30,6 @@ ARCHITECTURE behavioral OF pmp_unit IS
                 addr : STD_LOGIC_VECTOR(31 DOWNTO 0);
                 access_type : STD_LOGIC_VECTOR(2 DOWNTO 0);
                 pmp_csr : t_ex_pmp_data;
-                msse : STD_LOGIC;
                 ss_instr : STD_LOGIC
         ) RETURN STD_LOGIC IS
 
@@ -127,8 +125,8 @@ ARCHITECTURE behavioral OF pmp_unit IS
 
                                 IF v_match_found THEN
                                         v_is_ss_region := (pmp_csr.pmp_e_bits(i) = '1') AND 
-                                                (v_cfg_byte(2 DOWNTO 0) = "010") AND 
-                                                (msse = '1');
+                                                (v_cfg_byte(2 DOWNTO 0) = "010");
+                                                
                                         IF v_is_ss_region THEN
                                                 IF access_type(2) = '1' THEN
                                                         v_fault := '1'; 
@@ -143,8 +141,6 @@ ARCHITECTURE behavioral OF pmp_unit IS
                                                 END IF;
                                         ELSE
                                                 IF ss_instr = '1' THEN
-                                                        v_fault := '1';
-                                                ELSIF (pmp_csr.pmp_e_bits(i) = '1') THEN
                                                         v_fault := '1';
                                                 ELSE
                                                         IF (v_cfg_byte(7) = '0') THEN
@@ -182,7 +178,7 @@ BEGIN
 
         P_FETCH_ACCESS_CHECK : PROCESS (ALL)
         BEGIN
-                s_fetch_fault <= check_access(i_fetch_addr, "100", i_pmp_csr, i_msse, '0');
+                s_fetch_fault <= check_access(i_fetch_addr, "100", i_pmp_csr, '0');
         END PROCESS P_FETCH_ACCESS_CHECK;
 
         P_MEM_ACCESS_CHECK : PROCESS (ALL)
@@ -195,7 +191,7 @@ BEGIN
                                 v_acc_type := "001";
                         END IF;
 
-                        s_mem_fault <= check_access(i_mem_addr, v_acc_type, i_pmp_csr, i_msse, i_ss_instr);
+                        s_mem_fault <= check_access(i_mem_addr, v_acc_type, i_pmp_csr, i_ss_instr);
                 ELSE
                         s_mem_fault <= '0';
                 END IF;

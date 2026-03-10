@@ -52,8 +52,6 @@ ARCHITECTURE structural OF core IS
                         i_clk : IN STD_LOGIC;
                         i_rst : IN STD_LOGIC;
 
-                        o_msse       : OUT STD_LOGIC;
-
                         i_id_ex_bus  : IN t_id_ex_data;
                         i_wb_ex_bus   : IN t_wb_ex_fb;
 
@@ -126,7 +124,6 @@ ARCHITECTURE structural OF core IS
                         i_mem_write : IN  STD_LOGIC;
                         o_mem_write : OUT STD_LOGIC;
 
-                        i_msse : IN STD_LOGIC;
                         i_ss_instr : IN STD_LOGIC;
 
                         o_fetch_fault : OUT STD_LOGIC;
@@ -166,7 +163,6 @@ ARCHITECTURE structural OF core IS
         SIGNAL s_pmp_fetch_fault : STD_LOGIC;
         SIGNAL s_pmp_mem_fault : STD_LOGIC;
 
-        SIGNAL s_msse     : STD_LOGIC;
         SIGNAL s_ss_instr : STD_LOGIC;
 
 BEGIN
@@ -183,7 +179,6 @@ BEGIN
                 o_mem_addr => o_data_addr,
                 i_mem_write => s_mem_write,
                 o_mem_write => o_data_write_en,
-                i_msse  => s_msse,
                 i_ss_instr => s_ss_instr,
                 o_fetch_fault => s_pmp_fetch_fault,
                 o_mem_fault => s_pmp_mem_fault
@@ -225,7 +220,6 @@ BEGIN
 	PORT MAP(
 		i_clk                   => i_clk,
 		i_rst                   => i_rst,
-                o_msse                  => s_msse,
 		i_id_ex_bus             => r_id_ex_reg,
                 i_wb_ex_bus             => s_wb_ex_bus,
 		i_rd_mem_bus            => r_ex_mem_reg.rd_bus,

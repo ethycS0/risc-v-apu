@@ -8,7 +8,6 @@ ENTITY execution_stage IS
 		i_clk : IN STD_LOGIC;
 		i_rst : IN STD_LOGIC;
 
-		o_msse       : OUT STD_LOGIC;
                 o_pipeline_flush : OUT STD_LOGIC;
 
 		i_id_ex_bus  : IN t_id_ex_data;
@@ -112,9 +111,9 @@ ARCHITECTURE structural OF execution_stage IS
 
                         o_pmp_csr       : OUT t_ex_pmp_data;
                         o_lpad_en       : OUT STD_LOGIC;                     
+                        o_ss_en         : OUT STD_LOGIC;
                         o_mtvec         : OUT STD_LOGIC_VECTOR(31 DOWNTO 0); 
-                        o_mepc          : OUT STD_LOGIC_VECTOR(31 DOWNTO 0); 
-                        o_msse          : OUT STD_LOGIC
+                        o_mepc          : OUT STD_LOGIC_VECTOR(31 DOWNTO 0) 
 		);
 	END COMPONENT csr_unit;
 
@@ -148,6 +147,7 @@ ARCHITECTURE structural OF execution_stage IS
 	SIGNAL s_mtvec_val    : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL s_mepc_val     : STD_LOGIC_VECTOR(31 DOWNTO 0);
         SIGNAL s_lpad_en : STD_LOGIC;
+        SIGNAL s_ss_en : STD_LOGIC;
         SIGNAL s_crit_csr : STD_LOGIC;
         SIGNAL s_fault_tag : t_fault_tag;
 
@@ -210,6 +210,7 @@ BEGIN
 
 		o_pmp_csr     => o_ex_pmp_csr,
 		o_lpad_en     => s_lpad_en,
+                o_ss_en       => s_ss_en,
 		o_mtvec       => s_mtvec_val,
 		o_mepc        => s_mepc_val
 	);
@@ -429,24 +430,26 @@ BEGIN
 		END IF;
 	END PROCESS;
 
-        o_ex_mem_bus.mem_read             <= i_id_ex_bus.mem_read WHEN s_fault_tag = VALID ELSE '0';
-	o_ex_mem_bus.mem_write            <= i_id_ex_bus.mem_write WHEN s_fault_tag = VALID ELSE '0';
+        o_ex_mem_bus.mem_read  <= i_id_ex_bus.mem_read  WHEN (s_fault_tag = VALID AND NOT (s_ss_instr = '1' AND s_ss_en = '0')) ELSE '0';
+        o_ex_mem_bus.mem_write <= i_id_ex_bus.mem_write WHEN (s_fault_tag = VALID AND NOT (s_ss_instr = '1' AND s_ss_en = '0')) ELSE '0';
+        o_ex_mem_bus.csr_bus.csr_write_en <= s_csr_write_en WHEN (s_fault_tag = VALID) ELSE '0';
 	o_ex_mem_bus.rd_bus.reg_write_en  <= i_id_ex_bus.reg_write WHEN s_fault_tag = VALID ELSE '0';
-	o_ex_mem_bus.csr_bus.csr_write_en <= s_csr_write_en WHEN s_fault_tag = VALID ELSE '0';
 
-        o_ex_mem_bus.rs2_data             <= s_input_a WHEN (s_ss_instr = '1' AND i_id_ex_bus.mem_read = '1') ELSE s_rs2_data_fwd;
-	o_ex_mem_bus.pc4                  <= i_id_ex_bus.pc4;
-	o_ex_mem_bus.wb_src               <= i_id_ex_bus.wb_src;
-	o_ex_mem_bus.rd_bus.rd_addr       <= i_id_ex_bus.rd_addr;
-	o_ex_mem_bus.funct3               <= i_id_ex_bus.funct3;
-	o_ex_mem_bus.pc                   <= i_id_ex_bus.pc;
+        o_ex_mem_bus.rs2_data <= s_input_a WHEN (s_ss_instr = '1' AND i_id_ex_bus.mem_read = '1') ELSE s_rs2_data_fwd;
+        o_ex_mem_bus.pc4      <= i_id_ex_bus.pc4;
+        o_ex_mem_bus.wb_src   <= i_id_ex_bus.wb_src;
+        o_ex_mem_bus.rd_bus.rd_addr <= i_id_ex_bus.rd_addr;
+        o_ex_mem_bus.funct3   <= i_id_ex_bus.funct3;
+        o_ex_mem_bus.pc       <= i_id_ex_bus.pc;
 
-	o_ex_mem_bus.csr_bus.csr_data     <= s_new_csr_value;
-	o_ex_mem_bus.csr_bus.csr_addr     <= s_csr_addr_mux;
-        o_ex_mem_bus.fault_tag <=s_fault_tag;
+        o_ex_mem_bus.csr_bus.csr_data <= s_new_csr_value;
+        o_ex_mem_bus.csr_bus.csr_addr <= s_csr_addr_mux;
+        o_ex_mem_bus.fault_tag        <= s_fault_tag;
 
-        o_ex_mem_bus.ss_instr <= s_ss_instr WHEN s_fault_tag = VALID ELSE '0';
+        o_ex_mem_bus.ss_instr <= '1' WHEN (s_fault_tag = VALID AND s_ss_instr = '1' AND s_ss_en = '1') ELSE '0';
+
         o_pipeline_flush <= '1' WHEN (s_fault_tag /= VALID OR o_ex_if_bus.pc_redirect = '1') ELSE '0';
+
 
 END ARCHITECTURE structural;
 

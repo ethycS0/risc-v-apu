@@ -38,6 +38,10 @@ SECTIONS {
         _stack_top = ORIGIN(RAM) + LENGTH(RAM);
         _stack_bottom = _stack_top - _stack_size;
 
-        ASSERT(_end <= _stack_bottom, "Error: Heap collides with stack")
+        _shadow_stack_size = 1K;
+        _shadow_stack_top = _stack_bottom; 
+        _shadow_stack_bottom = _shadow_stack_top - _shadow_stack_size;
+
+        ASSERT(_end <= _shadow_stack_bottom, "Error: Heap collides with shadow stack")
 }
 

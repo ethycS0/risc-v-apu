@@ -126,27 +126,30 @@ BEGIN
 			half_val := i_dmem_data(31 DOWNTO 16);  -- Upper halfword
 		END IF;
 
-		-- Extension and load type selection
-		CASE i_mem_wb_bus.funct3 IS
-			WHEN "010" =>  -- LW: Load Word (32-bit, no extension needed)
-				s_read_data <= i_dmem_data;
+                IF i_mem_wb_bus.ss_instr = '1' THEN
+                        s_read_data <= i_dmem_data; -- sspopchk always reads a full 32-bit word!
+                ELSE
+                        CASE i_mem_wb_bus.funct3 IS
+                                WHEN "010" =>  -- LW: Load Word (32-bit, no extension needed)
+                                        s_read_data <= i_dmem_data;
 
-			WHEN "001" =>  -- LH: Load Halfword (sign-extended)
-				s_read_data <= STD_LOGIC_VECTOR(resize(signed(half_val), 32));
+                                WHEN "001" =>  -- LH: Load Halfword (sign-extended)
+                                        s_read_data <= STD_LOGIC_VECTOR(resize(signed(half_val), 32));
 
-			WHEN "000" =>  -- LB: Load Byte (sign-extended)
-				s_read_data <= STD_LOGIC_VECTOR(resize(signed(byte_val), 32));
+                                WHEN "000" =>  -- LB: Load Byte (sign-extended)
+                                        s_read_data <= STD_LOGIC_VECTOR(resize(signed(byte_val), 32));
 
-			WHEN "101" =>  -- LHU: Load Halfword Unsigned (zero-extended)
-				s_read_data <= STD_LOGIC_VECTOR(resize(unsigned(half_val), 32));
+                                WHEN "101" =>  -- LHU: Load Halfword Unsigned (zero-extended)
+                                        s_read_data <= STD_LOGIC_VECTOR(resize(unsigned(half_val), 32));
 
-			WHEN "100" =>  -- LBU: Load Byte Unsigned (zero-extended)
-				s_read_data <= STD_LOGIC_VECTOR(resize(unsigned(byte_val), 32));
+                                WHEN "100" =>  -- LBU: Load Byte Unsigned (zero-extended)
+                                        s_read_data <= STD_LOGIC_VECTOR(resize(unsigned(byte_val), 32));
 
-			WHEN OTHERS =>
-				NULL;
+                                WHEN OTHERS =>
+                                        NULL;
 
-		END CASE;
+                        END CASE;
+                END IF;
 	END PROCESS P_LOAD;
         
 	P_RD_WB_MUX : PROCESS (ALL)

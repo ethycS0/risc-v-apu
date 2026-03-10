@@ -106,12 +106,11 @@ BEGIN
 						END IF;
 
                                         WHEN "100" =>
+                                                o_csr_write_en <= '1';
                                                 IF i_funct12 = "110011011100" THEN
                                                         o_csr_command <= CSR_SSR;
                                                         IF i_reg_write_en = '1' THEN
                                                                 o_csr_write_en <= '0';
-                                                        ELSE
-                                                                o_csr_write_en <= '1';
                                                         END IF;
                                                 ELSIF i_funct12(11 DOWNTO 5) = "1100111" THEN
                                                         o_csr_command <= CSR_SSW;

@@ -45,13 +45,13 @@
 
         standard-toolchain =
           mkToolchain "rv32i-zicsr-toolchain"
-            "https://github.com/ethycS0/eSC-V/releases/download/Toolchain/rv32i-zicsr-toolchain.tar.gz"
+            "https://github.com/ethycS0/eSC-V/releases/download/rv32i_zicsr/rv32i-zicsr-toolchain.tar.gz"
             "sha256:3e7634ae400d834ae510a2057e525400fe14356aeba5dde2bb1457f70d3779cd";
 
-        zicfilp-toolchain =
-          mkToolchain "rv32i-zicfilp-zicsr-toolchain"
-            "https://github.com/ethycS0/eSC-V/releases/download/CFI_LPAD_toolchain/rv32i-zicfilp-zicsr-toolchain.tar.gz"
-            "sha256:e60bf58303bc5b60419e94b2e65dac20d310d1a613a0bf3cd71de0936a64b46a";
+        cfi-toolchain =
+          mkToolchain "rv32i-zicsr-zicfilp-zicfiss-toolchain"
+            "https://github.com/ethycS0/eSC-V/releases/download/rv32i_zicsr_zicfilp_zicfiss/rv32i-zicsr-zicfilp-zicfiss-toolchain.tar.gz"
+            "sha256:2420d0031b14537c327da600fd047a066e1ca0e7c12811caaf7144cc0827e1f5";
 
         commonPackages = with pkgs; [
           # Language Runtimes
@@ -110,12 +110,12 @@
         packages = {
           default = standard-toolchain;
           standard = standard-toolchain;
-          zicfilp = zicfilp-toolchain;
+          cfi = cfi-toolchain;
         };
 
         devShells = {
           default = mkDevShell standard-toolchain;
-          zicfilp = mkDevShell zicfilp-toolchain;
+          cfi = mkDevShell cfi-toolchain;
         };
       }
     );

@@ -71,11 +71,12 @@ BEGIN
 			IF i_stall = '0' THEN
 				IF i_ex_if_bus.pc_redirect = '1' THEN
 					s_pmp_fault_aligned <= '0';
+                                        s_pc_aligned <= (OTHERS => '0');
 				ELSE
+                                        s_pc_aligned <= s_pc;
 					s_pmp_fault_aligned <= i_pmp_fault;
 				END IF;
 
-				s_pc_aligned <= s_pc;
 				s_elp_aligned <= s_elp_current;
 			END IF;
 		END IF;
@@ -143,6 +144,7 @@ BEGIN
 			o_if_id_bus.instruction <= C_NOP;
 			o_if_id_bus.fault_tag <= VALID;
                         o_if_id_bus.elp_active <= '0';
+                        o_if_id_bus.pc <= (OTHERS => '0');
 
 		ELSIF v_pmp_fault = '1' THEN
 			o_if_id_bus.instruction <= C_NOP;
