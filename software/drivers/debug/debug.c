@@ -48,10 +48,10 @@ void print_crash_dump(unsigned long mcause, unsigned long mepc, unsigned long *f
                         uart_puts(" - Store/AMO address misaligned\n");
                         break;
                 case 7:
-                        uart_puts(" - Store/AMO access fault (Smcfiss shadow stack violation?)\n");
+                        uart_puts(" - Store/AMO access fault\n");
                         break;
                 case 18:
-                        uart_puts(" - Software check exception (Zicfilp Landing Pad violation!)\n");
+                        uart_puts(" - Software check exception\n");
                         break;
                 default:
                         uart_puts(" - Unknown exception code\n");
@@ -66,25 +66,6 @@ void print_crash_dump(unsigned long mcause, unsigned long mepc, unsigned long *f
                 // fp[0] = previous_fp
                 // fp[-1] = return_address
 
-                uart_puts("\n--- STACK TRACE ---\n");
-                int depth = 0;
-                while (fp != 0 && depth < 10) {
-                        unsigned long ra = *(fp - 1);
-                        unsigned long prev_fp = *fp;
-                        uart_puts("[");
-                        uart_putc('0' + depth);
-                        uart_puts("] RA: ");
-                        print_hex(ra);
-                        uart_puts("  FP: ");
-                        print_hex((unsigned long)fp);
-                        uart_puts("\n");
-                        if (prev_fp <= (unsigned long)fp) {
-                                break;
-                        }
-                        fp = (unsigned long *)prev_fp;
-
-                        depth++;
-                }
                 uart_puts("-------------------\n");
                 while (1) {
                         __asm__("NOP");

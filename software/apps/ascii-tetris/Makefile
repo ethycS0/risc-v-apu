@@ -5,7 +5,7 @@ AS := riscv32-unknown-elf-as
 DRIVERS_DIR := ../../drivers
 COMMON_DIR := ../../common
 
-CFLAGS := -c -g -O0 -ffreestanding -march=rv32i_zicsr -mabi=ilp32
+ CFLAGS := -c -g -O0 -ffreestanding -march=rv32i_zicsr -mabi=ilp32
 CFLAGS += -I$(DRIVERS_DIR)/debug -I$(DRIVERS_DIR)/uart
 
 ASFLAGS := -march=rv32i_zicfilp_zicsr -mabi=ilp32

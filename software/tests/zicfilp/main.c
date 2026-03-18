@@ -39,7 +39,7 @@ int main(void) {
         print_hex((unsigned int)&win_function);
         uart_puts("\n");
 
-        uart_puts("\nEnter string (Overflow past 16 bytes to overwrite func ptr):\n> ");
+        uart_puts("\nEnter string:\n> ");
 
         int i = 0;
         unsigned char c;
