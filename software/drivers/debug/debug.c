@@ -19,7 +19,7 @@ void print_hex(unsigned long val) {
         }
 }
 
-void print_crash_dump(unsigned long mcause, unsigned long mepc, unsigned long *fp) {
+void print_crash_dump(unsigned long mcause, unsigned long mepc, unsigned long mtval, unsigned long *fp) {
         uart_puts("\n\n\033[31m!!! SYSTEM TRAP (CRASH) !!!\033[0m\n");
         uart_puts("mcause: ");
         print_hex(mcause);
@@ -59,13 +59,8 @@ void print_crash_dump(unsigned long mcause, unsigned long mepc, unsigned long *f
                 }
                 uart_puts("mepc:   ");
                 print_hex(mepc);
-                uart_puts(" (Address where crash happened)\n");
-
-                // Simple Stack Trace Walking
-                // Assumes standard RISC-V stack frame:
-                // fp[0] = previous_fp
-                // fp[-1] = return_address
-
+                uart_puts("mtval:  ");
+                print_hex(mtval);
                 uart_puts("-------------------\n");
                 while (1) {
                         __asm__("NOP");

@@ -58,10 +58,14 @@ loop: j loop
 
 .align 4
 _trap_handler:
+#if defined(__ENABLE_ZICFILP__) || defined(__ENABLE_SMCFISS__)
+        li t0, 0
+        csrw 0x747, t0
+#endif
         csrr a0, 0x342
         csrr a1, 0x341
-        mv a2, s0
-
+        csrr a2, 0x343
+        mv   a3, s0
         call print_crash_dump
 
 die:

@@ -2,7 +2,7 @@
 
 ## Introduction
 
-eSC-V is a 5-stage pipelined RV32I Zicsr Zicfilp Smcfiss Smpmpnd RISC-V SoC implemented entirely in VHDL. It is designed to provide hardware-enforced Control-Flow Integrity (CFI) for bare-metal, M-mode microcontrollers. To protect against Return-Oriented Programming (ROP) and Jump-Oriented Programming (JOP) , the core integrates the Zicfilp extension for forward-edge protection and the draft Smcfiss and Smpmpind extensions to enforce a hardware shadow stack.
+eSC-V is a 5-stage pipelined RV32I Zicsr Zicfilp Smcfiss Smpmpind RISC-V SoC implemented entirely in VHDL. It is designed to provide hardware-enforced Control-Flow Integrity (CFI) for bare-metal, M-mode microcontrollers. To protect against Return-Oriented Programming (ROP) and Jump-Oriented Programming (JOP) , the core integrates the Zicfilp extension for forward-edge protection and the draft Smcfiss and Smpmpind extensions to enforce a hardware shadow stack.
 
 The SoC has a dual-port unified memory controller that synthesizes to BRAM, a UART for communication, and has been verified against Sail and Spike formal models using the RISC-V Compatibility Framework (RISCOF).
 
@@ -23,7 +23,7 @@ eSC-V/
 ├── docs/                  # Documentation and diagrams
 │   ├── dev_docs/
 │   ├── pipeline.png
-│   └── spec_docs/
+│   └── specifications/
 ├── software/              # Software and firmware
 │   ├── apps
 │   ├── common
@@ -49,119 +49,81 @@ eSC-V/
 
 ## Usage
 
-> [!CAUTION]
-> **Toolchain Compatibility**
-> There are separate toolchains for the baseline **RV32I Zicsr** and the secure **RV32I Zicsr Zicfilp Zicfiss** architecture due to binary incompatibilities in the precompiled `newlib`.
+### Starting the Environment
 
-**Available Toolchains**
-
-- **Standard Toolchain (`default`):** Use for general application development. Provides full `newlib` support.
-- **CFI Toolchain (`cfi`):** Use for security compliance testing and exploit validation. Standard library integration is limited here; it requires unbuffered `printf`, and `scanf` is unreliable.
-
-**How to Switch**
-
-- **Manual:** Run `nix develop` (default) or `nix develop .#cfi`.
-- **Automatic (with envrc):** Run `echo default > .toolchain` or `echo cfi > .toolchain`.
-
-**Starting the Environment**
-From the project root, enter the Nix development shell with the required toolchain. The Makefile handles building software, simulation, and synthesis directly without needing to change directories.
+From the project root, enter the Nix development shell. The Makefile handles building software, simulation, and synthesis directly without needing to change directories.
 
 ```bash
-# Enter the standard development shell
 nix develop
-
-# OR enter the CFI-enabled shell
-nix develop .#cfi
 ```
 
 ### Software Variants
 
-The build system will automatically compile the selected software variant before running the simulation or synthesis. Ensure you are in the correct Nix shell for the variant you want to build.
+The build system will automatically compile the selected software variant before running simulation or synthesis.
 
-**Standard Applications (Require `default` toolchain):**
+**Standard Applications:**
 
 - `ascii-tetris` (Default): A Tetris game playable over UART.
 - `pong-c`: A Pong game playable over UART.
 - `libc`: Functional tests for newlib functions like `printf`.
 
-**Security Validation (Require `cfi` toolchain):**
+**Security Validation:**
 
 - `smcfiss`: A vulnerable C program designed to test backward-edge protection (shadow stack).
 - `zicfilp`: A vulnerable C program designed to test forward-edge protection (landing pads).
 
 ### Simulation
 
-Run the SoC simulation. There is no functional simulation output, but simulation is useful for debugging waveforms.
-
 ```bash
 # Run with ASCII Tetris (default)
 make run
-
 # Run with specific software
 make run pong-c
 make run libc
-
 # View waveforms
 make view
-
 ```
 
 ### FPGA Synthesis & Programming
 
 > **Note:** For custom hardware constraints, modify `constraints/fpga.cst`.
 
-Synthesize the SoC with the selected software initialized in BRAM and program the FPGA (SRAM).
-
 ```bash
 # Program with Tetris (default)
 make program
-
-# Program with a specific standard application
+# Program with a specific application
 make program pong-c
-
 # Program with a vulnerable CFI test program
 make program smcfiss
-
 ```
 
 ### Security Testing
 
-To validate the hardware-enforced Control-Flow Integrity (CFI) extensions, a proof-of-concept exploit environment is provided. The `smcfiss` and `zicfilp` software variants contain a `vulnerable_function()` that accepts input over the UART interface without proper bounds checking. They print the memory address of a target `win_function()` that is never legitimately called during standard execution.
+To validate hardware-enforced CFI, a proof-of-concept exploit environment is provided. The `smcfiss` and `zicfilp` variants contain a `vulnerable_function()` that accepts UART input without bounds checking and print the address of an unreachable `win_function()`.
 
-You can use the provided Python scripts to deliver a crafted payload over UART. The payload overflows the local buffer to overwrite the stored return address or function pointer with the address of the `win_function()`.
+**Steps:**
 
-**Steps to run the exploit validation:**
+> CFI protections can be disabled individually by commenting out `-D__ENABLE_ZICFILP__` or `-D__ENABLE_SMCFISS__` in the respective Makefile under `software/tests/`.
 
-1. Enter the CFI-enabled toolchain environment:
-
-```bash
-nix develop .#cfi
-
-```
-
-2. Build and program the FPGA with one of the vulnerable targets:
+1. Build and program the FPGA with a vulnerable target:
 
 ```bash
 make program smcfiss
 # OR
 make program zicfilp
-
 ```
 
-3. Run the corresponding Python exploit script to send the malicious payload over UART:
+2. Run the corresponding exploit script:
 
 ```bash
 python3 scripts/smcfiss_exploit.py
 # OR
 python3 scripts/zicfilp_exploit.py
-
 ```
 
-4. **Observe the Results:**
-
-- **Without CFI:** The exploit succeeds, redirecting control flow to the `win_function()` and printing a success message to the terminal.
-
-- **With CFI Enabled:** The hardware enforcement successfully traps the violation. The core neutralizes the faulting instruction and outputs a fatal crash report via UART detailing the exception.
+3. **Observe the Results:**
+   - **Without CFI:** The exploit succeeds, redirecting control flow to `win_function()`.
+   - **With CFI Enabled:** The hardware traps the violation and outputs a fatal crash report over UART.
 
 ## Todo
 
@@ -176,16 +138,14 @@ python3 scripts/zicfilp_exploit.py
 - [x] Tetris
 - [x] Pong
 - [x] Zicfilp
-- [x] Smpmpnd
+- [x] Smpmpind
 - [x] Smcfiss
+- [ ] Bootloader
 - [ ] Wishbone Interconnect
 - [ ] DDR3 controller
 - [ ] Cache
 - [ ] ASCII Doom
 - [ ] Branch Prediction Unit
-- [ ] C Extension
-- [ ] M Extension
-- [ ] A Extension
 
 ## Contributing
 

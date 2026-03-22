@@ -23,8 +23,8 @@ SECTIONS {
 
         .bss : ALIGN(4) {
                 _bss_start = .;
-                *(.bss.*)
-                *(.sbss.*)
+                *(.bss .bss.*)
+                *(.sbss .sbss.*)
                 *(COMMON)
                 . = ALIGN(8);
                 _bss_end = .;

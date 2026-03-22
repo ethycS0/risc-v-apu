@@ -1,8 +1,8 @@
 # drivers
 CC ?= riscv32-unknown-elf-gcc
-AS ?= riscv32-unknown-elf-as
 AR ?= riscv32-unknown-elf-ar
 
+CFLAGS := -fcf-protection=full -ffreestanding -march=rv32i_zicfilp_zicfiss_zicsr -mabi=ilp32
 CFLAGS += -Iuart -Idebug
 
 DIRS := $(wildcard */*)

@@ -191,8 +191,23 @@ BEGIN
 		WAIT FOR 200 ns;  -- System initialization delay
 
 		REPORT "Test: Sending Input...";
-		UART_SEND(C_INPUT_DATA, r_uart_rx);
 
+		UART_SEND(C_INPUT_DATA, r_uart_rx);
+		WAIT FOR 1000 us;  -- Allow time for processing and response
+		UART_SEND(C_INPUT_DATA, r_uart_rx);
+		WAIT FOR 1000 us;  -- Allow time for processing and response
+		UART_SEND(C_INPUT_DATA, r_uart_rx);
+		WAIT FOR 1000 us;  -- Allow time for processing and response
+		UART_SEND(C_INPUT_DATA, r_uart_rx);
+		WAIT FOR 1000 us;  -- Allow time for processing and response
+		UART_SEND(C_INPUT_DATA, r_uart_rx);
+		WAIT FOR 1000 us;  -- Allow time for processing and response
+		UART_SEND(C_INPUT_DATA, r_uart_rx);
+		WAIT FOR 1000 us;  -- Allow time for processing and response
+		UART_SEND(C_INPUT_DATA, r_uart_rx);
+		WAIT FOR 1000 us;  -- Allow time for processing and response
+		UART_SEND(C_INPUT_DATA, r_uart_rx);
+		WAIT FOR 1000 us;  -- Allow time for processing and response
 		REPORT "Test: Waiting for response...";
 		WAIT FOR 1000 us;  -- Allow time for processing and response
 

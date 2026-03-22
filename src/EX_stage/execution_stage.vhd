@@ -130,6 +130,7 @@ ARCHITECTURE structural OF execution_stage IS
 	SIGNAL s_csr_fwd_select : t_Forward;
 
         SIGNAL s_ss_instr : STD_LOGIC;
+        SIGNAL s_lpad_exempt : STD_LOGIC;
 
 	SIGNAL s_input_a              : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL s_input_b              : STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -387,6 +388,10 @@ BEGIN
         END PROCESS P_FAULT_TAG;
 
 	s_is_branch <= '1' WHEN i_id_ex_bus.opr_type = OP_BRANCH ELSE '0';
+        s_lpad_exempt <= '1' WHEN (i_id_ex_bus.rs1_addr = "00001" OR 
+                                i_id_ex_bus.rs1_addr = "00101" OR 
+                                i_id_ex_bus.rs1_addr = "00111") ELSE '0';
+
         P_PC_REDR : PROCESS (ALL)
 	BEGIN
 		o_ex_if_bus.pc_redirect      <= '0';
@@ -405,9 +410,9 @@ BEGIN
                         o_ex_if_bus.pc_redirect <= '1' WHEN s_fault_tag = VALID ELSE '0';
 			IF i_id_ex_bus.src_a = SRC_A_RS1 THEN
 				o_ex_if_bus.redirect_address <= s_alu_result(31 DOWNTO 1) & '0';
-				IF i_id_ex_bus.rs1_addr /= "00001" AND i_id_ex_bus.rs1_addr /= "00101" AND s_lpad_en = '1' THEN
-					o_ex_if_bus.next_elp <= '1';
-				END IF;
+                                IF s_lpad_exempt = '0' AND s_lpad_en = '1' THEN
+                                        o_ex_if_bus.next_elp <= '1';
+                                END IF;
 
 			ELSE
 				o_ex_if_bus.redirect_address <= s_branch_target;
@@ -429,6 +434,7 @@ BEGIN
 
 		END IF;
 	END PROCESS;
+
 
         o_ex_mem_bus.mem_read  <= i_id_ex_bus.mem_read  WHEN (s_fault_tag = VALID AND NOT (s_ss_instr = '1' AND s_ss_en = '0')) ELSE '0';
         o_ex_mem_bus.mem_write <= i_id_ex_bus.mem_write WHEN (s_fault_tag = VALID AND NOT (s_ss_instr = '1' AND s_ss_en = '0')) ELSE '0';

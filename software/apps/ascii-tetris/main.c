@@ -10,7 +10,6 @@ int main(void) {
                         uart_getc(&c);
                 }
 
-                setvbuf(stdout, NULL, _IONBF, 0); // Disable all buffering for stdout
                 printf("Welcome to Tetris\n");
 
                 tetris_run(20, 20);

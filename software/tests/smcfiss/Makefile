@@ -1,18 +1,12 @@
 # tests/smcfiss
 CC := riscv32-unknown-elf-gcc 
-AS := riscv32-unknown-elf-as
 
 DRIVERS_DIR := ../../drivers
 COMMON_DIR := ../../common
 
-CFLAGS := -c -g -O0 -ffreestanding -march=rv32i_zicfiss_zicsr -mabi=ilp32 -fcf-protection=return
+CFLAGS := -c -g -O2 -fcf-protection=return -ffreestanding -march=rv32i_zicfilp_zicfiss_zicsr -mabi=ilp32
 CFLAGS += -I$(DRIVERS_DIR)/debug -I$(DRIVERS_DIR)/uart
-CFLAGS += -D__ENABLE_SMCFISS__ # Comment to demonstrate failiure
-
-export CC
-export CFLAGS
-
-ASFLAGS := -march=rv32i_zicfiss_zicsr -mabi=ilp32
+CFLAGS += -D__ENABLE_SMCFISS__
 
 LDFLAGS := -march=rv32i_zicfiss_zicsr -mabi=ilp32 -nostartfiles
 LDFLAGS += --specs=nano.specs

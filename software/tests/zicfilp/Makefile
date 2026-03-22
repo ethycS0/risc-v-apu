@@ -1,18 +1,12 @@
 # tests/zicfilp
 CC := riscv32-unknown-elf-gcc
-AS := riscv32-unknown-elf-as
 
 DRIVERS_DIR := ../../drivers
 COMMON_DIR := ../../common
 
-CFLAGS := -c -g -O0 -ffreestanding -march=rv32i_zicfilp_zicsr -mabi=ilp32 -fcf-protection=branch -fno-inline-functions -fno-unit-at-a-time -mno-relax -fno-jump-tables -mstrict-align -D__OPTIMIZE_SIZE__ -fno-partial-inlining -fno-optimize-sibling-calls -fno-ipa-sra -fno-shrink-wrap -fno-caller-saves
+CFLAGS := -c -g -O2 -fcf-protection=branch -ffreestanding -march=rv32i_zicfilp_zicfiss_zicsr -mabi=ilp32
 CFLAGS += -I$(DRIVERS_DIR)/debug -I$(DRIVERS_DIR)/uart
-CFLAGS += -D__ENABLE_ZICFILP__ # Comment to demonstrate failiure
-
-export CC
-export CFLAGS
-
-ASFLAGS := -march=rv32i_zicfilp_zicsr -mabi=ilp32
+CFLAGS += -D__ENABLE_ZICFILP__ 
 
 LDFLAGS := -march=rv32i_zicfilp_zicsr -mabi=ilp32 -nostartfiles
 LDFLAGS += --specs=nano.specs
