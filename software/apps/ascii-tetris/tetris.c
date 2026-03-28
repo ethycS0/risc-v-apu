@@ -1,4 +1,5 @@
 #include "tetris.h"
+#include "debug.h"
 #include "uart.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -230,13 +231,16 @@ void tetris_run(int w, int h) {
         int count = 0;
         tetris_init(&t, w, h);
         srand(get_cycles());
-        int game_speed = 2;
+        int game_speed = 1;
 
         tetris_new_block(&t);
         while (!t.gameover) {
                 count++;
                 if (count % 50 == 0) {
                         tetris_print(&t);
+                        print_stack(10);
+                        print_csrs();
+                        print_gprs();
                 }
                 if (count % 350 == 0) {
                         tetris_gravity(&t);
@@ -262,6 +266,7 @@ void tetris_run(int w, int h) {
                                 break;
                         }
                 }
+
                 delay(game_speed);
         }
 

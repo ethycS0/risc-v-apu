@@ -18,11 +18,13 @@ TARGET := ascii-tetris.elf
 
 all: $(TARGET)
 
+# $(TARGET): crt0.o $(OBJS) $(DRIVERS_DIR)/libdrivers.a
+# 	$(CC) $(LDFLAGS) -o $@ crt0.o $(OBJS) $(DRIVERS_DIR)/libdrivers.a
+
 $(TARGET): crt0.o $(OBJS) $(DRIVERS_DIR)/libdrivers.a
 	$(CC) $(LDFLAGS) -o $@ crt0.o $(OBJS) \
-	    $(DRIVERS_DIR)/syscalls/syscalls.o \
-	    $(DRIVERS_DIR)/debug/debug.o \
-	    $(DRIVERS_DIR)/uart/uart.o
+		$(DRIVERS_DIR)/libdrivers.a \
+		$(DRIVERS_DIR)/syscalls/syscalls.o
 
 %.o: %.c 
 	$(CC) $(CFLAGS) $< -o $@
@@ -31,6 +33,7 @@ crt0.o: $(COMMON_DIR)/crt0.S
 	$(CC) $(CFLAGS) -x assembler-with-cpp -c $< -o $@
 
 $(DRIVERS_DIR)/libdrivers.a:
+	$(MAKE) -C $(DRIVERS_DIR) clean
 	$(MAKE) -C $(DRIVERS_DIR)
 	
 clean: 

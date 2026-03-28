@@ -5,9 +5,10 @@ AR ?= riscv32-unknown-elf-ar
 CFLAGS := -fcf-protection=full -ffreestanding -march=rv32i_zicfilp_zicfiss_zicsr -mabi=ilp32
 CFLAGS += -Iuart -Idebug
 
-DIRS := $(wildcard */*)
+ASM_SRCS := $(wildcard */*.S)
 SRCS := $(wildcard */*.c)
-OBJS := $(SRCS:.c=.o)
+
+OBJS := $(SRCS:.c=.o) $(ASM_SRCS:.S=.o)
 
 LIB := libdrivers.a
 
@@ -18,6 +19,9 @@ $(LIB): $(OBJS)
 	@echo "Built $@"
 
 %.o: %.c 
+	$(CC) $(CFLAGS) -c $< -o $@
+
+%.o: %.S
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
