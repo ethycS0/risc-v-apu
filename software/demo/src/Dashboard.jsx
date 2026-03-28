@@ -10,18 +10,17 @@ const UartTerminal = ({ wsRef, isDarkMode }) => {
   useEffect(() => {
     const term = new Terminal({
       theme: {
-        background: isDarkMode ? '#0a0a0a' : '#f5f5f5',
+        background: 'transparent',
         foreground: isDarkMode ? '#e0e0e0' : '#1a1a1a',
         cursor: isDarkMode ? '#e0e0e0' : '#1a1a1a',
-        selectionBackground: isDarkMode ? '#333333' : '#cccccc',
+        selectionBackground: 'rgba(128, 128, 128, 0.3)',
       },
-      fontFamily: '"JetBrainsMono Nerd Font", "JetBrains Mono", monospace',
-      fontSize: 16,
-      cols: 80,
-      rows: 24,
+      fontFamily: '"JetBrainsMono Nerd Font", monospace',
+      fontSize: 14,
+      cols: 70,
+      rows: 25,
       cursorBlink: true,
       convertEol: true,
-      scrollback: 5000,
     })
 
     term.open(terminalDiv.current)
@@ -31,9 +30,7 @@ const UartTerminal = ({ wsRef, isDarkMode }) => {
       term.write(event.data)
     }
     
-    if (wsRef.current) {
-      wsRef.current.addEventListener('message', handleMessage)
-    }
+    if (wsRef.current) wsRef.current.addEventListener('message', handleMessage)
 
     const inputListener = term.onData((data) => {
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
@@ -42,9 +39,7 @@ const UartTerminal = ({ wsRef, isDarkMode }) => {
     })
 
     return () => {
-      if (wsRef.current) {
-        wsRef.current.removeEventListener('message', handleMessage)
-      }
+      if (wsRef.current) wsRef.current.removeEventListener('message', handleMessage)
       inputListener.dispose() 
       term.dispose()
     }
@@ -67,28 +62,18 @@ const Dashboard = () => {
     wsRef.current = ws
 
     const handleKeyDown = (e) => {
-      if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
-        e.preventDefault()
-      }
-
+      if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault()
       if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return
 
       let charToSend = null
-      if (e.key.length === 1) {
-        charToSend = e.key
-      } else if (e.key === 'Enter') {
-        charToSend = '\r'
-      } else if (e.key === 'Backspace') {
-        charToSend = '\b'
-      }
+      if (e.key.length === 1) charToSend = e.key
+      else if (e.key === 'Enter') charToSend = '\r'
+      else if (e.key === 'Backspace') charToSend = '\b'
 
-      if (charToSend) {
-        wsRef.current.send(`KEY:${charToSend}`)
-      }
+      if (charToSend) wsRef.current.send(`KEY:${charToSend}`)
     }
 
     window.addEventListener('keydown', handleKeyDown)
-
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
       ws.close()
@@ -96,36 +81,15 @@ const Dashboard = () => {
   }, [])
 
   const handleBootCPU = () => {
-    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      wsRef.current.send('KEY: ')
-    }
-  }
-
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode)
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) wsRef.current.send('KEY: ')
   }
 
   const tests = [
-    { id: 'pong', label: 'Pong', desc: 'Real-time ping pong' },
-    { id: 'tetris', label: 'Tetris', desc: 'Real time tetris gameplay' },
-    { id: 'libc', label: 'Libc Test', desc: 'Standard M-mode system output' },
-    {
-      id: 'cfi',
-      label: 'CFI Security Test',
-      desc: 'Hardware-enforced exploit mitigation',
-    },
+    { id: 'pong', label: 'PONG' },
+    { id: 'tetris', label: 'TETRIS' },
+    { id: 'libc', label: 'LIBC' },
+    { id: 'cfi', label: 'CFI' },
   ]
-
-  const renderActiveModule = () => {
-    if (activeTest === 'none') {
-      return (
-        <div className="pulse-animation empty-state">
-          <p className="init-text">&gt; SELECT MODULE TO INITIALIZE</p>
-        </div>
-      )
-    }
-    return <UartTerminal wsRef={wsRef} isDarkMode={isDarkMode} />
-  }
 
   return (
     <div className={`dashboard-root ${isDarkMode ? 'dark' : 'light'}`}>
@@ -136,39 +100,70 @@ const Dashboard = () => {
             <h1 className="dashboard-title">eSC-V</h1>
             <p className="dashboard-subtitle">M-mode CFI-Hardened RV32I SoC</p>
           </div>
-
           <div className="header-controls">
             <div className="theme-switch-wrapper">
               <label className="theme-switch">
-                <input 
-                type="checkbox" 
-                checked={!isDarkMode} 
-                onChange={toggleTheme} 
-                />
-              <span className="slider"></span>
+                <input type="checkbox" checked={!isDarkMode} onChange={() => setIsDarkMode(!isDarkMode)} />
+                <span className="slider"></span>
               </label>
-             </div>
-           </div> 
+            </div>
+          </div>
         </header>
 
-        <div className="tests-grid">
-          {tests.map((test) => (
-            <button
-              key={test.id}
-              onClick={() => setActiveTest(test.id)}
-              className={`test-button ${activeTest === test.id ? 'active' : ''}`}
-            >
-              <div className="test-header">
-                <span className="test-label">{test.label}</span>
-              </div>
-              <p className="test-desc">{test.desc}</p>
-            </button>
-          ))}
-        </div>
+        <div className="main-layout">
+          <section className="left-section">
+            <main className="viewport-container">
+              {activeTest === 'none' ? (
+                <div className="pulse-animation empty-state">
+                  <p className="init-text">&gt; SELECT MODULE</p>
+                </div>
+              ) : (
+                <UartTerminal wsRef={wsRef} isDarkMode={isDarkMode} />
+              )}
+            </main>
 
-        <main className="viewport-container">
-          {renderActiveModule()}
-        </main>
+            <div className="cube-grid">
+              {tests.map((test) => (
+                <button
+                  key={test.id}
+                  onClick={() => setActiveTest(test.id)}
+                  className={`test-cube ${activeTest === test.id ? 'active' : ''}`}
+                >
+                  <span className="cube-label">{test.label}</span>
+                </button>
+              ))}
+            </div>
+          </section>
+
+          <aside className="right-section">
+            <table className="status-table">
+              <thead>
+                <tr>
+                  <th>1</th>
+                  <th>2</th>
+                  <th>3</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </aside>
+        </div>
 
         <footer className="dashboard-footer">
           <span>BOARD: TANG PRIMER 20K</span>
