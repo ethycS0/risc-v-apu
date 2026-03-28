@@ -41,32 +41,40 @@
           # Language Runtimes
           python312
           python312Packages.pyserial
+          nodejs_24
+
           # Language Servers
           vhdl-ls
           asm-lsp
+
           # Compilation & Simulation
           ghdl
           gtkwave
+
           # Synthesis & Implementation
           yosys
           yosys-ghdl
           nextpnr
           python312Packages.apycula
           openfpgaloader
+
           # Verification & Compliance
           python312Packages.riscof
           python312Packages.distutils
           sail-riscv
           spike
           dtc
+
           # Documentation
           texlive.combined.scheme-full
           doxygen
+
           # Build Tools
           clang
           gnumake
           bear
           flex
+
           # Serial Interface
           screen
           xxd
