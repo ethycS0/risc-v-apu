@@ -134,35 +134,6 @@ const Dashboard = () => {
               ))}
             </div>
           </section>
-
-          <aside className="right-section">
-            <table className="status-table">
-              <thead>
-                <tr>
-                  <th>1</th>
-                  <th>2</th>
-                  <th>3</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                </tr>
-                <tr>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                </tr>
-                <tr>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                </tr>
-              </tbody>
-            </table>
-          </aside>
         </div>
 
         <footer className="dashboard-footer">
