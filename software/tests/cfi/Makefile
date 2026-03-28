@@ -1,21 +1,21 @@
-# tests/smcfiss
+# tests/cfi
 CC := riscv32-unknown-elf-gcc 
 
 DRIVERS_DIR := ../../drivers
 COMMON_DIR := ../../common
 
-CFLAGS := -c -g -O2 -fcf-protection=return -ffreestanding -march=rv32i_zicfilp_zicfiss_zicsr -mabi=ilp32
+CFLAGS := -c -g -O0 -fcf-protection=full -ffreestanding -march=rv32i_zicfilp_zicfiss_zicsr -mabi=ilp32
 CFLAGS += -I$(DRIVERS_DIR)/debug -I$(DRIVERS_DIR)/uart
-CFLAGS += -D__ENABLE_SMCFISS__
+CFLAGS += -D__ENABLE_SMCFISS__ -D__ENABLE_ZICFILP__
 
-LDFLAGS := -march=rv32i_zicfiss_zicsr -mabi=ilp32 -nostartfiles
+LDFLAGS := -march=rv32i_zicfilp_zicfiss_zicsr -mabi=ilp32 -nostartfiles
 LDFLAGS += --specs=nano.specs
 LDFLAGS += -T$(COMMON_DIR)/link.ld
 
 SRCS := main.c
 OBJS := $(SRCS:.c=.o) 
 
-TARGET := smcfiss.elf
+TARGET := cfi.elf
 
 all: $(TARGET)
 

@@ -21,9 +21,6 @@ void print_hex(unsigned long val) {
 
 void print_crash_dump(unsigned long mcause, unsigned long mepc, unsigned long mtval, unsigned long *fp) {
         uart_puts("\n\n\033[31m!!! SYSTEM TRAP (CRASH) !!!\033[0m\n");
-        uart_puts("mcause: ");
-        print_hex(mcause);
-        uart_puts(" ");
         if (mcause & 0x80000000) {
                 uart_puts("(Interrupt)\n");
         } else {
@@ -57,11 +54,14 @@ void print_crash_dump(unsigned long mcause, unsigned long mepc, unsigned long mt
                         uart_puts(" - Unknown exception code\n");
                         break;
                 }
-                uart_puts("mepc:   ");
+
+                uart_puts("\nmcause: ");
+                print_hex(mcause);
+                uart_puts("\nmepc:   ");
                 print_hex(mepc);
-                uart_puts("mtval:  ");
+                uart_puts("\nmtval:  ");
                 print_hex(mtval);
-                uart_puts("-------------------\n");
+                uart_puts("\n-------------------\n");
                 while (1) {
                         __asm__("NOP");
                 }

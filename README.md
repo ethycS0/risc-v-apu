@@ -49,6 +49,8 @@ eSC-V/
 
 ## Usage
 
+Here is the rewritten `Usage` section of your README, updated to reflect the unified `cfi` testing structure and the new exploit script arguments.
+
 ### Starting the Environment
 
 From the project root, enter the Nix development shell. The Makefile handles building software, simulation, and synthesis directly without needing to change directories.
@@ -69,8 +71,7 @@ The build system will automatically compile the selected software variant before
 
 **Security Validation:**
 
-- `smcfiss`: A vulnerable C program designed to test backward-edge protection (shadow stack).
-- `zicfilp`: A vulnerable C program designed to test forward-edge protection (landing pads).
+- `cfi`: A unified, vulnerable C program designed to test both backward-edge protection (shadow stack / ROP) and forward-edge protection (landing pads / JOP).
 
 ### Simulation
 
@@ -93,32 +94,35 @@ make view
 make program
 # Program with a specific application
 make program pong-c
-# Program with a vulnerable CFI test program
-make program smcfiss
+# Program with the vulnerable CFI test program
+make program cfi
 ```
 
 ### Security Testing
 
-To validate hardware-enforced CFI, a proof-of-concept exploit environment is provided. The `smcfiss` and `zicfilp` variants contain a `vulnerable_function()` that accepts UART input without bounds checking and print the address of an unreachable `win_function()`.
+To validate hardware-enforced Control Flow Integrity (CFI), a proof-of-concept exploit environment is provided. The `cfi` variant contains a `vulnerable_function()` that accepts UART input without bounds checking and prints the address of an unreachable `win_function()`.
 
 **Steps:**
 
-> CFI protections can be disabled individually by commenting out `-D__ENABLE_ZICFILP__` or `-D__ENABLE_SMCFISS__` in the respective Makefile under `software/tests/`.
+> CFI protections can be disabled individually by commenting out `-D__ENABLE_ZICFILP__` or `-D__ENABLE_SMCFISS__` in `software/tests/cfi/Makefile`.
 
-1. Build and program the FPGA with a vulnerable target:
+1. **Build and program the FPGA** with the vulnerable target:
 
 ```bash
-make program smcfiss
-# OR
-make program zicfilp
+make program cfi
 ```
 
-2. Run the corresponding exploit script:
+2. **Run the exploit script:**
+   The exploit script supports testing for both Jump-Oriented Programming (JOP) and Return-Oriented Programming (ROP) vulnerabilities. JOP is the default test and is executed first.
+
+> **Note:** If the ROP test is selected, the script will automatically input a dummy JOP string first to bypass the initial check before executing the ROP payload.\_
 
 ```bash
-python3 scripts/smcfiss_exploit.py
-# OR
-python3 scripts/zicfilp_exploit.py
+# Test JOP (Forward-edge / Landing Pads)
+python3 scripts/exploit.py --exploit jop
+
+# Test ROP (Backward-edge / Shadow Stack)
+python3 scripts/exploit.py --exploit rop
 ```
 
 3. **Observe the Results:**
