@@ -41,6 +41,7 @@
           # Language Runtimes
           python312
           python312Packages.pyserial
+          python312Packages.websockets
           nodejs_24
 
           # Language Servers
