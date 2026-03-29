@@ -1,0 +1,32 @@
+[default_config]
+version = "0.10.1"
+assembler = "gas"
+instruction_set = "riscv"
+
+[default_config.opts]
+compiler = "riscv32-unknown-elf-gcc"
+compile_flags_txt = [
+    "-fcf-protection=full",
+    "-ffreestanding",
+    "-march=rv32i_zicsr_zicfilp_zicfiss",
+    "-mabi=ilp32",
+]
+diagnostics = true
+default_diagnostics = false
+
+[[project]]
+path = ""
+version = "0.10.1"
+assembler = "gas"
+instruction_set = "riscv"
+
+[project.opts]
+compiler = "riscv32-unknown-elf-gcc"
+compile_flags_txt = [
+    "-fcf-protection=full",
+    "-ffreestanding",
+    "-march=rv32i_zicsr_zicfilp_zicfiss",
+    "-mabi=ilp32",
+]
+diagnostics = true
+default_diagnostics = false

@@ -26,10 +26,12 @@ const UartTerminal = ({ wsRef, isDarkMode }) => {
     term.open(terminalDiv.current)
     termInstance.current = term
 
+    // Auto-focus the terminal so you can immediately press Space to boot
+    term.focus()
+
     const handleMessage = (event) => {
       term.write(event.data)
     }
-    
     if (wsRef.current) wsRef.current.addEventListener('message', handleMessage)
 
     const inputListener = term.onData((data) => {
@@ -39,11 +41,23 @@ const UartTerminal = ({ wsRef, isDarkMode }) => {
     })
 
     return () => {
-      if (wsRef.current) wsRef.current.removeEventListener('message', handleMessage)
-      inputListener.dispose() 
+      if (wsRef.current)
+        wsRef.current.removeEventListener('message', handleMessage)
+      inputListener.dispose()
       term.dispose()
     }
-  }, [wsRef, isDarkMode])
+  }, [])
+
+  useEffect(() => {
+    if (termInstance.current) {
+      termInstance.current.options.theme = {
+        background: 'transparent',
+        foreground: isDarkMode ? '#e0e0e0' : '#1a1a1a',
+        cursor: isDarkMode ? '#e0e0e0' : '#1a1a1a',
+        selectionBackground: 'rgba(128, 128, 128, 0.3)',
+      }
+    }
+  }, [isDarkMode])
 
   return (
     <div className="terminal-wrapper">
@@ -55,34 +69,16 @@ const UartTerminal = ({ wsRef, isDarkMode }) => {
 const Dashboard = () => {
   const [activeTest, setActiveTest] = useState('none')
   const [isDarkMode, setIsDarkMode] = useState(true)
-  const wsRef = useRef(null) 
+  const wsRef = useRef(null)
 
   useEffect(() => {
     const ws = new WebSocket('ws://localhost:8081')
     wsRef.current = ws
 
-    const handleKeyDown = (e) => {
-      if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault()
-      if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return
-
-      let charToSend = null
-      if (e.key.length === 1) charToSend = e.key
-      else if (e.key === 'Enter') charToSend = '\r'
-      else if (e.key === 'Backspace') charToSend = '\b'
-
-      if (charToSend) wsRef.current.send(`KEY:${charToSend}`)
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
     return () => {
-      window.removeEventListener('keydown', handleKeyDown)
       ws.close()
     }
   }, [])
-
-  const handleBootCPU = () => {
-    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) wsRef.current.send('KEY: ')
-  }
 
   const tests = [
     { id: 'pong', label: 'PONG' },
@@ -100,10 +96,15 @@ const Dashboard = () => {
             <h1 className="dashboard-title">eSC-V</h1>
             <p className="dashboard-subtitle">M-mode CFI-Hardened RV32I SoC</p>
           </div>
+
           <div className="header-controls">
             <div className="theme-switch-wrapper">
               <label className="theme-switch">
-                <input type="checkbox" checked={!isDarkMode} onChange={() => setIsDarkMode(!isDarkMode)} />
+                <input
+                  type="checkbox"
+                  checked={!isDarkMode}
+                  onChange={() => setIsDarkMode(!isDarkMode)}
+                />
                 <span className="slider"></span>
               </label>
             </div>
