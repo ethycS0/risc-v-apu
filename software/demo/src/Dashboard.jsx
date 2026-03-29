@@ -25,8 +25,6 @@ const UartTerminal = ({ wsRef, isDarkMode }) => {
 
     term.open(terminalDiv.current)
     termInstance.current = term
-
-    // Auto-focus the terminal so you can immediately press Space to boot
     term.focus()
 
     const handleMessage = (event) => {
@@ -74,7 +72,6 @@ const Dashboard = () => {
   useEffect(() => {
     const ws = new WebSocket('ws://localhost:8081')
     wsRef.current = ws
-
     return () => {
       ws.close()
     }
@@ -96,7 +93,6 @@ const Dashboard = () => {
             <h1 className="dashboard-title">eSC-V</h1>
             <p className="dashboard-subtitle">M-mode CFI-Hardened RV32I SoC</p>
           </div>
-
           <div className="header-controls">
             <div className="theme-switch-wrapper">
               <label className="theme-switch">
@@ -122,7 +118,6 @@ const Dashboard = () => {
                 <UartTerminal wsRef={wsRef} isDarkMode={isDarkMode} />
               )}
             </main>
-
             <div className="cube-grid">
               {tests.map((test) => (
                 <button
@@ -135,6 +130,44 @@ const Dashboard = () => {
               ))}
             </div>
           </section>
+
+          <aside className="right-section">
+            <div className="dump-container">
+              <h2 className="dump-title">HARDWARE STACK DUMP</h2>
+              <div className="dump-grid stack-dump">
+                {[...Array(10)].map((_, i) => (
+                  <div key={i} className="dump-row">
+                    <span className="dump-label">PTR_{i}:</span>
+                    <span className="dump-value">--</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="dump-container">
+              <h2 className="dump-title">HARDWARE CSR DUMP</h2>
+              <div className="dump-grid">
+                {['mtvec', 'ssp', 'mseccfg', 'mscratch', 'mcycle', 'pmpcfg0', 'minstret', 'pmpaddr0'].map((reg) => (
+                  <div key={reg} className="dump-row">
+                    <span className="dump-label">{reg}:</span>
+                    <span className="dump-value">--</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="dump-container">
+              <h2 className="dump-title">HARDWARE GPR DUMP</h2>
+              <div className="dump-grid gpr-dump">
+                {['zero', 'a6', 'ra', 'a7', 'sp', 's2', 'gp', 's3', 'tp', 's4', 't0', 's5', 't1', 's6', 't2', 's7', 's0', 's8', 's1', 's9', 'a0', 's10', 'a1', 's11', 'a2', 't3', 'a3', 't4', 'a4', 't5', 'a5', 't6'].map((reg) => (
+                  <div key={reg} className="dump-row">
+                    <span className="dump-label">{reg}:</span>
+                    <span className="dump-value">--</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </aside>
         </div>
 
         <footer className="dashboard-footer">
