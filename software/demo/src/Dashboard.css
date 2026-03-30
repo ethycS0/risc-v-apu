@@ -1,17 +1,17 @@
 @import url('https://cdn.jsdelivr.net/gh/ryanoasis/nerd-fonts@master/patched-fonts/JetBrainsMono/Ligatures/Regular/mono.css');
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
 :root {
   --bg-dark: #0a0a0a;
   --bg-light: #ffffff;
   --text-dark: #e0e0e0;
   --text-light: #1a1a1a;
   --font-mono: "JetBrainsMono Nerd Font", monospace;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 html, body {
@@ -29,8 +29,15 @@ html, body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.dark { background-color: var(--bg-dark); color: var(--text-dark); }
-.light { background-color: var(--bg-light); color: var(--text-light); }
+.dark {
+  background-color: var(--bg-dark);
+  color: var(--text-dark);
+}
+
+.light {
+  background-color: var(--bg-light);
+  color: var(--text-light);
+}
 
 .grid-background {
   position: fixed;
@@ -45,15 +52,13 @@ html, body {
 }
 
 .dark .grid-background {
-  background-image: 
-    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), 
+                    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
 }
 
 .light .grid-background {
-  background-image: 
-    linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+  background-image: linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px), 
+                    linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
 }
 
 .dashboard-container {
@@ -75,69 +80,15 @@ html, body {
   margin-bottom: 1.5rem;
 }
 
-.dashboard-title {
-  font-size: 2rem;
-  font-weight: 800;
-  letter-spacing: -1px;
-}
+.dashboard-title { font-size: 2rem; font-weight: 800; letter-spacing: -1px; }
+.dashboard-subtitle { font-size: 0.75rem; opacity: 0.6; }
 
-.dashboard-subtitle {
-  font-size: 0.75rem;
-  opacity: 0.6;
-}
-
-.header-controls {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.theme-switch {
-  position: relative;
-  display: inline-block;
-  width: 40px;
-  height: 20px;
-}
-
+.header-controls { display: flex; align-items: center; gap: 1rem; }
+.theme-switch { position: relative; display: inline-block; width: 40px; height: 20px; }
 .theme-switch input { opacity: 0; width: 0; height: 0; }
-
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  border: 1px solid currentColor;
-  transition: .4s;
-}
-
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 12px;
-  width: 12px;
-  left: 3px;
-  bottom: 3px;
-  background-color: currentColor;
-  transition: .4s;
-}
-
-input:checked + .slider:before {
-  transform: translateX(20px);
-}
-
-.boot-button {
-  font-family: var(--font-mono);
-  padding: 0.4rem 0.8rem;
-  font-weight: 700;
-  font-size: 0.7rem;
-  background: #ef4444;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; border: 1px solid currentColor; transition: .4s; }
+.slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px; background-color: currentColor; transition: .4s; }
+input:checked + .slider:before { transform: translateX(20px); }
 
 .main-layout {
   display: flex;
@@ -148,14 +99,19 @@ input:checked + .slider:before {
 }
 
 .left-section {
-  flex: 2;
+  flex: 1.4;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
 .right-section {
-  flex: 0.8;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow-y: auto;
+  padding-right: 0.5rem;
 }
 
 .viewport-container {
@@ -168,16 +124,32 @@ input:checked + .slider:before {
   overflow: hidden;
 }
 
+.terminal-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  width: fit-content;
+  height: fit-content;
+}
 
-.cube-grid { 
-  display: grid; 
-  grid-template-columns: repeat(4, 1fr); 
-  gap: 1rem; 
-  width: 100%; 
+.terminal-container {
+  padding: 15px;
+  border: 1px solid rgba(128, 128, 128, 0.5);
+  background: #0a0a0a;
+  width: fit-content;
+  height: fit-content;
+}
+
+.cube-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  width: 100%;
 }
 
 .test-cube {
-  height: 6rem; 
+  height: 2.5rem; 
   border: 1px solid currentColor; 
   background: transparent; 
   color: inherit;
@@ -197,30 +169,39 @@ input:checked + .slider:before {
   border-width: 2px;
 }
 
-.cube-label {
-  font-size: 1.2rem;
-  letter-spacing: 1px;
-}
+.cube-label { font-size: 1rem; letter-spacing: 1px; }
 
-/* Status Table */
-.status-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.85rem;
+.dump-container {
   border: 1px solid currentColor;
+  background: rgba(128, 128, 128, 0.03);
+  padding: 1.2rem;
 }
 
-.status-table th, .status-table td {
-  padding: 1rem;
-  border: 1px solid rgba(128, 128, 128, 0.3);
-  text-align: left;
-  height: 3.5rem;
-}
-
-.status-table th {
+.dump-title {
+  font-size: 0.8rem;
   font-weight: 800;
-  background: rgba(128, 128, 128, 0.05);
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.3);
+  padding-bottom: 0.25rem;
+  opacity: 0.8;
 }
+
+.dump-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+.gpr-dump { grid-template-columns: repeat(2, 1fr); }
+
+.dump-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+}
+
+.dump-label { opacity: 0.5; }
+.dump-value { font-weight: 700; }
 
 .dashboard-footer {
   flex-shrink: 0;
@@ -232,18 +213,5 @@ input:checked + .slider:before {
   padding-top: 0.75rem;
 }
 
-.terminal-wrapper {
-  width: 100%;
-  height: 100%;
-  padding: 1rem;
-}
-
-.terminal-container {
-  width: 100%;
-  height: 100%;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 0.6; }
-}
+.right-section::-webkit-scrollbar { width: 4px; }
+.right-section::-webkit-scrollbar-thumb { background: currentColor; opacity: 0.2; }
