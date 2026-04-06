@@ -43,6 +43,7 @@
           python312Packages.pyserial
           python312Packages.websockets
           nodejs_24
+          nodePackages.npm
 
           # Language Servers
           vhdl-ls
