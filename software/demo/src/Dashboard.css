@@ -2,9 +2,7 @@
 
 :root {
   --bg-dark: #0a0a0a;
-  --bg-light: #ffffff;
   --text-dark: #e0e0e0;
-  --text-light: #1a1a1a;
   --font-mono: 'JetBrainsMono Nerd Font', monospace;
 }
 
@@ -16,30 +14,22 @@
 
 html,
 body {
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
+  width: 100%;
+  min-height: 100vh;
   background-color: var(--bg-dark);
+  color: var(--text-dark);
 }
 
 .dashboard-root {
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  min-height: 100vh;
   font-family: var(--font-mono);
   position: relative;
-  transition:
-    background-color 0.3s ease,
-    color 0.3s ease;
 }
 
 .dark {
   background-color: var(--bg-dark);
   color: var(--text-dark);
-}
-
-.light {
-  background-color: var(--bg-light);
-  color: var(--text-light);
 }
 
 .grid-background {
@@ -51,26 +41,17 @@ body {
   pointer-events: none;
   z-index: 0;
   background-size: 40px 40px;
-  mask-image: radial-gradient(circle at center, black 30%, transparent 80%);
-}
-
-.dark .grid-background {
   background-image:
     linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-}
-
-.light .grid-background {
-  background-image:
-    linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+  mask-image: radial-gradient(circle at center, black 30%, transparent 80%);
 }
 
 .dashboard-container {
   position: relative;
   z-index: 1;
   padding: 1.5rem 2rem;
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
@@ -90,6 +71,7 @@ body {
   font-weight: 800;
   letter-spacing: -1px;
 }
+
 .dashboard-subtitle {
   font-size: 0.75rem;
   opacity: 0.6;
@@ -97,57 +79,61 @@ body {
 
 .header-controls {
   display: flex;
-  align-items: center;
   gap: 1rem;
+  align-items: center;
 }
-.theme-switch {
-  position: relative;
-  display: inline-block;
-  width: 40px;
-  height: 20px;
-}
-.theme-switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-.slider {
-  position: absolute;
+
+.flash-btn {
+  height: 35px;
+  padding: 0 15px;
+  background: #ef4444;
+  color: #ffffff;
+  border: none;
+  font-weight: bold;
+  font-family: var(--font-mono);
   cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  transition: opacity 0.2s;
+}
+
+.flash-btn:hover {
+  opacity: 0.8;
+}
+
+.home-btn {
+  height: 35px;
+  padding: 0 15px;
   border: 1px solid currentColor;
-  transition: 0.4s;
+  background: transparent;
+  color: inherit;
+  font-family: var(--font-mono);
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
-.slider:before {
-  position: absolute;
-  content: '';
-  height: 12px;
-  width: 12px;
-  left: 3px;
-  bottom: 3px;
-  background-color: currentColor;
-  transition: 0.4s;
-}
-input:checked + .slider:before {
-  transform: translateX(20px);
+
+.home-btn:hover {
+  background: rgba(128, 128, 128, 0.1);
 }
 
 .main-layout {
   display: flex;
+  flex-direction: row;
   flex-grow: 1;
   gap: 2rem;
-  overflow: hidden;
   margin-bottom: 1rem;
 }
 
+.center-layout {
+  justify-content: center;
+  align-items: center;
+}
+
 .left-section {
-  flex: 1.4;
+  flex: 1.6;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  min-width: 0; /* Prevents flex children from blowing out container */
 }
 
 .right-section {
@@ -157,41 +143,55 @@ input:checked + .slider:before {
   gap: 1rem;
   overflow-y: auto;
   padding-right: 0.5rem;
+  max-height: calc(100vh - 150px);
 }
 
 .viewport-container {
-  /* The "Window" you look through */
   flex-grow: 1;
   border: 1px solid currentColor;
-  background: #0a0a0a;
-  width: 450px; /* Keep this narrow to fit only Tetris/Pong */
-  max-width: 450px;
-  overflow: hidden; /* Hides the right side of the terminal */
-  display: block; /* Crucial: Do not use flex here */
+  background: #000;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   position: relative;
+  min-height: 400px;
+  overflow: auto; /* Allows terminal to scroll instead of breaking layout */
 }
 
 .terminal-wrapper {
-  display: block; /* Crucial: Do not use flex centering here */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
   padding: 1rem;
-  width: fit-content;
-  height: fit-content;
-  margin-left: 0; /* Anchor strictly to the left */
 }
 
 .terminal-container {
-  padding: 15px;
-  /* border: 1px solid rgba(128, 128, 128, 0.5); */
   background: #0a0a0a;
-  width: fit-content;
-  height: fit-content;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Force xterm canvas to scale nicely */
+.terminal-container .xterm-screen {
+  width: 100% !important;
 }
 
 .cube-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
   width: 100%;
+}
+
+.home-grid {
+  width: 60%;
+  max-width: 800px;
 }
 
 .test-cube {
@@ -207,6 +207,14 @@ input:checked + .slider:before {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.home-cube {
+  height: 6rem;
+}
+
+.home-cube .cube-label {
+  font-size: 1.5rem;
 }
 
 .test-cube:hover,
@@ -255,8 +263,10 @@ input:checked + .slider:before {
 .dump-label {
   opacity: 0.5;
 }
+
 .dump-value {
   font-weight: 700;
+  word-break: break-all; /* Prevents long hex values from pushing layout */
 }
 
 .dashboard-footer {
@@ -267,72 +277,81 @@ input:checked + .slider:before {
   justify-content: space-between;
   border-top: 1px solid currentColor;
   padding-top: 0.75rem;
+  margin-top: auto;
 }
 
 .right-section::-webkit-scrollbar {
   width: 4px;
 }
+
 .right-section::-webkit-scrollbar-thumb {
   background: currentColor;
   opacity: 0.2;
 }
 
-/* =========================================================
-   NEW GAME RENDERER CSS
-   ========================================================= */
-
-.game-canvas {
-  font-family: var(--font-mono);
-  font-size: 14px;
-  line-height: 1;
-  display: flex;
-  flex-direction: column;
-  color: var(
-    --text-dark
-  ); /* Forces dark text so it shows up in the container */
-
-  /* These match your .terminal-container styles so the modes look identical */
-  padding: 15px;
-  border: 1px solid rgba(128, 128, 128, 0.5);
-  background: #0a0a0a;
-  width: fit-content;
-  height: fit-content;
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
 }
 
-.game-row {
-  display: flex;
-  height: 14px; /* Matches font size to keep the grid perfectly square */
+.pulse-animation {
+  animation: pulse 2s infinite;
 }
 
-.game-cell {
-  width: 8px; /* Typical width of a JetBrains Mono char at 14px */
-  height: 14px;
-  display: inline-block;
+/* Responsive Media Queries */
+@media (max-width: 1200px) {
+  .left-section {
+    flex: 1.2;
+  }
+  .right-section {
+    flex: 1;
+  }
 }
 
-/* Tetris Colors */
-.tetris-blue {
-  background-color: #007bff;
+@media (max-width: 992px) {
+  .main-layout {
+    flex-direction: column;
+  }
+  
+  .right-section {
+    max-height: none;
+    overflow-y: visible;
+  }
+
+  .home-grid {
+    width: 90%;
+  }
 }
 
-.tetris-green {
-  background-color: #28a745;
-}
+@media (max-width: 768px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .header-controls {
+    width: 100%;
+    justify-content: flex-start;
+  }
 
-.empty {
-  background-color: transparent;
-}
+  .cube-grid {
+    grid-template-columns: 1fr; 
+  }
 
-/* Pong Image Overrides */
-.game-img {
-  width: 8px;
-  height: 14px;
-  object-fit: cover; /* Forces the image to squash/stretch to fit the character space */
-}
+  .home-grid {
+    width: 100%;
+  }
 
-/* Default Character rendering */
-.game-char {
-  width: 8px;
-  display: inline-block;
-  text-align: center;
+  .dump-grid {
+    grid-template-columns: 1fr; 
+  }
+
+  .gpr-dump {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-container {
+    padding: 1rem;
+  }
 }
