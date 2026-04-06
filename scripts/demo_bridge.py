@@ -97,7 +97,7 @@ def serial_reader(loop):
 
                         # Strip all ANSI grid coordinates and colors
                         # This turns "\x1B[22;120H\033[1;36mmepc\033[0m: 0x800000A0" into "mepc: 0x800000A0"
-                        clean_frame = ANSI_ESCAPE.sub("", frame)
+                        clean_frame = ANSI_ESCAPE.sub(" ", frame)
 
                         # Find all cleanly extracted register-value pairs
                         matches = REG_PATTERN.findall(clean_frame)
