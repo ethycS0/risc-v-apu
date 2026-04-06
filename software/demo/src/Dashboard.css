@@ -5,7 +5,7 @@
   --bg-light: #ffffff;
   --text-dark: #e0e0e0;
   --text-light: #1a1a1a;
-  --font-mono: "JetBrainsMono Nerd Font", monospace;
+  --font-mono: 'JetBrainsMono Nerd Font', monospace;
 }
 
 * {
@@ -14,7 +14,8 @@
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
@@ -26,7 +27,9 @@ html, body {
   height: 100vh;
   font-family: var(--font-mono);
   position: relative;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 .dark {
@@ -52,13 +55,15 @@ html, body {
 }
 
 .dark .grid-background {
-  background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), 
-                    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
 }
 
 .light .grid-background {
-  background-image: linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px), 
-                    linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
 }
 
 .dashboard-container {
@@ -80,15 +85,55 @@ html, body {
   margin-bottom: 1.5rem;
 }
 
-.dashboard-title { font-size: 2rem; font-weight: 800; letter-spacing: -1px; }
-.dashboard-subtitle { font-size: 0.75rem; opacity: 0.6; }
+.dashboard-title {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+.dashboard-subtitle {
+  font-size: 0.75rem;
+  opacity: 0.6;
+}
 
-.header-controls { display: flex; align-items: center; gap: 1rem; }
-.theme-switch { position: relative; display: inline-block; width: 40px; height: 20px; }
-.theme-switch input { opacity: 0; width: 0; height: 0; }
-.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; border: 1px solid currentColor; transition: .4s; }
-.slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px; background-color: currentColor; transition: .4s; }
-input:checked + .slider:before { transform: translateX(20px); }
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.theme-switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 20px;
+}
+.theme-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 1px solid currentColor;
+  transition: 0.4s;
+}
+.slider:before {
+  position: absolute;
+  content: '';
+  height: 12px;
+  width: 12px;
+  left: 3px;
+  bottom: 3px;
+  background-color: currentColor;
+  transition: 0.4s;
+}
+input:checked + .slider:before {
+  transform: translateX(20px);
+}
 
 .main-layout {
   display: flex;
@@ -115,27 +160,28 @@ input:checked + .slider:before { transform: translateX(20px); }
 }
 
 .viewport-container {
+  /* The "Window" you look through */
   flex-grow: 1;
   border: 1px solid currentColor;
-  background: rgba(128, 128, 128, 0.02);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
+  background: #0a0a0a;
+  width: 450px; /* Keep this narrow to fit only Tetris/Pong */
+  max-width: 450px;
+  overflow: hidden; /* Hides the right side of the terminal */
+  display: block; /* Crucial: Do not use flex here */
+  position: relative;
 }
 
 .terminal-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display: block; /* Crucial: Do not use flex centering here */
   padding: 1rem;
   width: fit-content;
   height: fit-content;
+  margin-left: 0; /* Anchor strictly to the left */
 }
 
 .terminal-container {
   padding: 15px;
-  border: 1px solid rgba(128, 128, 128, 0.5);
+  /* border: 1px solid rgba(128, 128, 128, 0.5); */
   background: #0a0a0a;
   width: fit-content;
   height: fit-content;
@@ -149,27 +195,31 @@ input:checked + .slider:before { transform: translateX(20px); }
 }
 
 .test-cube {
-  height: 2.5rem; 
-  border: 1px solid currentColor; 
-  background: transparent; 
+  height: 2.5rem;
+  border: 1px solid currentColor;
+  background: transparent;
   color: inherit;
-  font-family: var(--font-mono); 
-  font-weight: 800; 
-  cursor: pointer; 
+  font-family: var(--font-mono);
+  font-weight: 800;
+  cursor: pointer;
   opacity: 0.5;
-  transition: 0.2s; 
-  display: flex; 
-  align-items: center; 
+  transition: 0.2s;
+  display: flex;
+  align-items: center;
   justify-content: center;
 }
 
-.test-cube:hover, .test-cube.active {
+.test-cube:hover,
+.test-cube.active {
   opacity: 1;
   background: rgba(128, 128, 128, 0.1);
   border-width: 2px;
 }
 
-.cube-label { font-size: 1rem; letter-spacing: 1px; }
+.cube-label {
+  font-size: 1rem;
+  letter-spacing: 1px;
+}
 
 .dump-container {
   border: 1px solid currentColor;
@@ -192,7 +242,9 @@ input:checked + .slider:before { transform: translateX(20px); }
   gap: 0.5rem;
 }
 
-.gpr-dump { grid-template-columns: repeat(2, 1fr); }
+.gpr-dump {
+  grid-template-columns: repeat(2, 1fr);
+}
 
 .dump-row {
   display: flex;
@@ -200,8 +252,12 @@ input:checked + .slider:before { transform: translateX(20px); }
   font-size: 0.7rem;
 }
 
-.dump-label { opacity: 0.5; }
-.dump-value { font-weight: 700; }
+.dump-label {
+  opacity: 0.5;
+}
+.dump-value {
+  font-weight: 700;
+}
 
 .dashboard-footer {
   flex-shrink: 0;
@@ -213,5 +269,70 @@ input:checked + .slider:before { transform: translateX(20px); }
   padding-top: 0.75rem;
 }
 
-.right-section::-webkit-scrollbar { width: 4px; }
-.right-section::-webkit-scrollbar-thumb { background: currentColor; opacity: 0.2; }
+.right-section::-webkit-scrollbar {
+  width: 4px;
+}
+.right-section::-webkit-scrollbar-thumb {
+  background: currentColor;
+  opacity: 0.2;
+}
+
+/* =========================================================
+   NEW GAME RENDERER CSS
+   ========================================================= */
+
+.game-canvas {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1;
+  display: flex;
+  flex-direction: column;
+  color: var(
+    --text-dark
+  ); /* Forces dark text so it shows up in the container */
+
+  /* These match your .terminal-container styles so the modes look identical */
+  padding: 15px;
+  border: 1px solid rgba(128, 128, 128, 0.5);
+  background: #0a0a0a;
+  width: fit-content;
+  height: fit-content;
+}
+
+.game-row {
+  display: flex;
+  height: 14px; /* Matches font size to keep the grid perfectly square */
+}
+
+.game-cell {
+  width: 8px; /* Typical width of a JetBrains Mono char at 14px */
+  height: 14px;
+  display: inline-block;
+}
+
+/* Tetris Colors */
+.tetris-blue {
+  background-color: #007bff;
+}
+
+.tetris-green {
+  background-color: #28a745;
+}
+
+.empty {
+  background-color: transparent;
+}
+
+/* Pong Image Overrides */
+.game-img {
+  width: 8px;
+  height: 14px;
+  object-fit: cover; /* Forces the image to squash/stretch to fit the character space */
+}
+
+/* Default Character rendering */
+.game-char {
+  width: 8px;
+  display: inline-block;
+  text-align: center;
+}

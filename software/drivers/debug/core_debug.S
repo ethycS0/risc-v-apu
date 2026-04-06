@@ -1,13 +1,19 @@
 # Functions to Print Internal states of CPU 
 
+.global GPRS_SIZE
+.global CSRS_SIZE
+
+.set GPRS_SIZE, 128
+.set CSRS_SIZE, 32
+
 .section .bss
         .align 4
         .global gprs_dump_buf
         .global csrs_dump_buf
 gprs_dump_buf:
-        .space 128
+        .space GPRS_SIZE
 csrs_dump_buf:
-        .space 32
+        .space CSRS_SIZE
 
         .section .text
         .global _dump_gprs

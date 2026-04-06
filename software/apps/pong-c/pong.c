@@ -9,7 +9,7 @@
 #define CPU_FREQ_HZ 27000000
 
 #define ROWS 32
-#define COLS 128
+#define COLS 96
 
 unsigned char grid[ROWS][COLS];
 
@@ -291,4 +291,3 @@ int main() {
         }
         end_game(0);
 }
-

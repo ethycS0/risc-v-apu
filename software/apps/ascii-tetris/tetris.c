@@ -96,6 +96,8 @@ void tetris_print(struct tetris *t) {
         // printf("\033[2J\033[H\033[?25l");
         printf("\033[H\033[?25l");
 
+        update_dashboard();
+
         printf("[LEVEL: %d | SCORE: %d]\n", t->level, t->score);
         for (x = 0; x < 2 * t->w + 2; x++)
                 printf("~");
@@ -176,6 +178,7 @@ void tetris_rotate(struct tetris *t) {
 }
 
 void tetris_gravity(struct tetris *t) {
+        update_dashboard();
         int x, y;
         t->y++;
         if (tetris_hittest(t)) {
@@ -238,9 +241,6 @@ void tetris_run(int w, int h) {
                 count++;
                 if (count % 50 == 0) {
                         tetris_print(&t);
-                        print_stack(10);
-                        print_csrs();
-                        print_gprs();
                 }
                 if (count % 350 == 0) {
                         tetris_gravity(&t);
