@@ -18,6 +18,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-.venv/
+..venv/
+venv/
 __pycache__/
 *.pyc

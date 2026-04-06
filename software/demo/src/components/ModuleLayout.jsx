@@ -11,6 +11,9 @@ const ModuleLayout = ({ children, title }) => {
   const [csrData, setCsrData] = useState({})
   const [stackData, setStackData] = useState({})
 
+  // CFI Toggle State
+  const [cfiEnabled, setCfiEnabled] = useState(false)
+
   useEffect(() => {
     const ws = new WebSocket('ws://localhost:8081')
     wsRef.current = ws
@@ -40,7 +43,7 @@ const ModuleLayout = ({ children, title }) => {
     const commandMap = {
       '/pong': 'upload_pong',
       '/tetris': 'upload_tetris',
-      '/cfi': 'echo "CFI Module Initialised Successfully"',
+      '/cfi': cfiEnabled ? 'firefox' : 'neofetch',
     }
 
     // Get the bash cmd based on current url
@@ -87,6 +90,19 @@ const ModuleLayout = ({ children, title }) => {
             <p className="dashboard-subtitle">{title}</p>
           </div>
           <div className="header-controls">
+            {location.pathname === '/cfi' && (
+              <div className="cfi-toggle-container">
+                <span className="toggle-label">Enable CFI Security</span>
+                <label className="switch">
+                  <input 
+                    type="checkbox" 
+                    checked={cfiEnabled} 
+                    onChange={() => setCfiEnabled(!cfiEnabled)} 
+                  />
+                  <span className={`slider ${cfiEnabled ? 'on' : 'off'}`}></span>
+                </label>
+              </div>
+            )}
             <button className="flash-btn" onClick={handleFlash}>
               FLASH CPU
             </button>
