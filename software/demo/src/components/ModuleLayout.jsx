@@ -84,7 +84,7 @@ const ModuleLayout = ({ children, title }) => {
   const viewportSizes = {
     '/pong': { width: '1000px', height: '580px' },
     '/tetris': { width: '400px', height: '450px' },
-    '/cfi': { width: '500px', height: '400px' },
+    '/cfi': { width: '500px', height: '1000px' },
   }
 
   const currentSize = viewportSizes[location.pathname] || {
