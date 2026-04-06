@@ -55,11 +55,11 @@ const ModuleLayout = ({ children, title }) => {
     const commandMap = {
       '/pong': 'upload_pong',
       '/tetris': 'upload_tetris',
-      '/cfi': cfiEnabled ? 'firefox' : 'neofetch',
+      '/cfi': cfiEnabled ? 'upload_safe' : 'upload_unsafe',
     }
 
     // Get the bash cmd based on current url
-    const targetCommand = commandMap[location.pathname] || 'upload_pong'
+    const targetCommand = commandMap[location.pathname] || 'upload_tetris'
 
     // checks if socket is open. If yes sends JSON
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
@@ -82,7 +82,7 @@ const ModuleLayout = ({ children, title }) => {
   ]
 
   const viewportSizes = {
-    '/pong': { width: '450px', height: '280px' },
+    '/pong': { width: '1000px', height: '580px' },
     '/tetris': { width: '400px', height: '450px' },
     '/cfi': { width: '500px', height: '400px' },
   }
@@ -104,21 +104,29 @@ const ModuleLayout = ({ children, title }) => {
           <div className="header-controls">
             {location.pathname === '/cfi' && (
               <>
-                <button className="exploit-btn" onClick={() => handleExploit('exploit_job')}>
+                <button
+                  className="exploit-btn"
+                  onClick={() => handleExploit('exploit_jop')}
+                >
                   JOP
                 </button>
-                <button className="exploit-btn" onClick={() => handleExploit('exploit_rop')}>
+                <button
+                  className="exploit-btn"
+                  onClick={() => handleExploit('exploit_rop')}
+                >
                   ROP
                 </button>
                 <div className="cfi-toggle-container">
                   <span className="toggle-label">Enable CFI Security</span>
                   <label className="switch">
-                    <input 
-                      type="checkbox" 
-                      checked={cfiEnabled} 
-                      onChange={() => setCfiEnabled(!cfiEnabled)} 
+                    <input
+                      type="checkbox"
+                      checked={cfiEnabled}
+                      onChange={() => setCfiEnabled(!cfiEnabled)}
                     />
-                    <span className={`slider ${cfiEnabled ? 'on' : 'off'}`}></span>
+                    <span
+                      className={`slider ${cfiEnabled ? 'on' : 'off'}`}
+                    ></span>
                   </label>
                 </div>
               </>
@@ -168,7 +176,7 @@ const ModuleLayout = ({ children, title }) => {
             <div className="dump-container">
               <h2 className="dump-title">HARDWARE STACK DUMP</h2>
               <div className="dump-grid stack-dump">
-                {[...Array(10)].map((_, i) => (
+                {[...Array(24)].map((_, i) => (
                   <div key={i} className="dump-row">
                     <span className="dump-label">PTR_{i}:</span>
                     <span className="dump-value">
