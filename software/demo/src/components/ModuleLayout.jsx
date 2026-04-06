@@ -11,8 +11,10 @@ const ModuleLayout = ({ children, title }) => {
   const [csrData, setCsrData] = useState({})
   const [stackData, setStackData] = useState({})
 
-  // CFI Toggle State
+  
   const [cfiEnabled, setCfiEnabled] = useState(false)
+  
+  const [isFlashing, setIsFlashing] = useState(false)
 
   useEffect(() => {
     const ws = new WebSocket('ws://localhost:8081')
@@ -38,6 +40,13 @@ const ModuleLayout = ({ children, title }) => {
     return () => ws.close()
   }, [])
 
+  // Clear terminal when switching modes
+  useEffect(() => {
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: 'game', data: '\x1b[2J\x1b[H' }))
+    }
+  }, [location.pathname])
+
   // exploit command handler
   const handleExploit = (cmd) => {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
@@ -50,29 +59,39 @@ const ModuleLayout = ({ children, title }) => {
     }
   }
 
-  // flash bash code
+  // flash cpu  delay
   const handleFlash = () => {
-    const commandMap = {
-      '/pong': 'upload_pong',
-      '/tetris': 'upload_tetris',
-      '/cfi': cfiEnabled ? 'upload_safe' : 'upload_unsafe',
-    }
+    if (isFlashing) return
 
-    // Get the bash cmd based on current url
-    const targetCommand = commandMap[location.pathname] || 'upload_tetris'
+    setIsFlashing(true)
 
-    // checks if socket is open. If yes sends JSON
+    // Clear terminal on flash start
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      const payload = JSON.stringify({
-        type: 'command',
-        data: targetCommand,
-      })
-
-      wsRef.current.send(payload)
-      console.log('Sent command to backend:', targetCommand)
-    } else {
-      console.error('WebSocket is not connected.')
+      wsRef.current.send(JSON.stringify({ type: 'game', data: '\x1b[2J\x1b[H' }))
     }
+
+    setTimeout(() => {
+      const commandMap = {
+        '/pong': 'upload_pong',
+        '/tetris': 'upload_tetris',
+        '/cfi': cfiEnabled ? 'upload_safe' : 'upload_unsafe',
+      }
+
+      const targetCommand = commandMap[location.pathname] || 'upload_tetris'
+
+      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        const payload = JSON.stringify({
+          type: 'command',
+          data: targetCommand,
+        })
+
+        wsRef.current.send(payload)
+        console.log('Sent command to backend:', targetCommand)
+      } else {
+        console.error('WebSocket is not connected.')
+      }
+      setIsFlashing(false)
+    }, 6000)
   }
 
   const modules = [
@@ -131,8 +150,11 @@ const ModuleLayout = ({ children, title }) => {
                 </div>
               </>
             )}
-            <button className="flash-btn" onClick={handleFlash}>
-              FLASH CPU
+            <button 
+              className={`flash-btn ${isFlashing ? 'flashing' : ''}`} 
+              onClick={handleFlash}
+            >
+              {isFlashing ? '' : 'FLASH CPU'}
             </button>
             <button onClick={() => navigate('/')} className="home-btn">
               <span>HOME</span>
