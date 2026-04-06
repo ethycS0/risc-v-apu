@@ -93,6 +93,35 @@ body {
   font-family: var(--font-mono);
   cursor: pointer;
   transition: opacity 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.flash-btn.flashing::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0;
+  background: #ef4444;
+  animation: fillFlash 6s linear forwards;
+}
+
+
+
+.flash-btn.flashing {
+  background: rgba(239, 68, 68, 0.2); 
+  cursor: not-allowed;
+}
+
+@keyframes fillFlash {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: 100%;
+  }
 }
 
 .flash-btn:hover {
