@@ -6,7 +6,7 @@ import sys
 import json
 import re
 
-SERIAL_PORT = "/dev/ttyUSB1"
+SERIAL_PORT = "/dev/ttyUSB2"
 BAUD_RATE = 921600
 
 clients = set()

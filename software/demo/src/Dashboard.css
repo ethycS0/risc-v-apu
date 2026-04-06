@@ -149,23 +149,20 @@ body {
 .viewport-container {
   flex-grow: 1;
   border: 1px solid currentColor;
-  background: #000;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: rgba(128, 128, 128, 0.02);
+  width: 650px; /* Keep this narrow to fit only Tetris/Pong */
+  max-width: 650px;
+  overflow: hidden; /* Hides the right side of the terminal */
+  display: block; /* Crucial: Do not use flex here */
   position: relative;
-  min-height: 400px;
-  overflow: auto; /* Allows terminal to scroll instead of breaking layout */
 }
 
 .terminal-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 100%;
+  display: block;
   padding: 1rem;
+  width: fit-content;
+  height: fit-content;
+  margin-left: 0;
 }
 
 .terminal-container {
@@ -290,8 +287,13 @@ body {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 0.6; }
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.6;
+  }
 }
 
 .pulse-animation {
@@ -312,7 +314,7 @@ body {
   .main-layout {
     flex-direction: column;
   }
-  
+
   .right-section {
     max-height: none;
     overflow-y: visible;
@@ -329,14 +331,14 @@ body {
     align-items: flex-start;
     gap: 1rem;
   }
-  
+
   .header-controls {
     width: 100%;
     justify-content: flex-start;
   }
 
   .cube-grid {
-    grid-template-columns: 1fr; 
+    grid-template-columns: 1fr;
   }
 
   .home-grid {
@@ -344,7 +346,7 @@ body {
   }
 
   .dump-grid {
-    grid-template-columns: 1fr; 
+    grid-template-columns: 1fr;
   }
 
   .gpr-dump {

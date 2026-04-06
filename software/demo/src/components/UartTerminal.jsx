@@ -16,7 +16,7 @@ const UartTerminal = ({ moduleId }) => {
       },
       fontFamily: '"JetBrainsMono Nerd Font", monospace',
       fontSize: 14,
-      cols: 120,
+      cols: 180,
       rows: 30,
       cursorBlink: true,
       convertEol: true,
