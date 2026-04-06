@@ -17,3 +17,4 @@ bitstreams/
 .cache/
 .direnv/
 *.a
+.venv/
