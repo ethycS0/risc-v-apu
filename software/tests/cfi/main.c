@@ -9,6 +9,7 @@
 #define CYAN "\033[1;36m"
 
 void win_function(void) {
+        DEBUG_UPDATE();
         uart_puts("\n" RED "==================================================" RESET "\n");
         uart_puts(RED "[!] CRITICAL: ARBITRARY CODE EXECUTION ACHIEVED!" RESET "\n");
         uart_puts(RED "[!] Control flow successfully hijacked." RESET "\n");
@@ -21,6 +22,7 @@ void win_function(void) {
 void vulnerable_function(void) {
         char buffer[16];
         uart_puts(YELLOW "[*] Awaiting ROP payload via UART..." RESET "\n> ");
+        DEBUG_UPDATE();
 
         static int i;
         static unsigned char c;
@@ -73,6 +75,7 @@ int main(void) {
 
         uart_puts("\n\n" YELLOW "[*] PHASE 1: JOP VULNERABILITY (Zicfilp Test)" RESET "\n");
         uart_puts("Overflow ctx.buffer to overwrite ctx.action:\n> ");
+        DEBUG_UPDATE();
 
         static int ji;
         static unsigned char jc;

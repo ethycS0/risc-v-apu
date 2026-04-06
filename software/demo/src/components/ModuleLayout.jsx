@@ -94,12 +94,14 @@ const ModuleLayout = ({ children, title }) => {
               <div className="cfi-toggle-container">
                 <span className="toggle-label">Enable CFI Security</span>
                 <label className="switch">
-                  <input 
-                    type="checkbox" 
-                    checked={cfiEnabled} 
-                    onChange={() => setCfiEnabled(!cfiEnabled)} 
+                  <input
+                    type="checkbox"
+                    checked={cfiEnabled}
+                    onChange={() => setCfiEnabled(!cfiEnabled)}
                   />
-                  <span className={`slider ${cfiEnabled ? 'on' : 'off'}`}></span>
+                  <span
+                    className={`slider ${cfiEnabled ? 'on' : 'off'}`}
+                  ></span>
                 </label>
               </div>
             )}
@@ -148,7 +150,7 @@ const ModuleLayout = ({ children, title }) => {
             <div className="dump-container">
               <h2 className="dump-title">HARDWARE STACK DUMP</h2>
               <div className="dump-grid stack-dump">
-                {[...Array(10)].map((_, i) => (
+                {[...Array(28)].map((_, i) => (
                   <div key={i} className="dump-row">
                     <span className="dump-label">PTR_{i}:</span>
                     <span className="dump-value">

@@ -238,7 +238,7 @@ void tetris_run(int w, int h) {
         while (!t.gameover) {
                 count++;
                 if (count % 50 == 0) {
-                        update_dashboard();
+                        DEBUG_UPDATE();
                         tetris_print(&t);
                 }
                 if (count % 350 == 0) {
@@ -252,24 +252,24 @@ void tetris_run(int w, int h) {
                                 if (tetris_hittest(&t))
                                         t.x++;
 
-                                update_dashboard();
+                                DEBUG_UPDATE();
                                 break;
                         case 'd':
                                 t.x++;
                                 if (tetris_hittest(&t))
                                         t.x--;
 
-                                update_dashboard();
+                                DEBUG_UPDATE();
                                 break;
                         case 's':
                                 tetris_gravity(&t);
 
-                                update_dashboard();
+                                DEBUG_UPDATE();
                                 break;
                         case ' ':
                                 tetris_rotate(&t);
 
-                                update_dashboard();
+                                DEBUG_UPDATE();
                                 break;
                         }
                 }

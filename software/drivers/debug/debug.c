@@ -11,6 +11,7 @@ extern void _dump_gprs(void);
 extern void _dump_csrs(void);
 
 void init() {
+        DEBUG_UPDATE();
         unsigned char c = 0x00;
         while (c != 0x20) {
                 uart_getc(&c);
@@ -53,6 +54,7 @@ void print_hex(unsigned long val) {
 }
 
 void print_crash_dump(unsigned long mcause, unsigned long mepc, unsigned long mtval, unsigned long *fp) {
+        DEBUG_UPDATE();
         uart_puts("\n\n\033[31m!!! SYSTEM TRAP (CRASH) !!!\033[0m\n");
         if (mcause & 0x80000000) {
                 uart_puts("(Interrupt)\n");
@@ -157,38 +159,38 @@ void print_csrs_col(int start_row, int col) {
         }
 }
 
-void print_stack_col(int start_row, int col, int entries) {
-        if (entries > 16)
-                entries = 16;
+void print_stack_col(int start_row, int col, int graveyard_words, int active_words, unsigned int game_sp) {
+        int total_entries = graveyard_words + active_words;
+        if (total_entries > 32)
+                total_entries = 32;
 
-        unsigned int sp_val;
-        __asm__ volatile("mv %0, sp" : "=r"(sp_val));
-        unsigned int *sp_ptr = (unsigned int *)sp_val;
+        unsigned int *sp_ptr = (unsigned int *)game_sp;
         int line = 0;
 
         set_cursor(start_row, col);
         uart_puts("\033[1;35m=== HARDWARE STACK DUMP ===\033[0m");
 
-        for (int i = 4; i < entries + 4; i++) {
+        for (int i = -graveyard_words; i < active_words; i++) {
                 set_cursor(start_row + 1 + line, col);
+
                 uart_puts("PTR_");
                 uart_put_int(line);
                 uart_puts(": ");
+
                 print_hex(*(sp_ptr + i));
+
                 line += 1;
         }
 }
 
-void update_dashboard() {
+void update_dashboard(unsigned int game_sp) {
         int dashboard_col = 120;
-
         uart_puts(ANSI_SAVE_CURSOR);
 
         print_gprs_col(2, dashboard_col);
-
         print_csrs_col(21, dashboard_col);
 
-        print_stack_col(28, dashboard_col, 10);
+        print_stack_col(28, dashboard_col, 8, 20, game_sp);
 
         uart_puts(ANSI_RESTORE_CURSOR);
 }
