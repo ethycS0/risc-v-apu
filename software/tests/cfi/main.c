@@ -41,9 +41,6 @@ void vulnerable_function(void) {
 int main(void) {
         init();
 
-        print_gprs();
-        print_csrs();
-
         uart_puts("\n" CYAN "=== RISC-V M-MODE SECURE MONITOR ===" RESET "\n");
 
 #ifdef __ENABLE_SMCFISS__
@@ -81,7 +78,6 @@ int main(void) {
         static unsigned char jc;
         ji = 0;
 
-        print_stack(10);
         while (1) {
                 if (uart_getc(&jc)) {
                         // Removed echo here too

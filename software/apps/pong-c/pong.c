@@ -1,3 +1,4 @@
+#include "debug.h"
 #include "uart.h"
 #include <stdbool.h>
 #include <stdint.h>
@@ -73,6 +74,8 @@ int get_score_len(unsigned long long score) {
 }
 
 void draw_game(unsigned char grid[ROWS][COLS]) {
+        update_dashboard();
+
         printf("\033[H");
 
         // Insert players (with bounds checking)
@@ -135,6 +138,8 @@ void draw_game(unsigned char grid[ROWS][COLS]) {
 }
 
 void update_ball(unsigned char grid[ROWS][COLS]) {
+        update_dashboard();
+
         // Clear previous ball position
         for (int y = ball.y; y < ball.y + BALL_SIZE; y++) {
                 for (int x = ball.x; x < ball.x + BALL_SIZE; x++) {
@@ -182,6 +187,8 @@ void update_ball(unsigned char grid[ROWS][COLS]) {
 }
 
 void move_player(unsigned char index, bool direction, unsigned char grid[ROWS][COLS]) {
+        update_dashboard();
+
         if (!direction) { // Move UP
                 if (player[index].y >= 2) {
                         player[index].y -= 1;

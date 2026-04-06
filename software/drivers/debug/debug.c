@@ -164,16 +164,18 @@ void print_stack_col(int start_row, int col, int entries) {
         unsigned int sp_val;
         __asm__ volatile("mv %0, sp" : "=r"(sp_val));
         unsigned int *sp_ptr = (unsigned int *)sp_val;
+        int line = 0;
 
         set_cursor(start_row, col);
         uart_puts("\033[1;35m=== HARDWARE STACK DUMP ===\033[0m");
 
-        for (int i = 0; i < entries; i++) {
-                set_cursor(start_row + 1 + i, col);
+        for (int i = 4; i < entries + 4; i++) {
+                set_cursor(start_row + 1 + line, col);
                 uart_puts("PTR_");
-                uart_put_int(i);
+                uart_put_int(line);
                 uart_puts(": ");
                 print_hex(*(sp_ptr + i));
+                line += 1;
         }
 }
 
@@ -186,7 +188,7 @@ void update_dashboard() {
 
         print_csrs_col(21, dashboard_col);
 
-        print_stack_col(28, dashboard_col, 8);
+        print_stack_col(28, dashboard_col, 10);
 
         uart_puts(ANSI_RESTORE_CURSOR);
 }

@@ -38,25 +38,25 @@ const ModuleLayout = ({ children, title }) => {
   // flash bash code
   const handleFlash = () => {
     const commandMap = {
-      '/pong': 'neofetch',
-      '/tetris': 'firefox',
+      '/pong': 'upload_pong',
+      '/tetris': 'upload_tetris',
       '/cfi': 'echo "CFI Module Initialised Successfully"',
     }
 
     // Get the bash cmd based on current url
-    const targetCommand = commandMap[location.pathname] || 'neofetch';
+    const targetCommand = commandMap[location.pathname] || 'upload_pong'
 
     // checks if socket is open. If yes sends JSON
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      const payload = JSON.stringify({ 
-        type: 'command', 
-        data: targetCommand 
-      });
-      
-      wsRef.current.send(payload);
-      console.log("Sent command to backend:", targetCommand);
+      const payload = JSON.stringify({
+        type: 'command',
+        data: targetCommand,
+      })
+
+      wsRef.current.send(payload)
+      console.log('Sent command to backend:', targetCommand)
     } else {
-      console.error("WebSocket is not connected.");
+      console.error('WebSocket is not connected.')
     }
   }
 
@@ -68,7 +68,7 @@ const ModuleLayout = ({ children, title }) => {
 
   const viewportSizes = {
     '/pong': { width: '450px', height: '280px' },
-    '/tetris': { width: '345px', height: '380px' },
+    '/tetris': { width: '400px', height: '450px' },
     '/cfi': { width: '500px', height: '400px' },
   }
 

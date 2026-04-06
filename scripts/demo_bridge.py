@@ -156,14 +156,22 @@ async def ws_handler(websocket):
                     if cmd_data.get("type") == "command":
                         target = cmd_data.get("data")
                         print(f"[!] FLASH BUTTON TRIGGERED: Executing {target}...")
-                        
-                        if target == "firefox":
-                            subprocess.Popen(["firefox"])
-                        elif target == "neofetch":
-                            subprocess.run(["neofetch"])
+
+                        if target == "upload_pong":
+                            subprocess.Popen(
+                                [
+                                    " openFPGALoader -c ft2232 -b tangprimer20k ../bitstreams/pong/soc.fs"
+                                ]
+                            )
+                        elif target == "upload_tetris":
+                            subprocess.Popen(
+                                [
+                                    " openFPGALoader -c ft2232 -b tangprimer20k ../bitstreams/tetris/soc.fs"
+                                ]
+                            )
                         else:
                             subprocess.run(target, shell=True)
-                        continue 
+                        continue
                 except:
                     pass
 

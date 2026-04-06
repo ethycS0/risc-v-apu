@@ -96,8 +96,6 @@ void tetris_print(struct tetris *t) {
         // printf("\033[2J\033[H\033[?25l");
         printf("\033[H\033[?25l");
 
-        update_dashboard();
-
         printf("[LEVEL: %d | SCORE: %d]\n", t->level, t->score);
         for (x = 0; x < 2 * t->w + 2; x++)
                 printf("~");
@@ -113,6 +111,7 @@ void tetris_print(struct tetris *t) {
                 }
                 printf("!\n");
         }
+
         for (x = 0; x < 2 * t->w + 2; x++)
                 printf("~");
         printf("\n");
@@ -178,7 +177,6 @@ void tetris_rotate(struct tetris *t) {
 }
 
 void tetris_gravity(struct tetris *t) {
-        update_dashboard();
         int x, y;
         t->y++;
         if (tetris_hittest(t)) {
@@ -189,7 +187,6 @@ void tetris_gravity(struct tetris *t) {
 }
 
 void tetris_fall(struct tetris *t, int l) {
-        update_dashboard();
         int x, y;
         for (y = l; y > 0; y--) {
                 for (x = 0; x < t->w; x++)
@@ -200,7 +197,6 @@ void tetris_fall(struct tetris *t, int l) {
 }
 
 void tetris_check_lines(struct tetris *t) {
-        update_dashboard();
         int x, y, l;
         int p = 100;
         for (y = t->h - 1; y >= 0; y--) {
@@ -220,7 +216,6 @@ void tetris_check_lines(struct tetris *t) {
 }
 
 int tetris_level(struct tetris *t) {
-        update_dashboard();
         int i;
         for (i = 0; i < TETRIS_LEVELS; i++) {
                 if (t->score >= levels[i].score) {
@@ -243,6 +238,7 @@ void tetris_run(int w, int h) {
         while (!t.gameover) {
                 count++;
                 if (count % 50 == 0) {
+                        update_dashboard();
                         tetris_print(&t);
                 }
                 if (count % 350 == 0) {
@@ -255,17 +251,25 @@ void tetris_run(int w, int h) {
                                 t.x--;
                                 if (tetris_hittest(&t))
                                         t.x++;
+
+                                update_dashboard();
                                 break;
                         case 'd':
                                 t.x++;
                                 if (tetris_hittest(&t))
                                         t.x--;
+
+                                update_dashboard();
                                 break;
                         case 's':
                                 tetris_gravity(&t);
+
+                                update_dashboard();
                                 break;
                         case ' ':
                                 tetris_rotate(&t);
+
+                                update_dashboard();
                                 break;
                         }
                 }
