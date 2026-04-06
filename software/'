@@ -72,10 +72,10 @@ const ModuleLayout = ({ children, title }) => {
             <main className="screen-container">
               <div
                 className="viewport-container"
-                style={{
+                                                                style={{
                   width: currentSize.width,
                   height: currentSize.height,
-                  transition: 'width 0.3s ease, height 0.3s ease',
+                  transition: 'width 0.3s ease, height 0.3s ease' // Bonus: Smooth animation when switching games!
                 }}
                 onScroll={(e) => {
                   e.target.scrollLeft = 0

@@ -17,16 +17,35 @@ const UartTerminal = ({ moduleId }) => {
       fontFamily: '"JetBrainsMono Nerd Font", monospace',
       fontSize: 14,
       cols: 180,
-      rows: 30,
+      rows: 50,
       cursorBlink: true,
       convertEol: true,
+    })
+
+    const ws = new WebSocket('ws://localhost:8081')
+
+    term.attachCustomKeyEventHandler((e) => {
+      if (e.code === 'Space') {
+        if (e.type === 'keydown') {
+          e.preventDefault()
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send('KEY: ')
+          }
+        }
+        return false // Prevents xterm from capturing it and jumping
+      }
+      if (e.code.startsWith('Arrow')) {
+        if (e.type === 'keydown') {
+          e.preventDefault()
+        }
+        return true
+      }
+      return true
     })
 
     term.open(terminalDiv.current)
     termInstance.current = term
     term.focus()
-
-    const ws = new WebSocket('ws://localhost:8081')
 
     ws.addEventListener('open', () => {
       ws.send(`MOD:${moduleId}`)

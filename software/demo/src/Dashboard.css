@@ -146,37 +146,45 @@ body {
   max-height: calc(100vh - 150px);
 }
 
-.viewport-container {
+.screen-container {
   flex-grow: 1;
+  background-color: #0a0a0a;
   border: 1px solid currentColor;
-  background: rgba(128, 128, 128, 0.02);
-  width: 650px; /* Keep this narrow to fit only Tetris/Pong */
-  max-width: 650px;
-  overflow: hidden; /* Hides the right side of the terminal */
-  display: block; /* Crucial: Do not use flex here */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
   position: relative;
 }
 
+.viewport-container {
+  overflow: hidden;
+  position: relative;
+  display: block;
+}
+
+/* 3. The Terminal Wrapper: Strip padding so it's flush to the Viewport edge */
 .terminal-wrapper {
   display: block;
-  padding: 1rem;
+  padding: 0;
+  margin: 0;
   width: fit-content;
   height: fit-content;
-  margin-left: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
+/* Force xterm to have enough physical width to render 180 cols */
 .terminal-container {
-  background: #0a0a0a;
-  width: 100%;
+  width: 1800px !important;
+  min-width: 1800px !important;
   height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
-/* Force xterm canvas to scale nicely */
-.terminal-container .xterm-screen {
-  width: 100% !important;
+/* Remove default scrollbar styles on the viewport just in case */
+.viewport-container::-webkit-scrollbar {
+  display: none;
 }
 
 .cube-grid {

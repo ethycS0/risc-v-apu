@@ -189,6 +189,7 @@ void tetris_gravity(struct tetris *t) {
 }
 
 void tetris_fall(struct tetris *t, int l) {
+        update_dashboard();
         int x, y;
         for (y = l; y > 0; y--) {
                 for (x = 0; x < t->w; x++)
@@ -199,6 +200,7 @@ void tetris_fall(struct tetris *t, int l) {
 }
 
 void tetris_check_lines(struct tetris *t) {
+        update_dashboard();
         int x, y, l;
         int p = 100;
         for (y = t->h - 1; y >= 0; y--) {
@@ -218,6 +220,7 @@ void tetris_check_lines(struct tetris *t) {
 }
 
 int tetris_level(struct tetris *t) {
+        update_dashboard();
         int i;
         for (i = 0; i < TETRIS_LEVELS; i++) {
                 if (t->score >= levels[i].score) {
