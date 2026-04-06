@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import '../Dashboard.css'
 
 const ModuleLayout = ({ children, title }) => {
   const navigate = useNavigate()
   const location = useLocation()
+  const wsRef = useRef(null)
 
   const [gprData, setGprData] = useState({})
   const [csrData, setCsrData] = useState({})
@@ -12,6 +13,7 @@ const ModuleLayout = ({ children, title }) => {
 
   useEffect(() => {
     const ws = new WebSocket('ws://localhost:8081')
+    wsRef.current = ws
 
     ws.addEventListener('message', (event) => {
       try {
@@ -32,6 +34,31 @@ const ModuleLayout = ({ children, title }) => {
 
     return () => ws.close()
   }, [])
+
+  // flash bash code
+  const handleFlash = () => {
+    const commandMap = {
+      '/pong': 'neofetch',
+      '/tetris': 'firefox',
+      '/cfi': 'echo "CFI Module Initialised Successfully"',
+    }
+
+    // Get the bash cmd based on current url
+    const targetCommand = commandMap[location.pathname] || 'neofetch';
+
+    // checks if socket is open. If yes sends JSON
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      const payload = JSON.stringify({ 
+        type: 'command', 
+        data: targetCommand 
+      });
+      
+      wsRef.current.send(payload);
+      console.log("Sent command to backend:", targetCommand);
+    } else {
+      console.error("WebSocket is not connected.");
+    }
+  }
 
   const modules = [
     { id: 'pong', label: 'PONG', path: '/pong' },
@@ -60,7 +87,9 @@ const ModuleLayout = ({ children, title }) => {
             <p className="dashboard-subtitle">{title}</p>
           </div>
           <div className="header-controls">
-            <button className="flash-btn">FLASH CPU</button>
+            <button className="flash-btn" onClick={handleFlash}>
+              FLASH CPU
+            </button>
             <button onClick={() => navigate('/')} className="home-btn">
               <span>HOME</span>
             </button>

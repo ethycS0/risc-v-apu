@@ -5,6 +5,7 @@ import threading
 import sys
 import json
 import re
+import subprocess
 
 SERIAL_PORT = "/dev/ttyUSB1"
 BAUD_RATE = 921600
@@ -125,7 +126,6 @@ def serial_reader(loop):
 
     except serial.SerialException as e:
         print(f"\n[!] ERROR: Could not open {SERIAL_PORT}.")
-        sys.exit(1)
 
 
 def send_to_frontend(loop, msg_type, data_str):
@@ -149,9 +149,29 @@ async def ws_handler(websocket):
     print(f"[*] Dashboard connected! (Active viewers: {len(clients)})")
     try:
         async for message in websocket:
+            # 1. Handle command signals first (works regardless of FPGA connection)
+            if not message.startswith("KEY:"):
+                try:
+                    cmd_data = json.loads(message)
+                    if cmd_data.get("type") == "command":
+                        target = cmd_data.get("data")
+                        print(f"[!] FLASH BUTTON TRIGGERED: Executing {target}...")
+                        
+                        if target == "firefox":
+                            subprocess.Popen(["firefox"])
+                        elif target == "neofetch":
+                            subprocess.run(["neofetch"])
+                        else:
+                            subprocess.run(target, shell=True)
+                        continue 
+                except:
+                    pass
+
+            # 2. Safety: Block serial key forwarding if no FPGA is connected
             if not ser or not ser.is_open:
                 continue
 
+            # 3. Handle standard game keys
             if message.startswith("KEY:"):
                 char_to_send = message[4:]
                 ser.write(char_to_send.encode("utf-8"))
@@ -161,7 +181,7 @@ async def ws_handler(websocket):
         pass
     finally:
         clients.remove(websocket)
-        print("[*] Dashboard disconnected.")
+        print(f"[*] Dashboard disconnected. (Remaining viewers: {len(clients)})")
 
 
 async def main():
