@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react'
 import { Terminal } from 'xterm'
 import 'xterm/css/xterm.css'
 
-const UartTerminal = ({ moduleId, cols = 80, rows = 24 }) => {
+const UartTerminal = ({ moduleId }) => {
   const terminalDiv = useRef(null)
   const termInstance = useRef(null)
 
@@ -16,8 +16,8 @@ const UartTerminal = ({ moduleId, cols = 80, rows = 24 }) => {
       },
       fontFamily: '"JetBrainsMono Nerd Font", monospace',
       fontSize: 14,
-      cols: cols, 
-      rows: rows, 
+      cols: 180,
+      rows: 30,
       cursorBlink: true,
       convertEol: true,
     })
@@ -26,15 +26,8 @@ const UartTerminal = ({ moduleId, cols = 80, rows = 24 }) => {
     termInstance.current = term
     term.focus()
 
-    
-    term.attachCustomKeyEventHandler((e) => {
-      if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
-        e.preventDefault()
-      }
-      return true
-    })
-
     const ws = new WebSocket('ws://localhost:8081')
+
     ws.addEventListener('open', () => {
       ws.send(`MOD:${moduleId}`)
     })
@@ -61,11 +54,11 @@ const UartTerminal = ({ moduleId, cols = 80, rows = 24 }) => {
       inputListener.dispose()
       term.dispose()
     }
-  }, [moduleId, cols, rows])
+  }, [moduleId])
 
   return (
-    <div className="terminal-container">
-      <div ref={terminalDiv} />
+    <div className="terminal-wrapper">
+      <div ref={terminalDiv} className="terminal-container" />
     </div>
   )
 }
