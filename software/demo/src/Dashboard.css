@@ -365,3 +365,78 @@ body {
     padding: 1rem;
   }
 }
+
+/* CFI Toggle Styling */
+.cfi-toggle-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-right: 10px;
+}
+
+.toggle-label {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* The switch - the box around the slider */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 22px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ef4444; /* Default Red (OFF) */
+  transition: .3s;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 4px;
+  bottom: 3px;
+  background-color: white;
+  transition: .3s;
+}
+
+input:checked + .slider {
+  background-color: #22c55e; /* Green (ON) */
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #22c55e;
+}
+
+input:checked + .slider:before {
+  transform: translateX(20px);
+}
+
+/* Optional: Label color change based on state */
+.slider.on {
+  background-color: #22c55e;
+}
+
+.slider.off {
+  background-color: #ef4444;
+}
