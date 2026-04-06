@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import '../Dashboard.css'
 
-const ModuleLayout = ({ children, title, terminalClass = "standard" }) => {
+const ModuleLayout = ({ children, title }) => {
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -37,9 +37,6 @@ const ModuleLayout = ({ children, title, terminalClass = "standard" }) => {
     { id: 'cfi', label: 'CFI', path: '/cfi' },
   ]
 
-  const csrLabels = ['mtvec', 'ssp', 'mseccfg', 'mscratch', 'mcycle', 'pmpcfg0', 'minstret', 'pmpaddr0']
-  const gprLabels = ['zero', 'a6', 'ra', 'a7', 'sp', 's2', 'gp', 's3', 'tp', 's4', 't0', 's5', 't1', 's6', 't2', 's7', 's0', 's8', 's1', 's9', 'a0', 's10', 'a1', 's11', 'a2', 't3', 'a3', 't4', 'a4', 't5', 'a5', 't6']
-
   return (
     <div className="dashboard-root dark">
       <div className="grid-background" />
@@ -50,17 +47,19 @@ const ModuleLayout = ({ children, title, terminalClass = "standard" }) => {
             <p className="dashboard-subtitle">{title}</p>
           </div>
           <div className="header-controls">
-            <button className="flash-btn">FLASH CPU</button>
-            <button onClick={() => navigate('/')} className="home-btn">HOME</button>
+            <button className="flash-btn">
+              FLASH CPU
+            </button>
+            <button onClick={() => navigate('/')} className="home-btn">
+              <span>HOME</span>
+            </button>
           </div>
         </header>
 
         <div className="main-layout">
           <section className="left-section">
             <main className="viewport-container">
-              <div className={`terminal-wrapper ${terminalClass}`}>
-                {children}
-              </div>
+              {children}
             </main>
             <div className="cube-grid">
               {modules.map((m) => (
@@ -91,7 +90,7 @@ const ModuleLayout = ({ children, title, terminalClass = "standard" }) => {
             <div className="dump-container">
               <h2 className="dump-title">HARDWARE CSR DUMP</h2>
               <div className="dump-grid">
-                {csrLabels.map((reg) => (
+                {['mtvec', 'ssp', 'mseccfg', 'mscratch', 'mcycle', 'pmpcfg0', 'minstret', 'pmpaddr0'].map((reg) => (
                   <div key={reg} className="dump-row">
                     <span className="dump-label">{reg}:</span>
                     <span className="dump-value">{csrData[reg] || '--'}</span>
@@ -103,7 +102,7 @@ const ModuleLayout = ({ children, title, terminalClass = "standard" }) => {
             <div className="dump-container">
               <h2 className="dump-title">HARDWARE GPR DUMP</h2>
               <div className="dump-grid gpr-dump">
-                {gprLabels.map((reg) => (
+                {['zero', 'a6', 'ra', 'a7', 'sp', 's2', 'gp', 's3', 'tp', 's4', 't0', 's5', 't1', 's6', 't2', 's7', 's0', 's8', 's1', 's9', 'a0', 's10', 'a1', 's11', 'a2', 't3', 'a3', 't4', 'a4', 't5', 'a5', 't6'].map((reg) => (
                   <div key={reg} className="dump-row">
                     <span className="dump-label">{reg}:</span>
                     <span className="dump-value">{gprData[reg] || '--'}</span>
