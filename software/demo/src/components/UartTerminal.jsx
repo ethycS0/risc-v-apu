@@ -21,14 +21,6 @@ const UartTerminal = ({ moduleId }) => {
       cursorBlink: true,
       convertEol: true,
     })
-    
-    term.open(terminalDiv.current)
-    termInstance.current = term
-    
-    // Clear terminal and home cursor immediately on mount
-    term.write('\x1b[2J\x1b[H')
-    
-    term.focus()
 
     const ws = new WebSocket('ws://localhost:8081')
 

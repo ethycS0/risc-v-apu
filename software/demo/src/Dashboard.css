@@ -15,16 +15,28 @@
 html,
 body {
   width: 100%;
-  min-height: 100vh;
+  height: 100vh;
   background-color: var(--bg-dark);
   color: var(--text-dark);
+  overflow: hidden; /* REMOVES SITE SCROLL */
 }
 
 .dashboard-root {
   width: 100%;
-  min-height: 100vh;
+  height: 100vh;
   font-family: var(--font-mono);
   position: relative;
+  background: radial-gradient(circle at center, #111111 0%, #0a0a0a 100%);
+  overflow: hidden; /* LOCKS VIEWPORT */
+}
+
+.trace-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.8;
 }
 
 .dark {
@@ -39,7 +51,7 @@ body {
   width: 100vw;
   height: 100vh;
   pointer-events: none;
-  z-index: 0;
+  z-index: 1;
   background-size: 40px 40px;
   background-image:
     linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
@@ -49,11 +61,12 @@ body {
 
 .dashboard-container {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   padding: 1.5rem 2rem;
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .dashboard-header {
@@ -108,8 +121,6 @@ body {
   animation: fillFlash 6s linear forwards;
 }
 
-
-
 .flash-btn.flashing {
   background: rgba(239, 68, 68, 0.2); 
   cursor: not-allowed;
@@ -150,6 +161,8 @@ body {
   flex-grow: 1;
   gap: 2rem;
   margin-bottom: 1rem;
+  height: calc(100% - 120px); /* KILLS INTERNAL SCROLL */
+  overflow: hidden;
 }
 
 .center-layout {
@@ -162,7 +175,8 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  min-width: 0; /* Prevents flex children from blowing out container */
+  min-width: 0; 
+  height: 100%;
 }
 
 .right-section {
@@ -172,7 +186,7 @@ body {
   gap: 1rem;
   overflow-y: auto;
   padding-right: 0.5rem;
-  max-height: calc(100vh - 150px);
+  max-height: 100%;
 }
 
 .screen-container {
@@ -192,7 +206,6 @@ body {
   display: block;
 }
 
-/* 3. The Terminal Wrapper: Strip padding so it's flush to the Viewport edge */
 .terminal-wrapper {
   display: block;
   padding: 0;
@@ -204,14 +217,12 @@ body {
   left: 0;
 }
 
-/* Force xterm to have enough physical width to render 180 cols */
 .terminal-container {
   width: 1800px !important;
   min-width: 1800px !important;
   height: 100%;
 }
 
-/* Remove default scrollbar styles on the viewport just in case */
 .viewport-container::-webkit-scrollbar {
   display: none;
 }
@@ -219,13 +230,13 @@ body {
 .cube-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
+  gap: 1.5rem;
   width: 100%;
 }
 
 .home-grid {
-  width: 60%;
-  max-width: 800px;
+  width: 65%;
+  max-width: 900px;
 }
 
 .test-cube {
@@ -244,18 +255,23 @@ body {
 }
 
 .home-cube {
-  height: 6rem;
+  height: 8rem;
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
 }
 
 .home-cube .cube-label {
-  font-size: 1.5rem;
+  font-size: 1.8rem;
+  letter-spacing: 2px;
 }
 
 .test-cube:hover,
 .test-cube.active {
   opacity: 1;
-  background: rgba(128, 128, 128, 0.1);
+  background: rgba(255, 255, 255, 0.08) !important;
   border-width: 2px;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
+  transform: translateY(-2px);
 }
 
 .cube-label {
@@ -300,18 +316,23 @@ body {
 
 .dump-value {
   font-weight: 700;
-  word-break: break-all; /* Prevents long hex values from pushing layout */
+  word-break: break-all; 
 }
 
 .dashboard-footer {
   flex-shrink: 0;
-  font-size: 0.7rem;
-  opacity: 0.5;
+  font-size: 0.75rem;
+  opacity: 0.6;
   display: flex;
   justify-content: space-between;
   border-top: 1px solid currentColor;
   padding-top: 0.75rem;
   margin-top: auto;
+}
+
+.footer-status {
+  letter-spacing: 1px;
+  font-weight: 800;
 }
 
 .right-section::-webkit-scrollbar {
@@ -337,7 +358,6 @@ body {
   animation: pulse 2s infinite;
 }
 
-/* Responsive Media Queries */
 @media (max-width: 1200px) {
   .left-section {
     flex: 1.2;
@@ -350,6 +370,7 @@ body {
 @media (max-width: 992px) {
   .main-layout {
     flex-direction: column;
+    overflow-y: auto;
   }
 
   .right-section {
@@ -395,7 +416,6 @@ body {
   }
 }
 
-
 .cfi-toggle-container {
   display: flex;
   align-items: center;
@@ -410,7 +430,6 @@ body {
   letter-spacing: 0.5px;
 }
 
-
 .switch {
   position: relative;
   display: inline-block;
@@ -418,14 +437,12 @@ body {
   height: 22px;
 }
 
-
 .switch input {
   opacity: 0;
   width: 0;
   height: 0;
 }
 
-/* The slider */
 .slider {
   position: absolute;
   cursor: pointer;
@@ -461,7 +478,6 @@ input:checked + .slider:before {
   transform: translateX(20px);
 }
 
-
 .slider.on {
   background-color: #22c55e;
 }
@@ -485,3 +501,4 @@ input:checked + .slider:before {
 .exploit-btn:hover {
   background: rgba(128, 128, 128, 0.1);
 }
+
