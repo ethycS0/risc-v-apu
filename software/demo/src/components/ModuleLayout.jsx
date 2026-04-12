@@ -59,7 +59,7 @@ const ModuleLayout = ({ children, title }) => {
     }
   }
 
-  // CORRECT DELAY: IMMEDIATE SEND + 6S LOCK
+  // Corrected Delay
   const handleFlash = () => {
     if (isFlashing) return
 
