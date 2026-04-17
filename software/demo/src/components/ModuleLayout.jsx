@@ -59,37 +59,40 @@ const ModuleLayout = ({ children, title }) => {
     }
   }
 
-  // flash cpu  delay
+  // Corrected Delay
   const handleFlash = () => {
     if (isFlashing) return
 
     setIsFlashing(true)
 
-    // Clear terminal on flash start
+    // 1. Clear terminal immediately
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify({ type: 'game', data: '\x1b[2J\x1b[H' }))
     }
 
+    // 2. Send command to hardware INSTANTLY
+    const commandMap = {
+      '/pong': 'upload_pong',
+      '/tetris': 'upload_tetris',
+      '/cfi': cfiEnabled ? 'upload_safe' : 'upload_unsafe',
+    }
+
+    const targetCommand = commandMap[location.pathname] || 'upload_tetris'
+
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      const payload = JSON.stringify({
+        type: 'command',
+        data: targetCommand,
+      })
+
+      wsRef.current.send(payload)
+      console.log('Sent command to backend immediately:', targetCommand)
+    } else {
+      console.error('WebSocket is not connected.')
+    }
+
+    // 3. Keep UI flashing state for 6s
     setTimeout(() => {
-      const commandMap = {
-        '/pong': 'upload_pong',
-        '/tetris': 'upload_tetris',
-        '/cfi': cfiEnabled ? 'upload_safe' : 'upload_unsafe',
-      }
-
-      const targetCommand = commandMap[location.pathname] || 'upload_tetris'
-
-      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-        const payload = JSON.stringify({
-          type: 'command',
-          data: targetCommand,
-        })
-
-        wsRef.current.send(payload)
-        console.log('Sent command to backend:', targetCommand)
-      } else {
-        console.error('WebSocket is not connected.')
-      }
       setIsFlashing(false)
     }, 6000)
   }
@@ -103,7 +106,7 @@ const ModuleLayout = ({ children, title }) => {
   const viewportSizes = {
     '/pong': { width: '1000px', height: '580px' },
     '/tetris': { width: '400px', height: '450px' },
-    '/cfi': { width: '500px', height: '1000px' },
+    '/cfi': { width: '600px', height: '580px' },
   }
 
   const currentSize = viewportSizes[location.pathname] || {
