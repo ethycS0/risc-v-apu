@@ -205,7 +205,7 @@ const ModuleLayout = ({ children, title }) => {
                     <span className="gdb-line">]────────</span>
                   </div>
                   <div className="gdb-stack-container">
-                    {Array.from({ length: 32 }, (_, i) => i - 7).map(
+                    {Array.from({ length: 36 }, (_, i) => i - 7).map(
                       (offset) => {
                         const sign = offset < 0 ? '-' : '+'
                         const absVal = Math.abs(offset)
