@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      :root {
+        --bg: #0a0a0a;
+        --text: #cdd6f4;
+        --memory-bg: #11111b;
+        --safe: #a6e3a1;
+        --danger: #f38ba8;
+        --gadget: #89b4fa;
+        --border: #45475a;
+      }
+
+      body {
+        background-color: var(--bg);
+        color: var(--text);
+        font-family: 'Courier New', Courier, monospace;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        overflow: hidden;
+      }
+
+      .container { display: flex; gap: 40px; }
+      .stack {
+        border: 2px solid var(--border);
+        border-top: none;
+        border-radius: 0 0 8px 8px;
+        padding: 10px;
+        width: 300px;
+        position: relative;
+      }
+
+      .slot {
+        background: var(--memory-bg);
+        border: 1px solid var(--border);
+        margin: 5px 0;
+        padding: 15px;
+        text-align: center;
+        position: relative;
+        font-weight: bold;
+        transition: all 0.3s;
+      }
+
+      .registers { display: flex; flex-direction: column; gap: 20px; width: 250px; }
+      .reg {
+        background: var(--memory-bg);
+        border: 1px solid var(--border);
+        padding: 15px;
+        border-radius: 5px;
+        font-weight: bold;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .code-display {
+        background: #000;
+        padding: 15px;
+        border-radius: 5px;
+        border: 1px solid var(--border);
+        margin-top: 20px;
+        height: 120px;
+      }
+
+      /* Slowed down animations to 20s */
+      @keyframes fillBuffer {
+        0%, 10% { content: 'Local Buffer'; background: var(--memory-bg); color: var(--text); }
+        15%, 100% { content: 'AAAAAAAAA'; background: var(--danger); color: #111; }
+      }
+
+      @keyframes fillS0 {
+        0%, 20% { content: 'Saved s0'; background: var(--memory-bg); color: var(--text); }
+        25%, 100% { content: 'AAAAAAAAA'; background: var(--danger); color: #111; }
+      }
+
+      @keyframes overwriteRA {
+        0%, 30% { content: 'ra: 0x400108'; background: var(--memory-bg); color: var(--safe); }
+        35%, 100% { content: 'ra: 0x80020'; background: var(--gadget); color: #111; }
+      }
+
+      @keyframes injectROP1 {
+        0%, 40% { content: 'Stack Data'; background: var(--memory-bg); color: var(--text); }
+        45%, 100% { content: 'ROP: 0x80040'; background: var(--gadget); color: #111; }
+      }
+
+      @keyframes injectROP2 {
+        0%, 50% { content: 'Stack Data'; background: var(--memory-bg); color: var(--text); }
+        55%, 100% { content: 'ROP: 0x80080'; background: var(--gadget); color: #111; }
+      }
+
+      @keyframes updateRA {
+        0%, 60% { content: '0x400108'; color: var(--safe); }
+        65%, 85% { content: '0x80020'; color: var(--gadget); }
+        90%, 100% { content: '0x80040'; color: var(--gadget); }
+      }
+
+      @keyframes updatePC {
+        0%, 65% { content: '0x40005c'; color: var(--safe); }
+        70%, 90% { content: '0x80020'; color: var(--gadget); }
+        95%, 100% { content: '0x80040'; color: var(--gadget); }
+      }
+
+      @keyframes executionText {
+        0%, 10% { content: 'strcpy(buffer, input);'; }
+        15%, 55% { content: '[!] OVERFLOW DETECTED'; color: var(--danger); }
+        60%, 65% { content: 'vuln epilogue: ld ra, 24(sp)'; color: var(--safe); }
+        70%, 75% { content: 'ret: Jumping to Gadget!'; color: var(--danger); }
+        80%, 90% { content: 'Gadget 1: ld a0, 0(sp)'; color: var(--gadget); }
+        95%, 100% { content: 'Pwned!'; color: var(--danger); }
+      }
+
+      .slot-buffer::after { content: ''; animation: fillBuffer 20s infinite; display: block; }
+      .slot-s0::after { content: ''; animation: fillS0 20s infinite; display: block; }
+      .slot-ra::after { content: ''; animation: overwriteRA 20s infinite; display: block; }
+      .slot-rop1::after { content: ''; animation: injectROP1 20s infinite; display: block; }
+      .slot-rop2::after { content: ''; animation: injectROP2 20s infinite; display: block; }
+      .reg-ra::after { content: ''; animation: updateRA 20s infinite; }
+      .reg-pc::after { content: ''; animation: updatePC 20s infinite; }
+      .code-display::after { content: ''; animation: executionText 20s infinite; white-space: pre-line; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="stack">
+        <div class="slot slot-rop2"></div>
+        <div class="slot slot-rop1"></div>
+        <div class="slot slot-ra"></div>
+        <div class="slot slot-s0"></div>
+        <div class="slot slot-buffer"></div>
+      </div>
+      <div class="registers">
+        <div class="reg"><span>PC</span><span class="reg-pc"></span></div>
+        <div class="reg"><span>RA</span><span class="reg-ra"></span></div>
+        <div class="code-display"></div>
+      </div>
+    </div>
+  </body>
+</html>
