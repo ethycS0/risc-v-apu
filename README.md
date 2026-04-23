@@ -1,4 +1,4 @@
-# eSC-V: M-mode CFI-Hardened RV32I SoC in VHDL
+# eSC-V: M-mode CFI-Hardened RISC-V SoC in VHDL
 
 ## Introduction
 
