@@ -1,118 +1,66 @@
-import React, { useRef, useEffect } from 'react'
+import React from 'react'
 import { useNavigate } from 'react-router-dom'
+import TraceBackground from './TraceBackground'
 import './Dashboard.css'
 
 const Dashboard = () => {
   const navigate = useNavigate()
-  const canvasRef = useRef(null)
-  const mouse = useRef({ x: 0, y: 0 })
 
-  useEffect(() => {
-    const canvas = canvasRef.current
-    const ctx = canvas.getContext('2d')
-    let animationFrameId
-    let traces = []
-
-    const resize = () => {
-      canvas.width = window.innerWidth
-      canvas.height = window.innerHeight
-    }
-
-    window.addEventListener('resize', resize)
-    resize()
-
-    class Trace {
-      constructor(x, y, isManual = false) {
-        this.x = x || Math.random() * canvas.width
-        this.y = y || Math.random() * canvas.height
-        this.path = [{ x: this.x, y: this.y }]
-        this.length = Math.floor(Math.random() * 8) + 4
-        this.life = 1.0
-        this.speed = isManual ? 0.01 : 0.005
-        this.dir = Math.random() > 0.5 ? 'h' : 'v'
-        this.buildPath()
-      }
-
-      buildPath() {
-        let curX = this.x
-        let curY = this.y
-        for (let i = 0; i < this.length; i++) {
-          const segment = Math.random() * 120 + 40
-          if (this.dir === 'h') {
-            curX += Math.random() > 0.5 ? segment : -segment
-            this.dir = 'v'
-          } else {
-            curY += Math.random() > 0.5 ? segment : -segment
-            this.dir = 'h'
-          }
-          this.path.push({ x: curX, y: curY })
-        }
-      }
-
-      draw() {
-        ctx.beginPath()
-        ctx.strokeStyle = `rgba(255, 255, 255, ${this.life * 0.15})`
-        ctx.lineWidth = 1.5
-        ctx.moveTo(this.path[0].x, this.path[0].y)
-        for (let i = 1; i < this.path.length; i++) {
-          ctx.lineTo(this.path[i].x, this.path[i].y)
-        }
-        ctx.stroke()
-
-        const head = this.path[0]
-        ctx.fillStyle = `rgba(255, 255, 255, ${this.life * 0.6})`
-        ctx.beginPath()
-        ctx.arc(head.x, head.y, 1.5, 0, Math.PI * 2)
-        ctx.fill()
-
-        this.life -= this.speed
-      }
-    }
-
-    const render = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
-      
-      if (Math.random() > 0.92) {
-        traces.push(new Trace())
-      }
-
-      if (Math.random() > 0.98) {
-        traces.push(new Trace(mouse.current.x, mouse.current.y, true))
-      }
-
-      traces = traces.filter(t => t.life > 0)
-      traces.forEach(t => t.draw())
-
-      animationFrameId = requestAnimationFrame(render)
-    }
-
-    render()
-    return () => {
-      window.removeEventListener('resize', resize)
-      cancelAnimationFrame(animationFrameId)
-    }
-  }, [])
-
-  const handleMouseMove = (e) => {
-    mouse.current.x = e.clientX
-    mouse.current.y = e.clientY
-  }
-
+  // We add custom CSS/HTML "art" to each module to display on hover
   const modules = [
-    { id: 'pong', label: 'PONG', path: '/pong' },
-    { id: 'tetris', label: 'TETRIS', path: '/tetris' },
-    { id: 'cfi', label: 'CFI', path: '/cfi' },
+    {
+      id: 'pong',
+      label: 'PONG',
+      path: '/pong',
+      art: (
+        <div className="art-container pong-art">
+          <div className="pong-line"></div>
+          <div className="pong-paddle left"></div>
+          <div className="pong-ball"></div>
+          <div className="pong-paddle right"></div>
+        </div>
+      ),
+    },
+    {
+      id: 'tetris',
+      label: 'TETRIS',
+      path: '/tetris',
+      art: (
+        <div className="art-container tetris-art">
+          <div className="t-block empty"></div>
+          <div className="t-block filled"></div>
+          <div className="t-block empty"></div>
+          <div className="t-block filled"></div>
+          <div className="t-block filled"></div>
+          <div className="t-block filled"></div>
+        </div>
+      ),
+    },
+    {
+      id: 'cfi',
+      label: 'CFI',
+      path: '/cfi',
+      art: (
+        <div className="art-container cfi-art">
+          <span className="cfi-line valid">SHADOW_RA == 0x10A4</span>
+          <span className="cfi-line invalid">
+            STACK_RA == <span className="strike">0xDEAD</span>
+          </span>
+          <span className="cfi-line blink">[ HARDWARE TRAP ]</span>
+        </div>
+      ),
+    },
   ]
 
   return (
-    <div onMouseMove={handleMouseMove} className="dashboard-root dark">
-      <canvas ref={canvasRef} className="trace-canvas" />
+    <div className="dashboard-root dark">
+      <TraceBackground />
       <div className="grid-background" />
       <div className="dashboard-container">
         <header className="dashboard-header">
           <div className="header-left">
             <h1 className="dashboard-title">eSC-V</h1>
-            <p className="dashboard-subtitle">M-mode CFI-Hardened RV32I SoC</p>
+            <p className="dashboard-subtitle">M-mode CFI-Hardened RISC-V SoC</p>
           </div>
         </header>
 
@@ -125,6 +73,7 @@ const Dashboard = () => {
                 className="test-cube home-cube"
               >
                 <span className="cube-label">{m.label}</span>
+                <div className="cube-art-wrapper">{m.art}</div>
               </button>
             ))}
           </div>
@@ -132,7 +81,6 @@ const Dashboard = () => {
 
         <footer className="dashboard-footer">
           <span>BOARD: TANG PRIMER 20K</span>
-
         </footer>
       </div>
     </div>

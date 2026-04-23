@@ -4,7 +4,7 @@ import UartTerminal from '../components/UartTerminal.jsx'
 
 const CfiPage = () => {
   return (
-    <ModuleLayout title="CFI MODULE ACTIVE">
+    <ModuleLayout title="CFI">
       <UartTerminal moduleId="cfi" />
     </ModuleLayout>
   )

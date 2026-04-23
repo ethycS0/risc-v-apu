@@ -190,7 +190,7 @@ void update_dashboard(unsigned int game_sp) {
         print_gprs_col(2, dashboard_col);
         print_csrs_col(21, dashboard_col);
 
-        print_stack_col(28, dashboard_col, 8, 20, game_sp);
+        print_stack_col(28, dashboard_col, 8, 24, game_sp);
 
         uart_puts(ANSI_RESTORE_CURSOR);
 }

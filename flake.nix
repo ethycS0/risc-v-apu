@@ -23,9 +23,7 @@
           sourceRoot = ".";
           dontBuild = true;
           dontConfigure = true;
-          dontPatchELF = true;
           dontStrip = true;
-          dontFixup = true;
           installPhase = ''
             mkdir -p $out
             if [ -d "bin" ]; then

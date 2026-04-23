@@ -23,6 +23,10 @@ const UartTerminal = ({ moduleId }) => {
     })
 
     const ws = new WebSocket('ws://localhost:8081')
+    const handleClearTerminal = () => {
+      term.reset()
+    }
+    window.addEventListener('clear-terminal', handleClearTerminal)
 
     term.attachCustomKeyEventHandler((e) => {
       if (e.code === 'Space') {
@@ -72,6 +76,7 @@ const UartTerminal = ({ moduleId }) => {
       ws.close()
       inputListener.dispose()
       term.dispose()
+      window.removeEventListener('clear-terminal', handleClearTerminal)
     }
   }, [moduleId])
 

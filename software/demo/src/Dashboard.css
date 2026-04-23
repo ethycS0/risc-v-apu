@@ -4,6 +4,7 @@
   --bg-dark: #0a0a0a;
   --text-dark: #e0e0e0;
   --font-mono: 'JetBrainsMono Nerd Font', monospace;
+  --font-brand: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 * {
@@ -80,7 +81,7 @@ body {
 }
 
 .dashboard-title {
-  font-size: 2rem;
+  font-size: 4rem;
   font-weight: 800;
   letter-spacing: -1px;
 }
@@ -122,7 +123,7 @@ body {
 }
 
 .flash-btn.flashing {
-  background: rgba(239, 68, 68, 0.2); 
+  background: rgba(239, 68, 68, 0.2);
   cursor: not-allowed;
 }
 
@@ -133,6 +134,189 @@ body {
   100% {
     width: 100%;
   }
+}
+
+/* GDB/pwndbg Terminal Styling */
+.gdb-terminal {
+  background-color: rgba(5, 5, 5, 0.15);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  color: #f8f8f2;
+  font-family: var(--font-mono);
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #222;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 1);
+  overflow-y: auto;
+  font-size: 1.05rem;
+  line-height: 1.5;
+  position: relative; /* CRUCIAL: Makes the branding relative to this container */
+}
+
+.gdb-terminal::after {
+  content: 'eSC-V_';
+  position: absolute;
+  bottom: 600px;
+  right: 5px;
+  font-family: var(--font-mono);
+  font-size: 12rem;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.06);
+  letter-spacing: -7px;
+  pointer-events: none;
+  z-index: 0;
+  user-select: none;
+  white-space: nowrap;
+  animation: cursorBlink 1s step-end infinite;
+  transform: scale(1, 1.15); /* 1x width, 1.5x height */
+  transform-origin: bottom right; /* Keeps it locked to the bottom right corner */
+  transform: rotate(-90deg); /* Reads from bottom to top */
+}
+
+/* Hard-step animation to simulate a terminal cursor */
+@keyframes cursorBlink {
+  0%,
+  100% {
+    content: 'eSC-V_';
+  }
+  50% {
+    /* \00a0 is a non-breaking space. It perfectly matches the width of the underscore! */
+    content: 'eSC-V\00a0';
+  }
+}
+
+.gdb-section {
+  margin-bottom: 25px;
+  width: 100%;
+}
+
+/* Header Styling */
+.gdb-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  color: #00ff00; /* True Neon Green */
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.gdb-line {
+  color: #333;
+  letter-spacing: -1px;
+  overflow: hidden;
+}
+--font-brand:
+  'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* A bold, geometric sans-serif */
+
+.gdb-title {
+  margin: 0 12px;
+  font-size: 1.15rem;
+  text-shadow: 0 0 8px rgba(0, 255, 0, 0.6);
+}
+
+/* Grid Layouts - Maintained for dense display */
+.gdb-grid {
+  display: grid;
+  gap: 8px 15px;
+}
+
+.gpr-grid {
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+}
+
+.csr-grid {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.gdb-row {
+  display: flex;
+  white-space: pre;
+}
+/* Split Pane Layout */
+.gdb-split-layout {
+  display: flex;
+  flex-direction: row;
+  gap: 20px; /* Space between stack and registers */
+  height: 100%;
+}
+
+.gdb-left-pane {
+  flex: 0 0 max-content; /* Hugs the stack tightly to minimize empty padding */
+  border-right: 1px dashed #333; /* Classic terminal separator line */
+  padding-right: 50px; /* Minimal padding */
+}
+
+.gdb-right-pane {
+  flex: 1; /* Takes up all remaining space on the right */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Update your existing stack container */
+.gdb-stack-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2px; /* Tightened gap since you now have 32 items */
+  width: 100%; /* Let the left-pane control the width */
+}
+
+.stack-section {
+  margin-bottom: 0; /* Prevents awkward bottom padding in the left column */
+}
+
+/* Register Colors - maintained */
+.gdb-reg-name {
+  color: #00f0ff; /* Neon Cyan */
+  font-weight: 800;
+  margin-right: 12px;
+  text-shadow: 0 0 5px rgba(0, 240, 255, 0.4);
+}
+
+.csr-name {
+  color: #ff00ff; /* Neon Magenta */
+  text-shadow: 0 0 5px rgba(255, 0, 255, 0.4);
+}
+
+.gdb-value {
+  color: #ffffff;
+}
+
+/* Stack Colors - maintained for single line visual */
+.gdb-stack-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  /* Occupies the left half, leaving space for branding on the right */
+  width: 50%;
+}
+
+.stack-row {
+  padding-left: 10px;
+}
+
+.gdb-stack-ptr {
+  color: #ffd700; /* Bright Yellow */
+  font-weight: 800;
+  margin-right: 12px;
+}
+
+.gdb-stack-arrow {
+  color: #555;
+  margin-right: 12px;
+  font-weight: 800;
+}
+
+.stack-value {
+  color: #ff5555; /* Neon Red */
+  font-weight: 800;
+  text-shadow: 0 0 5px rgba(255, 85, 85, 0.3);
+}
+
+.stack-value {
+  color: #ff5555; /* Neon Red for stack values */
+  font-weight: 800;
+  text-shadow: 0 0 5px rgba(255, 85, 85, 0.3);
 }
 
 .flash-btn:hover {
@@ -175,7 +359,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  min-width: 0; 
+  min-width: 0;
   height: 100%;
 }
 
@@ -254,15 +438,63 @@ body {
   justify-content: center;
 }
 
+/* --- UPDATED HOME CUBE STYLES --- */
+.home-grid {
+  width: 65%;
+  max-width: 900px;
+  align-items: start; /* Prevents all cubes from stretching when one expands */
+}
+
 .home-cube {
   height: 8rem;
   background: rgba(255, 255, 255, 0.02) !important;
   border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  /* Smooth bouncy transition for the expand effect */
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.home-cube:hover {
+  height: 14rem; /* Expands the button downwards */
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: #00f0ff !important; /* Glows neon cyan on hover */
+  box-shadow: 0 0 25px rgba(0, 240, 255, 0.15);
+  transform: translateY(-5px);
 }
 
 .home-cube .cube-label {
   font-size: 1.8rem;
   letter-spacing: 2px;
+  transition: all 0.3s ease;
+}
+
+.home-cube:hover .cube-label {
+  transform: translateY(-35px); /* Pushes the label up to make room for art */
+  color: #00f0ff;
+  text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+}
+
+/* Wrapper that hides the art until hovered */
+.cube-art-wrapper {
+  position: absolute;
+  bottom: 20px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.3s ease;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.home-cube:hover .cube-art-wrapper {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 0.1s; /* Slight delay so the box expands first */
 }
 
 .test-cube:hover,
@@ -279,44 +511,8 @@ body {
   letter-spacing: 1px;
 }
 
-.dump-container {
-  border: 1px solid currentColor;
-  background: rgba(128, 128, 128, 0.03);
-  padding: 1.2rem;
-}
-
-.dump-title {
-  font-size: 0.8rem;
-  font-weight: 800;
-  margin-bottom: 0.75rem;
-  border-bottom: 1px solid rgba(128, 128, 128, 0.3);
-  padding-bottom: 0.25rem;
-  opacity: 0.8;
-}
-
-.dump-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.5rem;
-}
-
-.gpr-dump {
-  grid-template-columns: repeat(2, 1fr);
-}
-
-.dump-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.7rem;
-}
-
-.dump-label {
-  opacity: 0.5;
-}
-
-.dump-value {
-  font-weight: 700;
-  word-break: break-all; 
+.stack-value {
+  color: #ce9178; /* String/Reddish for stack values */
 }
 
 .dashboard-footer {
@@ -450,24 +646,24 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #ef4444; 
-  transition: .3s;
+  background-color: #ef4444;
+  transition: 0.3s;
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .slider:before {
   position: absolute;
-  content: "";
+  content: '';
   height: 14px;
   width: 14px;
   left: 4px;
   bottom: 3px;
   background-color: white;
-  transition: .3s;
+  transition: 0.3s;
 }
 
 input:checked + .slider {
-  background-color: #22c55e; 
+  background-color: #22c55e;
 }
 
 input:focus + .slider {
@@ -502,3 +698,99 @@ input:checked + .slider:before {
   background: rgba(128, 128, 128, 0.1);
 }
 
+/* --- DYNAMIC CSS ART --- */
+
+/* 1. PONG ART */
+.pong-art {
+  width: 70%;
+  height: 50px;
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
+}
+.pong-line {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  border-left: 1px dashed rgba(255, 255, 255, 0.3);
+}
+.pong-paddle {
+  position: absolute;
+  width: 4px;
+  height: 16px;
+  background: #fff;
+  border-radius: 2px;
+}
+.pong-paddle.left {
+  left: 8px;
+  top: 8px;
+}
+.pong-paddle.right {
+  right: 8px;
+  bottom: 8px;
+}
+.pong-ball {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: #00ff00;
+  border-radius: 50%;
+  left: 60%;
+  top: 40%;
+  box-shadow: 0 0 5px #00ff00;
+}
+
+/* 2. TETRIS ART */
+.tetris-art {
+  display: grid;
+  grid-template-columns: repeat(3, 18px);
+  gap: 2px;
+}
+.t-block {
+  width: 18px;
+  height: 18px;
+  border-radius: 2px;
+}
+.t-block.filled {
+  background: #ff00ff; /* Neon Magenta Tetromino */
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 8px rgba(255, 0, 255, 0.6);
+}
+.t-block.empty {
+  background: transparent;
+}
+
+/* 3. CFI ART */
+.cfi-art {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 8px 15px;
+  border-radius: 5px;
+  border-left: 2px solid #ef4444;
+}
+.cfi-line.valid {
+  color: #22c55e;
+} /* Green */
+.cfi-line.invalid {
+  color: #ef4444;
+} /* Red */
+.cfi-line .strike {
+  text-decoration: line-through;
+  opacity: 0.8;
+}
+.cfi-line.blink {
+  color: #ef4444;
+  font-weight: 900;
+  margin-top: 4px;
+  letter-spacing: 1px;
+  /* Reusing the blink animation we made earlier */
+  animation: cursorBlink 1s step-end infinite;
+}

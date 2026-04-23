@@ -4,7 +4,7 @@ import UartTerminal from '../components/UartTerminal.jsx'
 
 const PongPage = () => {
   return (
-    <ModuleLayout title="PONG MODULE ACTIVE">
+    <ModuleLayout title="PONG">
       <UartTerminal moduleId="pong" />
     </ModuleLayout>
   )

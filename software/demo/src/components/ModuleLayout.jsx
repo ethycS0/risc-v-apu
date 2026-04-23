@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
+import TraceBackground from '../TraceBackground'
 import '../Dashboard.css'
 
 const ModuleLayout = ({ children, title }) => {
@@ -11,9 +12,8 @@ const ModuleLayout = ({ children, title }) => {
   const [csrData, setCsrData] = useState({})
   const [stackData, setStackData] = useState({})
 
-  
   const [cfiEnabled, setCfiEnabled] = useState(false)
-  
+
   const [isFlashing, setIsFlashing] = useState(false)
 
   useEffect(() => {
@@ -43,7 +43,9 @@ const ModuleLayout = ({ children, title }) => {
   // Clear terminal when switching modes
   useEffect(() => {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type: 'game', data: '\x1b[2J\x1b[H' }))
+      wsRef.current.send(
+        JSON.stringify({ type: 'game', data: '\x1b[0m\x1b[2J\x1b[H' }),
+      )
     }
   }, [location.pathname])
 
@@ -65,12 +67,8 @@ const ModuleLayout = ({ children, title }) => {
 
     setIsFlashing(true)
 
-    // 1. Clear terminal immediately
-    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type: 'game', data: '\x1b[2J\x1b[H' }))
-    }
+    window.dispatchEvent(new Event('clear-terminal'))
 
-    // 2. Send command to hardware INSTANTLY
     const commandMap = {
       '/pong': 'upload_pong',
       '/tetris': 'upload_tetris',
@@ -91,9 +89,9 @@ const ModuleLayout = ({ children, title }) => {
       console.error('WebSocket is not connected.')
     }
 
-    // 3. Keep UI flashing state for 6s
     setTimeout(() => {
       setIsFlashing(false)
+      window.dispatchEvent(new Event('clear-terminal'))
     }, 6000)
   }
 
@@ -104,8 +102,8 @@ const ModuleLayout = ({ children, title }) => {
   ]
 
   const viewportSizes = {
-    '/pong': { width: '1000px', height: '580px' },
-    '/tetris': { width: '400px', height: '450px' },
+    '/pong': { width: '1000px', height: '620px' },
+    '/tetris': { width: '400px', height: '470px' },
     '/cfi': { width: '600px', height: '580px' },
   }
 
@@ -116,12 +114,12 @@ const ModuleLayout = ({ children, title }) => {
 
   return (
     <div className="dashboard-root dark">
+      <TraceBackground />
       <div className="grid-background" />
       <div className="dashboard-container">
         <header className="dashboard-header">
           <div className="header-left">
-            <h1 className="dashboard-title">eSC-V</h1>
-            <p className="dashboard-subtitle">{title}</p>
+            <h1 className="dashboard-title">{title}</h1>
           </div>
           <div className="header-controls">
             {location.pathname === '/cfi' && (
@@ -153,8 +151,8 @@ const ModuleLayout = ({ children, title }) => {
                 </div>
               </>
             )}
-            <button 
-              className={`flash-btn ${isFlashing ? 'flashing' : ''}`} 
+            <button
+              className={`flash-btn ${isFlashing ? 'flashing' : ''}`}
               onClick={handleFlash}
             >
               {isFlashing ? '' : 'FLASH CPU'}
@@ -196,85 +194,131 @@ const ModuleLayout = ({ children, title }) => {
               ))}
             </div>
           </section>
-
-          <aside className="right-section">
-            <div className="dump-container">
-              <h2 className="dump-title">HARDWARE STACK DUMP</h2>
-              <div className="dump-grid stack-dump">
-                {[...Array(24)].map((_, i) => (
-                  <div key={i} className="dump-row">
-                    <span className="dump-label">PTR_{i}:</span>
-                    <span className="dump-value">
-                      {stackData[i.toString()] || '--'}
-                    </span>
+          <aside className="right-section gdb-terminal">
+            <div className="gdb-split-layout">
+              {/* LEFT PANE: STACK */}
+              <div className="gdb-left-pane">
+                <div className="gdb-section stack-section">
+                  <div className="gdb-header">
+                    <span className="gdb-line">────────[</span>
+                    <span className="gdb-title"> STACK </span>
+                    <span className="gdb-line">]────────</span>
                   </div>
-                ))}
+                  <div className="gdb-stack-container">
+                    {Array.from({ length: 32 }, (_, i) => i - 7).map(
+                      (offset) => {
+                        const sign = offset < 0 ? '-' : '+'
+                        const absVal = Math.abs(offset)
+                          .toString()
+                          .padStart(2, '0')
+                        const ptrStr = `0xSP${sign}${absVal}`
+                        const dataKey = offset.toString()
+
+                        return (
+                          <div key={dataKey} className="gdb-row stack-row">
+                            <span
+                              className="gdb-stack-ptr"
+                              style={{
+                                color: offset === 0 ? '#00ff00' : '#ffd700',
+                              }}
+                            >
+                              {ptrStr}
+                            </span>
+                            <span className="gdb-stack-arrow">→</span>
+                            <span className="gdb-value stack-value">
+                              {stackData[dataKey] || '0x00000000'}
+                            </span>
+                          </div>
+                        )
+                      },
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
 
-            <div className="dump-container">
-              <h2 className="dump-title">HARDWARE CSR DUMP</h2>
-              <div className="dump-grid">
-                {[
-                  'mtvec',
-                  'ssp',
-                  'mseccfg',
-                  'mscratch',
-                  'mcycle',
-                  'pmpcfg0',
-                  'minstret',
-                  'pmpaddr0',
-                ].map((reg) => (
-                  <div key={reg} className="dump-row">
-                    <span className="dump-label">{reg}:</span>
-                    <span className="dump-value">{csrData[reg] || '--'}</span>
+              {/* RIGHT PANE: REGISTERS & CSRs */}
+              <div className="gdb-right-pane">
+                <div className="gdb-section">
+                  <div className="gdb-header">
+                    <span className="gdb-line">────────────────────[</span>
+                    <span className="gdb-title"> REGISTERS </span>
+                    <span className="gdb-line">]────────────────────</span>
                   </div>
-                ))}
-              </div>
-            </div>
+                  <div className="gdb-grid gpr-grid">
+                    {[
+                      'zero',
+                      'ra',
+                      'sp',
+                      'gp',
+                      'tp',
+                      't0',
+                      't1',
+                      't2',
+                      's0',
+                      's1',
+                      'a0',
+                      'a1',
+                      'a2',
+                      'a3',
+                      'a4',
+                      'a5',
+                      'a6',
+                      'a7',
+                      's2',
+                      's3',
+                      's4',
+                      's5',
+                      's6',
+                      's7',
+                      's8',
+                      's9',
+                      's10',
+                      's11',
+                      't3',
+                      't4',
+                      't5',
+                      't6',
+                    ].map((reg) => (
+                      <div key={reg} className="gdb-row">
+                        <span className="gdb-reg-name">
+                          {reg.padEnd(4, ' ')}
+                        </span>
+                        <span className="gdb-value">
+                          {gprData[reg] || '0x00000000'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
 
-            <div className="dump-container">
-              <h2 className="dump-title">HARDWARE GPR DUMP</h2>
-              <div className="dump-grid gpr-dump">
-                {[
-                  'zero',
-                  'a6',
-                  'ra',
-                  'a7',
-                  'sp',
-                  's2',
-                  'gp',
-                  's3',
-                  'tp',
-                  's4',
-                  't0',
-                  's5',
-                  't1',
-                  's6',
-                  't2',
-                  's7',
-                  's0',
-                  's8',
-                  's1',
-                  's9',
-                  'a0',
-                  's10',
-                  'a1',
-                  's11',
-                  'a2',
-                  't3',
-                  'a3',
-                  't4',
-                  'a4',
-                  't5',
-                  'a5',
-                  't6',
-                ].map((reg) => (
-                  <div key={reg} className="dump-row">
-                    <span className="dump-label">{reg}:</span>
-                    <span className="dump-value">{gprData[reg] || '--'}</span>
+                <div className="gdb-section">
+                  <div className="gdb-header">
+                    <span className="gdb-line">──────────────────────[</span>
+                    <span className="gdb-title"> CSRs </span>
+                    <span className="gdb-line">]──────────────────────</span>
                   </div>
-                ))}
+                  <div className="gdb-grid csr-grid">
+                    {[
+                      'mtvec',
+                      'mscratch',
+                      'mcycle',
+                      'minstret',
+                      'ssp',
+                      'mseccfg',
+                      'pmpcfg0',
+                      'pmpaddr0',
+                    ].map((reg) => (
+                      <div key={reg} className="gdb-row">
+                        <span className="gdb-reg-name csr-name">
+                          {reg.padEnd(8, ' ')}
+                        </span>
+                        <span className="gdb-value">
+                          {csrData[reg] || '0x00000000'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </aside>

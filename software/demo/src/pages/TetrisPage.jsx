@@ -4,7 +4,7 @@ import UartTerminal from '../components/UartTerminal.jsx'
 
 const TetrisPage = () => {
   return (
-    <ModuleLayout title="TETRIS MODULE ACTIVE">
+    <ModuleLayout title="TETRIS">
       <UartTerminal moduleId="tetris" />
     </ModuleLayout>
   )
