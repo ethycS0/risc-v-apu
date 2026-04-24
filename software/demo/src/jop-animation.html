@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Interactive RISC-V JOP Animation</title>
+    <style>
+      :root {
+        --bg: #1e1e2e;
+        --text: #cdd6f4;
+        --memory-bg: #313244;
+        --safe: #a6e3a1;
+        --danger: #f38ba8;
+        --gadget: #89b4fa;
+        --dispatcher: #cba6f7;
+        --border: #45475a;
+      }
+
+      body {
+        background-color: var(--bg);
+        color: var(--text);
+        font-family: 'Courier New', Courier, monospace;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+
+      /* Hidden inputs to track the state */
+      input[type='radio'] {
+        display: none;
+      }
+
+      /* --- Default State Variables (Step 0) --- */
+      .wrapper {
+        --t1-txt: 'Legit App Data';
+        --t1-bg: var(--memory-bg);
+        --t1-col: var(--text);
+        --t1-glow: none;
+        --t2-txt: 'Legit App Data';
+        --t2-bg: var(--memory-bg);
+        --t2-col: var(--text);
+        --t2-glow: none;
+        --t3-txt: 'NULL / End';
+        --t3-bg: var(--memory-bg);
+        --t3-col: var(--text);
+        --t3-glow: none;
+
+        --ptr-op: 0;
+        --ptr-y: 0px;
+
+        --pc-txt: '0x4000bc (Safe)';
+        --pc-col: var(--safe);
+        --t0-txt: '0x0';
+        --t0-col: var(--text);
+        --a0-txt: '0x0';
+        --a0-col: var(--text);
+
+        --code-txt: 'System running normally...\nWaiting for input.';
+        --code-col: var(--safe);
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 30px;
+      }
+
+      /* --- State Definitions --- */
+
+      /* Step 1: Vulnerability */
+      #s1:checked ~ .wrapper {
+        --t1-txt: '0x80020 (Gadget 1)';
+        --t1-bg: var(--gadget);
+        --t1-col: #111;
+        --t2-txt: '0x80040 (Gadget 2)';
+        --t2-bg: var(--gadget);
+        --t2-col: #111;
+        --t3-txt: '0x80080 (execve)';
+        --t3-bg: var(--danger);
+        --t3-col: #111;
+        --t0-txt: '0x20000 (Table Start)';
+        --t0-col: var(--danger);
+        --ptr-op: 1;
+        --ptr-y: 0px;
+        --code-txt: '[!] Vulnerability triggered!\nAttacker overwrites memory with Gadget Table.\nt0 register is overwritten to point to table.';
+        --code-col: var(--danger);
+      }
+
+      /* Step 2: Dispatcher 1 */
+      #s2:checked ~ .wrapper {
+        --t1-txt: '0x80020 (Gadget 1)';
+        --t1-bg: var(--gadget);
+        --t1-col: #111;
+        --t1-glow: 0 0 10px var(--gadget);
+        --t2-txt: '0x80040 (Gadget 2)';
+        --t2-bg: var(--gadget);
+        --t2-col: #111;
+        --t3-txt: '0x80080 (execve)';
+        --t3-bg: var(--danger);
+        --t3-col: #111;
+        --t0-txt: '0x20008 (Next Entry)';
+        --t0-col: var(--dispatcher);
+        --ptr-op: 1;
+        --ptr-y: 56px;
+        --pc-txt: '0x70000 (Dispatcher)';
+        --pc-col: var(--dispatcher);
+        --a0-txt: '0x80020 (Gadget 1)';
+        --a0-col: var(--gadget);
+        --code-txt: 'Dispatcher executes:\nld a0, 0(t0)   // Reads 0x80020 from Table\naddi t0, t0, 8 // Increments pointer\njalr a0        // Jumps to Gadget 1';
+        --code-col: var(--dispatcher);
+      }
+
+      /* Step 3: Gadget 1 */
+      #s3:checked ~ .wrapper {
+        --t1-txt: '0x80020 (Gadget 1)';
+        --t1-bg: var(--gadget);
+        --t1-col: #111;
+        --t2-txt: '0x80040 (Gadget 2)';
+        --t2-bg: var(--gadget);
+        --t2-col: #111;
+        --t3-txt: '0x80080 (execve)';
+        --t3-bg: var(--danger);
+        --t3-col: #111;
+        --t0-txt: '0x20008 (Next Entry)';
+        --t0-col: var(--dispatcher);
+        --ptr-op: 1;
+        --ptr-y: 56px;
+        --pc-txt: '0x80020 (Gadget 1)';
+        --pc-col: var(--gadget);
+        --a0-txt: '0x80020 (Gadget 1)';
+        --a0-col: var(--gadget);
+        --code-txt: 'Gadget 1 executes:\n... attacker pops values to registers ...\njalr zero, 0(s1) // Jumps back to Dispatcher';
+        --code-col: var(--gadget);
+      }
+
+      /* Step 4: Dispatcher 2 */
+      #s4:checked ~ .wrapper {
+        --t1-txt: '0x80020 (Gadget 1)';
+        --t1-bg: var(--gadget);
+        --t1-col: #111;
+        --t2-txt: '0x80040 (Gadget 2)';
+        --t2-bg: var(--gadget);
+        --t2-col: #111;
+        --t2-glow: 0 0 10px var(--gadget);
+        --t3-txt: '0x80080 (execve)';
+        --t3-bg: var(--danger);
+        --t3-col: #111;
+        --t0-txt: '0x20010 (Next Entry)';
+        --t0-col: var(--dispatcher);
+        --ptr-op: 1;
+        --ptr-y: 112px;
+        --pc-txt: '0x70000 (Dispatcher)';
+        --pc-col: var(--dispatcher);
+        --a0-txt: '0x80040 (Gadget 2)';
+        --a0-col: var(--gadget);
+        --code-txt: 'Dispatcher executes again:\nld a0, 0(t0)   // Reads 0x80040 from Table\naddi t0, t0, 8 // Increments pointer\njalr a0        // Jumps to Gadget 2';
+        --code-col: var(--dispatcher);
+      }
+
+      /* Step 5: Gadget 2 */
+      #s5:checked ~ .wrapper {
+        --t1-txt: '0x80020 (Gadget 1)';
+        --t1-bg: var(--gadget);
+        --t1-col: #111;
+        --t2-txt: '0x80040 (Gadget 2)';
+        --t2-bg: var(--gadget);
+        --t2-col: #111;
+        --t3-txt: '0x80080 (execve)';
+        --t3-bg: var(--danger);
+        --t3-col: #111;
+        --t0-txt: '0x20010 (Next Entry)';
+        --t0-col: var(--dispatcher);
+        --ptr-op: 1;
+        --ptr-y: 112px;
+        --pc-txt: '0x80040 (Gadget 2)';
+        --pc-col: var(--gadget);
+        --a0-txt: '0x80040 (Gadget 2)';
+        --a0-col: var(--gadget);
+        --code-txt: 'Gadget 2 executes:\n... attacker prepares execve arguments ...\njalr zero, 0(s1) // Jumps back to Dispatcher';
+        --code-col: var(--gadget);
+      }
+
+      /* Step 6: Final Exploit */
+      #s6:checked ~ .wrapper {
+        --t1-txt: '0x80020 (Gadget 1)';
+        --t1-bg: var(--gadget);
+        --t1-col: #111;
+        --t2-txt: '0x80040 (Gadget 2)';
+        --t2-bg: var(--gadget);
+        --t2-col: #111;
+        --t3-txt: '0x80080 (execve)';
+        --t3-bg: var(--danger);
+        --t3-col: #111;
+        --t3-glow: 0 0 15px var(--danger);
+        --t0-txt: '0x20018 (End)';
+        --t0-col: var(--dispatcher);
+        --ptr-op: 1;
+        --ptr-y: 168px;
+        --pc-txt: '0x80080 (execve)';
+        --pc-col: var(--danger);
+        --a0-txt: '0x80080 (execve)';
+        --a0-col: var(--danger);
+        --code-txt: "Dispatcher reads final entry.\nexecve('/bin/sh') is called!\n[!] SYSTEM FULLY COMPROMISED";
+        --code-col: var(--danger);
+      }
+
+      /* --- Container Layout --- */
+      .container {
+        display: flex;
+        gap: 40px;
+      }
+
+      /* --- Memory Styling --- */
+      .memory-block {
+        border: 2px solid var(--border);
+        border-radius: 8px;
+        padding: 10px;
+        width: 320px;
+        position: relative;
+      }
+
+      .memory-block::before {
+        content: 'Memory Buffer (Gadget Table)';
+        position: absolute;
+        top: -25px;
+        left: 0;
+        font-size: 0.8rem;
+        color: #bac2de;
+      }
+
+      .slot {
+        border: 1px solid var(--border);
+        margin: 5px 0;
+        padding: 15px;
+        display: flex;
+        justify-content: space-between;
+        font-weight: bold;
+        transition: all 0.3s ease;
+      }
+
+      .slot-t1 {
+        background: var(--t1-bg);
+        box-shadow: var(--t1-glow);
+      }
+      .slot-t1 .data::after {
+        content: var(--t1-txt);
+        color: var(--t1-col);
+      }
+
+      .slot-t2 {
+        background: var(--t2-bg);
+        box-shadow: var(--t2-glow);
+      }
+      .slot-t2 .data::after {
+        content: var(--t2-txt);
+        color: var(--t2-col);
+      }
+
+      .slot-t3 {
+        background: var(--t3-bg);
+        box-shadow: var(--t3-glow);
+      }
+      .slot-t3 .data::after {
+        content: var(--t3-txt);
+        color: var(--t3-col);
+      }
+
+      .addr-label {
+        color: #9399b2;
+        font-size: 0.8rem;
+      }
+
+      .ptr-marker {
+        color: var(--dispatcher);
+        position: absolute;
+        left: -25px;
+        top: 25px; /* Base position */
+        transform: translateY(var(--ptr-y));
+        opacity: var(--ptr-op);
+        transition:
+          transform 0.4s ease,
+          opacity 0.3s ease;
+      }
+
+      /* --- Register Styling --- */
+      .registers {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        width: 330px;
+      }
+
+      .reg-label {
+        color: #bac2de;
+        font-size: 0.8rem;
+      }
+
+      .reg {
+        background: var(--memory-bg);
+        border: 1px solid var(--border);
+        padding: 15px;
+        border-radius: 5px;
+        font-weight: bold;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .reg-pc::after {
+        content: var(--pc-txt);
+        color: var(--pc-col);
+        transition: color 0.3s;
+      }
+      .reg-t0::after {
+        content: var(--t0-txt);
+        color: var(--t0-col);
+        transition: color 0.3s;
+      }
+      .reg-a0::after {
+        content: var(--a0-txt);
+        color: var(--a0-col);
+        transition: color 0.3s;
+      }
+
+      /* --- Code Display --- */
+      .code-display {
+        background: #11111b;
+        padding: 15px;
+        border-radius: 5px;
+        border: 1px solid var(--border);
+        margin-top: 20px;
+        height: 80px;
+        color: var(--code-col);
+        white-space: pre-wrap;
+        transition: color 0.3s ease;
+      }
+
+      .code-display::after {
+        content: var(--code-txt);
+      }
+
+      /* --- UI Controls --- */
+      .controls {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+      }
+
+      .btn {
+        display: none; /* Hidden by default, toggled via state */
+        padding: 15px 30px;
+        background: #a6e3a1;
+        color: #111;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        text-align: center;
+        font-size: 1.1rem;
+        transition: filter 0.2s;
+        user-select: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      }
+
+      .btn:hover {
+        filter: brightness(1.1);
+      }
+      .btn.danger {
+        background: #f38ba8;
+      }
+      .btn.gadget {
+        background: #89b4fa;
+      }
+      .btn.dispatcher {
+        background: #cba6f7;
+      }
+
+      /* Logic to show the correct button for the current state */
+      #s0:checked ~ .wrapper #btn0,
+      #s1:checked ~ .wrapper #btn1,
+      #s2:checked ~ .wrapper #btn2,
+      #s3:checked ~ .wrapper #btn3,
+      #s4:checked ~ .wrapper #btn4,
+      #s5:checked ~ .wrapper #btn5,
+      #s6:checked ~ .wrapper #btn6 {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <input type="radio" name="step" id="s0" checked />
+    <input type="radio" name="step" id="s1" />
+    <input type="radio" name="step" id="s2" />
+    <input type="radio" name="step" id="s3" />
+    <input type="radio" name="step" id="s4" />
+    <input type="radio" name="step" id="s5" />
+    <input type="radio" name="step" id="s6" />
+
+    <div class="wrapper">
+      <div class="container">
+        <div class="memory-block">
+          <div class="ptr-marker">&#x27A4;</div>
+          <div class="slot slot-t1">
+            <span class="addr-label">0x20000</span><span class="data"></span>
+          </div>
+          <div class="slot slot-t2">
+            <span class="addr-label">0x20008</span><span class="data"></span>
+          </div>
+          <div class="slot slot-t3">
+            <span class="addr-label">0x20010</span><span class="data"></span>
+          </div>
+        </div>
+
+        <div class="registers">
+          <div class="reg-label">RISC-V Registers</div>
+
+          <div class="reg">
+            <span>PC</span>
+            <span class="reg-pc"></span>
+          </div>
+
+          <div class="reg" style="border-color: var(--dispatcher)">
+            <span>t0 (Dispatch Reg)</span>
+            <span class="reg-t0"></span>
+          </div>
+
+          <div class="reg" style="border-color: var(--gadget)">
+            <span>a0 (Jump Reg)</span>
+            <span class="reg-a0"></span>
+          </div>
+
+          <div class="code-display"></div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <label for="s1" class="btn danger" id="btn0"
+          >1. Trigger Vulnerability</label
+        >
+        <label for="s2" class="btn dispatcher" id="btn1"
+          >2. Run Dispatcher Gadget</label
+        >
+        <label for="s3" class="btn gadget" id="btn2">3. Execute Gadget 1</label>
+        <label for="s4" class="btn dispatcher" id="btn3"
+          >4. Run Dispatcher Gadget</label
+        >
+        <label for="s5" class="btn gadget" id="btn4">5. Execute Gadget 2</label>
+        <label for="s6" class="btn danger" id="btn5"
+          >6. Run Final Payload</label
+        >
+        <label for="s0" class="btn" id="btn6">Reset Simulation</label>
+      </div>
+    </div>
+  </body>
+</html>

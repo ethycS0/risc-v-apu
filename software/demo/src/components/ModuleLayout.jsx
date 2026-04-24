@@ -40,16 +40,17 @@ const ModuleLayout = ({ children, title }) => {
     return () => ws.close()
   }, [])
 
-  // Clear terminal when switching modes
   useEffect(() => {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(
-        JSON.stringify({ type: 'game', data: '\x1b[0m\x1b[2J\x1b[H' }),
+        JSON.stringify({
+          type: 'game',
+          data: '\x1b[0m\x1b[2J\x1b[H',
+        }),
       )
     }
   }, [location.pathname])
 
-  // exploit command handler
   const handleExploit = (cmd) => {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       const payload = JSON.stringify({
@@ -61,7 +62,6 @@ const ModuleLayout = ({ children, title }) => {
     }
   }
 
-  // Corrected Delay
   const handleFlash = () => {
     if (isFlashing) return
 
@@ -96,15 +96,36 @@ const ModuleLayout = ({ children, title }) => {
   }
 
   const modules = [
-    { id: 'pong', label: 'PONG', path: '/pong' },
-    { id: 'tetris', label: 'TETRIS', path: '/tetris' },
-    { id: 'cfi', label: 'CFI', path: '/cfi' },
+    {
+      id: 'pong',
+      label: 'PONG',
+      path: '/pong',
+    },
+    {
+      id: 'tetris',
+      label: 'TETRIS',
+      path: '/tetris',
+    },
+    {
+      id: 'cfi',
+      label: 'CFI',
+      path: '/cfi',
+    },
   ]
 
   const viewportSizes = {
-    '/pong': { width: '1000px', height: '620px' },
-    '/tetris': { width: '400px', height: '470px' },
-    '/cfi': { width: '600px', height: '580px' },
+    '/pong': {
+      width: '1000px',
+      height: '620px',
+    },
+    '/tetris': {
+      width: '400px',
+      height: '470px',
+    },
+    '/cfi': {
+      width: '600px',
+      height: '580px',
+    },
   }
 
   const currentSize = viewportSizes[location.pathname] || {
@@ -122,6 +143,13 @@ const ModuleLayout = ({ children, title }) => {
             <h1 className="dashboard-title">{title}</h1>
           </div>
           <div className="header-controls">
+            <button
+              onClick={() => navigate('/docs')}
+              className="home-btn"
+              style={{ marginRight: '10px' }}
+            >
+              <span>DOCS</span>
+            </button>
             {location.pathname === '/cfi' && (
               <>
                 <button
@@ -196,7 +224,6 @@ const ModuleLayout = ({ children, title }) => {
           </section>
           <aside className="right-section gdb-terminal">
             <div className="gdb-split-layout">
-              {/* LEFT PANE: STACK */}
               <div className="gdb-left-pane">
                 <div className="gdb-section stack-section">
                   <div className="gdb-header">
@@ -236,7 +263,6 @@ const ModuleLayout = ({ children, title }) => {
                 </div>
               </div>
 
-              {/* RIGHT PANE: REGISTERS & CSRs */}
               <div className="gdb-right-pane">
                 <div className="gdb-section">
                   <div className="gdb-header">

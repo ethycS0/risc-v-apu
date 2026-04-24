@@ -6,7 +6,6 @@ import './Dashboard.css'
 const Dashboard = () => {
   const navigate = useNavigate()
 
-  // We add custom CSS/HTML "art" to each module to display on hover
   const modules = [
     {
       id: 'pong',
@@ -61,6 +60,18 @@ const Dashboard = () => {
           <div className="header-left">
             <h1 className="dashboard-title">eSC-V</h1>
             <p className="dashboard-subtitle">M-mode CFI-Hardened RISC-V SoC</p>
+          </div>
+          <div className="header-controls">
+            <button
+              onClick={() => navigate('/docs')}
+              className="home-btn"
+              style={{
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+              }}
+            >
+              <span>DOCS</span>
+            </button>
           </div>
         </header>
 
