@@ -49,8 +49,6 @@ eSC-V/
 
 ## Usage
 
-Here is the rewritten `Usage` section of your README, updated to reflect the unified `cfi` testing structure and the new exploit script arguments.
-
 ### Starting the Environment
 
 From the project root, enter the Nix development shell. The Makefile handles building software, simulation, and synthesis directly without needing to change directories.
