@@ -1,7 +1,6 @@
 #include "debug.h"
 #include "uart.h"
 
-// --- ANSI Escape Codes for Terminal Colors ---
 #define RESET "\033[0m"
 #define RED "\033[1;31m"
 #define GREEN "\033[1;32m"
@@ -29,7 +28,6 @@ void vulnerable_function(void) {
         i = 0;
         while (1) {
                 if (uart_getc(&c)) {
-                        // Removed uart_putc(c) here to hide the ugly payload string in the screenshot
                         if (c == '\r' || c == '\n') {
                                 buffer[i] = '\0';
                                 break;
@@ -83,7 +81,6 @@ int main(void) {
 
         while (1) {
                 if (uart_getc(&jc)) {
-                        // Removed echo here too
                         if (jc == '\r' || jc == '\n') {
                                 ctx.buffer[ji] = '\0';
                                 break;
@@ -95,7 +92,6 @@ int main(void) {
         uart_puts(CYAN "\n[+] Payload received. Jumping via hijacked ctx.action..." RESET "\n");
         ctx.action(ctx.buffer);
 
-        // --- ROP Target Label ---
         static const int password[] = {'r', 'e', 'a', 'l', '_', 'p', 'a', 's', 's', 'w', 'o', 'r', 'd', 0};
         char pbuf[16];
 
@@ -107,7 +103,7 @@ int main(void) {
         pi = 0;
         while (1) {
                 if (uart_getc(&pc)) {
-                        uart_putc(pc); // We keep echo here because this is natural typing
+                        uart_putc(pc);
                         if (pc == '\r' || pc == '\n') {
                                 pbuf[pi] = '\0';
                                 break;

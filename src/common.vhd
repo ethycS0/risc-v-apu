@@ -10,7 +10,7 @@ USE ieee.std_logic_1164.ALL;
 
 PACKAGE rv32i_pkg IS
 
-        CONSTANT RESET_ADDRESS : STD_LOGIC_VECTOR(31 DOWNTO 0) := x"80000000";
+        CONSTANT RESET_ADDRESS : STD_LOGIC_VECTOR(31 DOWNTO 0) := x"80000000"; --! Reset Address 
         CONSTANT C_NOP : STD_LOGIC_VECTOR(31 DOWNTO 0) := x"00000013"; --! NOP instruction (ADDI x0, x0, 0) used for flushing
 
         --! Decoded high-level operation types.
@@ -255,6 +255,7 @@ PACKAGE rv32i_pkg IS
                 wb_src                  => WB_SRC_EX_RESULT
         );
 
+        --! Feedback signals from Writeback to Execution (CSR Writeback)
         TYPE t_wb_ex_fb IS RECORD
                 csr_bus         : t_csr_reg_data;
                 trap            : STD_LOGIC;
@@ -276,6 +277,7 @@ PACKAGE rv32i_pkg IS
                 redirect_address        : STD_LOGIC_VECTOR(31 DOWNTO 0); --! Target Address
         END RECORD t_ex_if_data;
 
+        --! PMP configuration data from EX/CSR to PMP
         TYPE t_ex_pmp_data IS RECORD
                 pmpcfg0     : STD_LOGIC_VECTOR(31 DOWNTO 0);
                 pmpaddr0    : STD_LOGIC_VECTOR(31 DOWNTO 0);

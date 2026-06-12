@@ -12,7 +12,7 @@ const UartTerminal = ({ moduleId }) => {
         background: '#0a0a0a',
         foreground: '#e0e0e0',
         cursor: '#e0e0e0',
-        selectionBackground: 'rgba(128, 128, 128, 0.3)',
+        selectionBackground: 'rgba(256, 256, 256, 0.3)',
       },
       fontFamily: '"JetBrainsMono Nerd Font", monospace',
       fontSize: 14,

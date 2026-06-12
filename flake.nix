@@ -14,6 +14,7 @@
       system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
+
         toolchain = pkgs.stdenvNoCC.mkDerivation {
           name = "toolchain";
           src = pkgs.fetchurl {
@@ -24,6 +25,23 @@
           dontBuild = true;
           dontConfigure = true;
           dontStrip = true;
+
+          nativeBuildInputs = [ pkgs.autoPatchelfHook ];
+
+          buildInputs = [
+            pkgs.glibc
+            pkgs.stdenv.cc.cc.lib
+            pkgs.gmp
+            pkgs.zlib
+            pkgs.zstd
+            pkgs.libmpc
+            pkgs.mpfr
+            pkgs.flex
+            pkgs.ncurses
+            pkgs.expat
+            pkgs.python313
+          ];
+
           installPhase = ''
             mkdir -p $out
             if [ -d "bin" ]; then
@@ -36,12 +54,11 @@
           '';
         };
         commonPackages = with pkgs; [
-          # Language Runtimes
+          # Languages
           python312
           python312Packages.pyserial
           python312Packages.websockets
           nodejs_24
-          nodePackages.npm
 
           # Language Servers
           vhdl-ls
@@ -52,8 +69,7 @@
           gtkwave
 
           # Synthesis & Implementation
-          yosys
-          yosys-ghdl
+          (pkgs.yosys.withPlugins [ pkgs.yosys-ghdl ])
           nextpnr
           python312Packages.apycula
           openfpgaloader
@@ -87,6 +103,7 @@
           shellHook = ''
             export PATH="${toolchain}/bin:$PATH"
             echo "Environment loaded with: ${toolchain.name}"
+            export NIX_YOSYS_PLUGIN_DIRS="${pkgs.yosys-ghdl}/share/yosys/plugins"
           '';
         };
       }

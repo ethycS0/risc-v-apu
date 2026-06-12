@@ -156,10 +156,10 @@ body {
 .gdb-terminal::after {
   content: 'eSC-V_';
   position: absolute;
-  bottom: 600px;
+  bottom: 500px;
   right: 5px;
   font-family: var(--font-mono);
-  font-size: 12rem;
+  font-size: 10rem;
   font-weight: 900;
   color: rgba(255, 255, 255, 0.06);
   letter-spacing: -7px;
@@ -206,9 +206,8 @@ body {
   letter-spacing: -1px;
   overflow: hidden;
   --font-brand:
-  'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* A bold, geometric sans-serif */
+    'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* A bold, geometric sans-serif */
 }
-
 
 .gdb-title {
   margin: 0 12px;
@@ -876,7 +875,8 @@ input:checked + .slider:before {
   transition: 0.3s;
 }
 
-.docs-nav li:hover, .docs-nav li.active {
+.docs-nav li:hover,
+.docs-nav li.active {
   color: #fff;
   padding-left: 10px;
   border-left: 1px solid #fff;
@@ -899,7 +899,8 @@ input:checked + .slider:before {
   margin-bottom: 0.5rem;
 }
 
-.docs-code-snippet, .docs-tree {
+.docs-code-snippet,
+.docs-tree {
   background: #000;
   border: 1px solid rgba(255, 255, 255, 0.1);
   margin: 1.5rem 0;
@@ -912,7 +913,8 @@ input:checked + .slider:before {
   color: rgba(255, 255, 255, 0.4);
 }
 
-.docs-code-snippet pre, .docs-tree pre {
+.docs-code-snippet pre,
+.docs-tree pre {
   padding: 1.5rem;
   color: #22c55e;
   font-size: 0.85rem;

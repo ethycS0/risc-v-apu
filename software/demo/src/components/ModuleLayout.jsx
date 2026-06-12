@@ -115,12 +115,12 @@ const ModuleLayout = ({ children, title }) => {
 
   const viewportSizes = {
     '/pong': {
-      width: '1000px',
-      height: '620px',
+      width: '800px',
+      height: '590px',
     },
     '/tetris': {
-      width: '400px',
-      height: '470px',
+      width: '360px',
+      height: '450px',
     },
     '/cfi': {
       width: '600px',
