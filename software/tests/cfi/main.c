@@ -71,7 +71,6 @@ int main(void) {
         uart_puts("\n[INFO] win_function target: ");
         print_hex((unsigned int)win_function);
 
-        uart_puts("\n\n" YELLOW "[*] PHASE 1: JOP VULNERABILITY (Zicfilp Test)" RESET "\n");
         uart_puts("Overflow ctx.buffer to overwrite ctx.action:\n> ");
         DEBUG_UPDATE();
 
@@ -95,7 +94,6 @@ int main(void) {
         static const int password[] = {'r', 'e', 'a', 'l', '_', 'p', 'a', 's', 's', 'w', 'o', 'r', 'd', 0};
         char pbuf[16];
 
-        uart_puts("\n" YELLOW "[*] PHASE 2: ROP VULNERABILITY (Smcfiss Test)" RESET "\n");
         uart_puts("Enter Password to proceed naturally:\n> ");
 
         static int pi;

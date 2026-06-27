@@ -1,28 +1,27 @@
 --! @file register_file.vhd
---! Register File
+--! @brief 32-entry Integer Register File (x0-x31) for the RISC-V processor.
 --! @author ethycS
---! @details This module implements the 32-entry integer register file (x0-x31)
---! for the RV32I processor. It provides dual asynchronous read ports and a single
---! synchronous write port.
+--! @details This module implements the general-purpose integer registers.
+--! It features dual asynchronous read ports and a single synchronous write port.
 --!
 --! Key features:
---! - Register x0 is hardwired to zero (writes to x0 are ignored)
---! - Synchronous write on rising clock edge
---! - Asynchronous combinational reads
---! - Internal forwarding logic to handle write-during-read hazards
+--! - Register x0 is hardwired to zero (writes to x0 are ignored).
+--! - Synchronous write on rising clock edge.
+--! - Asynchronous combinational reads.
+--! - Asynchronous reset (Active High) clearing all registers.
+--! - Internal forwarding logic to handle write-during-read hazards.
 --!
---! The forwarding logic allows reading the new value being written in the same
---! cycle, preventing pipeline stalls for back-to-back dependencies.
+--! The internal forwarding logic allows reading the new value being written in the same
+--! cycle, preventing pipeline stalls for back-to-back register dependencies.
 
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
-USE work.rv32i_pkg.ALL;
 
 ENTITY register_file IS
 	PORT (
-		i_clk      : IN  STD_LOGIC;                     --! Global clock
-		i_rst      : IN  STD_LOGIC;                     --! Synchronous reset (Active High)
+		i_clk      : IN  STD_LOGIC;                     --! Global clock (rising-edge active)
+		i_rst      : IN  STD_LOGIC;                     --! Asynchronous reset (Active High)
 		i_wr_en    : IN  STD_LOGIC;                     --! Write enable signal
 		i_wr_addr  : IN  STD_LOGIC_VECTOR(4 DOWNTO 0);  --! Write address (destination register rd)
 		i_wr_data  : IN  STD_LOGIC_VECTOR(31 DOWNTO 0); --! Write data (value to be written to rd)

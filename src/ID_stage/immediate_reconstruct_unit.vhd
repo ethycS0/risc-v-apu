@@ -1,5 +1,5 @@
 --! @file immediate_reconstruct_unit.vhd
---! Immediate Reconstruction Unit
+--! @brief Immediate Reconstruction Unit
 --! @author ethycS
 --! @details This module extracts and reconstructs immediate values from RV32I
 --! instruction encodings. RISC-V uses multiple immediate formats (I, S, B, U, J)
@@ -10,6 +10,7 @@
 --! - Zero extension for unsigned immediates (CSR)
 --! - Bit reordering and alignment based on instruction format
 --! - Left-shifting for PC-relative offsets (Branch, Jump)
+--! - Overloaded support for Zicfilp Landing Pad (lpad) immediates using U-type format
 
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
@@ -29,17 +30,17 @@ BEGIN
 	--! @details Combinational process that decodes instruction bits [6:2] (partial opcode)
 	--! and reconstructs the appropriate immediate format. Each RV32I instruction type
 	--! has a specific immediate encoding:
-	--! - U-type (LUI, AUIPC): Upper 20 bits with lower 12 bits zeroed
+	--! - U-type (LUI, AUIPC, LPAD): Upper 20 bits with lower 12 bits zeroed. Zicfilp's lpad uses this format.
 	--! - J-type (JAL): 20-bit signed offset, reordered and left-shifted by 1
 	--! - B-type (Branch): 12-bit signed offset, reordered and left-shifted by 1
 	--! - I-type (JALR, Load, I-ALU): 12-bit signed immediate
 	--! - S-type (Store): 12-bit signed immediate split between [31:25] and [11:7]
 	--! - CSR immediate: 12-bit zero-extended for UIMM field
-        imm_reconstruct : PROCESS (ALL)
+	imm_reconstruct : PROCESS (ALL)
 	BEGIN
 		CASE i_instruction(6 DOWNTO 2) IS
 
-			WHEN b"01101" | b"00101" =>  -- U-type: LUI (0110111) and AUIPC (0010111)
+			WHEN b"01101" | b"00101" =>  -- U-type: LUI (0110111), AUIPC (0010111), and LPAD (AUIPC with rd=x0 and elp active)
 				o_immediate <= i_instruction(31 DOWNTO 12) & (11 DOWNTO 0 => '0');
 
 			WHEN b"11011" =>  -- J-type: JAL (1101111)
