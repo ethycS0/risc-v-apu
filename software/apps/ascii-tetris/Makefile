@@ -1,11 +1,12 @@
 # apps/ascii-tetris
-CC :=riscv32-unknown-elf-gcc
+CC :=riscv32-none-elf-gcc
 
 DRIVERS_DIR := ../../drivers
 COMMON_DIR := ../../common
 
 CFLAGS := -c -g -O2 -fcf-protection=full -ffreestanding -march=rv32i_zicfilp_zicfiss_zicsr -mabi=ilp32
 CFLAGS += -I$(DRIVERS_DIR)/debug -I$(DRIVERS_DIR)/uart
+CFLAGS += --specs=nano.specs
 CFLAGS += -D__ENABLE_ZICFILP__ -D__ENABLE_SMCFISS__
 
 LDFLAGS := -march=rv32i_zicfilp_zicfiss_zicsr -mabi=ilp32 -nostartfiles

@@ -1,15 +1,13 @@
 # apps/pong-c
-CC := riscv32-unknown-elf-gcc
+CC := riscv32-none-elf-gcc
 
 DRIVERS_DIR := ../../drivers
 COMMON_DIR := ../../common
 
-# CHANGED: Added -ffunction-sections and -fdata-sections 
 CFLAGS := -c -g -O2 -fcf-protection=full -ffreestanding -march=rv32i_zicfilp_zicfiss_zicsr -mabi=ilp32 -ffunction-sections -fdata-sections
 CFLAGS += -I$(DRIVERS_DIR)/debug -I$(DRIVERS_DIR)/uart
 CFLAGS += -D__ENABLE_ZICFILP__ -D__ENABLE_SMCFISS__
 
-# CHANGED: Added -Wl,--gc-sections
 LDFLAGS := -march=rv32i_zicfilp_zicfiss_zicsr -mabi=ilp32 -nostartfiles -Wl,--gc-sections
 LDFLAGS += --specs=nano.specs
 LDFLAGS += -T$(COMMON_DIR)/link.ld

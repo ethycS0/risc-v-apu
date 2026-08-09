@@ -1,12 +1,13 @@
 # tests/cfi
-CC := riscv32-unknown-elf-gcc 
+CC := riscv32-none-elf-gcc 
 
 DRIVERS_DIR := ../../drivers
 COMMON_DIR := ../../common
 
 CFLAGS := -c -g -O0 -fcf-protection=full -ffreestanding -march=rv32i_zicfilp_zicfiss_zicsr -mabi=ilp32
 CFLAGS += -I$(DRIVERS_DIR)/debug -I$(DRIVERS_DIR)/uart
-# CFLAGS += -D__ENABLE_SMCFISS__ -D__ENABLE_ZICFILP__
+CFLAGS += --specs=nano.specs
+CFLAGS += -D__ENABLE_SMCFISS__ -D__ENABLE_ZICFILP__
 
 LDFLAGS := -march=rv32i_zicfilp_zicfiss_zicsr -mabi=ilp32 -nostartfiles
 LDFLAGS += --specs=nano.specs

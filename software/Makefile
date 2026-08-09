@@ -1,5 +1,5 @@
 # Toolchain
-PREFIX = riscv32-unknown-elf-
+PREFIX = riscv32-none-elf-
 OBJCOPY = $(PREFIX)objcopy
 
 .PHONY: all  clean ascii-tetris pong-c libc cfi

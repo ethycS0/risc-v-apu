@@ -3,56 +3,21 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+    riscv-toolchains.url = "github:ethycS0/nix-riscv-toolchains";
   };
   outputs =
     {
       self,
       nixpkgs,
       flake-utils,
+      riscv-toolchains,
     }:
     flake-utils.lib.eachDefaultSystem (
       system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
+        toolchain = riscv-toolchains.packages.${system}.rv32i-cfi;
 
-        toolchain = pkgs.stdenvNoCC.mkDerivation {
-          name = "toolchain";
-          src = pkgs.fetchurl {
-            url = "https://github.com/ethycS0/eSC-V/releases/download/toolchain/toolchain.tar.gz";
-            sha256 = "sha256:5b82aa9e830b5bed4a2ac2b1b5b8ea2c6fb3b4a8f477e84c618efbe8f848129a";
-          };
-          sourceRoot = ".";
-          dontBuild = true;
-          dontConfigure = true;
-          dontStrip = true;
-
-          nativeBuildInputs = [ pkgs.autoPatchelfHook ];
-
-          buildInputs = [
-            pkgs.glibc
-            pkgs.stdenv.cc.cc.lib
-            pkgs.gmp
-            pkgs.zlib
-            pkgs.zstd
-            pkgs.libmpc
-            pkgs.mpfr
-            pkgs.flex
-            pkgs.ncurses
-            pkgs.expat
-            pkgs.python313
-          ];
-
-          installPhase = ''
-            mkdir -p $out
-            if [ -d "bin" ]; then
-              cp -r ./* $out/
-            else
-              cd */
-              cp -r ./* $out/
-            fi
-            chmod +x $out/bin/* 2>/dev/null || true
-          '';
-        };
         commonPackages = with pkgs; [
           # Languages
           python312
@@ -82,7 +47,7 @@
           dtc
 
           # Documentation
-          texlive.combined.scheme-full
+          texliveFull
           doxygen
 
           # Build Tools
@@ -97,12 +62,11 @@
         ];
       in
       {
-        packages.default = toolchain;
         devShells.default = pkgs.mkShell {
-          buildInputs = commonPackages ++ [ toolchain ];
+
+          packages = commonPackages ++ [ toolchain ];
+          env = toolchain.envVars;
           shellHook = ''
-            export PATH="${toolchain}/bin:$PATH"
-            echo "Environment loaded with: ${toolchain.name}"
             export NIX_YOSYS_PLUGIN_DIRS="${pkgs.yosys-ghdl}/share/yosys/plugins"
           '';
         };
